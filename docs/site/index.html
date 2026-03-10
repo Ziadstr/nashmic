@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NashmiC - A Programming Language from Jordan</title>
 <meta name="description" content="NashmiC: Easy like Python. Powerful like Go. Jordanian to the bone. A compiled language with Franco-Arab keywords.">
+<link rel="icon" type="image/x-icon" href="../assets/favicon.ico">
+<link rel="icon" type="image/png" sizes="64x64" href="../assets/logo-64.png">
+<meta property="og:title" content="NashmiC - The First Franco-Arab Programming Language">
+<meta property="og:description" content="Easy like Python. Powerful like Go. Jordanian to the bone. Code the way you text.">
+<meta property="og:image" content="https://raw.githubusercontent.com/Ziadstr/nashmic/main/assets/social-preview.png">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://ziadstr.github.io/nashmic/">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -171,7 +179,7 @@ tbody tr:last-child td{border-bottom:none}
       <svg viewBox="0 0 20 20"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
     </button>
     <a href="#" class="logo" onclick="showSection('hero');return false">
-      <span class="logo-mark">.nsh</span>
+      <img src="../assets/logo-64.png" alt="NashmiC" width="28" height="28" style="border-radius:4px">
       NashmiC
     </a>
   </div>
@@ -232,11 +240,12 @@ tbody tr:last-child td{border-bottom:none}
 <!-- ═══════════ HERO ═══════════ -->
 <div class="section active" id="sec-hero">
 <div class="hero">
+  <img src="../assets/logo-128.png" alt="NashmiC Logo" width="96" height="96" style="margin-bottom:24px;border-radius:12px">
   <div class="hero-badge">Open Source &middot; MIT License</div>
   <h1>Code in <span>Jordanian.</span></h1>
   <p class="hero-sub">NashmiC is a compiled programming language with Franco-Arab keywords. Every keyword is a word you'd actually say in Amman. Not textbook Arabic, real dialect.</p>
   <div class="install-box" onclick="copyInstall(this)">
-    <code>curl -fsSL https://raw.githubusercontent.com/Ziadstr/nashmic/dev/install.sh | bash</code>
+    <code>curl -fsSL https://raw.githubusercontent.com/Ziadstr/nashmic/main/install.sh | bash</code>
     <span class="copy-hint">copy</span>
   </div>
   <div class="hero-code">
@@ -274,7 +283,7 @@ tbody tr:last-child td{border-bottom:none}
 </ul>
 
 <h2>Install</h2>
-<div class="code-block"><div class="code-block-header"><span class="code-block-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code>curl -fsSL https://raw.githubusercontent.com/Ziadstr/nashmic/dev/install.sh | bash</code></pre></div>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code>curl -fsSL https://raw.githubusercontent.com/Ziadstr/nashmic/main/install.sh | bash</code></pre></div>
 <p>This checks for dependencies, clones and builds the compiler, installs to <code class="inline-code">~/.nashmic/</code>, and adds <code class="inline-code">mansaf</code> to your PATH. No sudo needed.</p>
 
 <h3>Build from source</h3>

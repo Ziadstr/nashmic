@@ -12,7 +12,7 @@
 ### One-liner (recommended)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Ziadstr/nashmic/dev/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Ziadstr/nashmic/main/install.sh | bash
 ```
 
 This checks for dependencies, clones and builds the compiler, installs to `~/.nashmic/`, and adds `mansaf` to your PATH. No sudo needed.

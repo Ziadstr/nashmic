@@ -1,10 +1,26 @@
-# NashmiC 🇯🇴
+<p align="center">
+  <img src="assets/logo-128.png" alt="NashmiC Logo" width="128">
+</p>
 
-A programming language from Jordan. **(نشمي)**
+<h1 align="center">NashmiC 🇯🇴</h1>
 
-Easy like Python. Powerful like Go. Jordanian to the bone.
+<p align="center">
+  <strong>The First Franco-Arab Programming Language</strong><br>
+  Easy like Python. Powerful like Go. Jordanian to the bone.
+</p>
 
-NashmiC speaks Franco-Arab. Code the way you text. Every keyword is a word you'd actually say in Amman. Not textbook Arabic, real Jordanian dialect.
+<p align="center">
+  <a href="https://github.com/Ziadstr/nashmic/actions/workflows/build.yml"><img src="https://github.com/Ziadstr/nashmic/actions/workflows/build.yml/badge.svg" alt="Build"></a>
+  <a href="https://github.com/Ziadstr/nashmic/releases"><img src="https://img.shields.io/github/v/release/Ziadstr/nashmic?include_prereleases&label=version" alt="Version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
+  <a href="https://ziadstr.github.io/nashmic/"><img src="https://img.shields.io/badge/docs-live-brightgreen.svg" alt="Docs"></a>
+</p>
+
+---
+
+NashmiC speaks **Franco-Arab** (Arabizi) — the way 400M+ Arabs actually text. No Arabic script, no RTL headaches. Every keyword is a word you'd say in Amman. Not textbook Arabic, real Jordanian dialect.
+
+> **No programming language has ever used Franco-Arab before.** Every Arabic-script language (Qalb, Alif, ABJAD) died from RTL/tooling issues. NashmiC sidesteps all of that.
 
 ```
 yalla() {
@@ -31,7 +47,7 @@ yalla() {
 ### One-liner (recommended)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/Ziadstr/nashmic/dev/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/Ziadstr/nashmic/main/install.sh | bash
 ```
 
 This will:
