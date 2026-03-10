@@ -20,7 +20,7 @@ COMPILER_SRC = \
 BUILD_DIR = build
 MANSAF = $(BUILD_DIR)/mansaf
 
-.PHONY: all clean test run-hello run-fib run-enums run-natije run-all test
+.PHONY: all clean test run-hello run-fib run-enums run-natije run-yimkin run-all test
 
 all: $(MANSAF)
 
@@ -66,6 +66,9 @@ run-enums: $(MANSAF)
 run-natije: $(MANSAF)
 	NASHMIC_ROOT=. $(MANSAF) run examples/natije.nsh
 
+run-yimkin: $(MANSAF)
+	NASHMIC_ROOT=. $(MANSAF) run examples/yimkin.nsh
+
 # Run all examples
 run-all: $(MANSAF)
 	@echo "=== marhaba ==="
@@ -84,6 +87,8 @@ run-all: $(MANSAF)
 	@NASHMIC_ROOT=. $(MANSAF) run examples/enums.nsh
 	@echo "\n=== natije ==="
 	@NASHMIC_ROOT=. $(MANSAF) run examples/natije.nsh
+	@echo "\n=== yimkin ==="
+	@NASHMIC_ROOT=. $(MANSAF) run examples/yimkin.nsh
 
 install: $(MANSAF)
 	mkdir -p /usr/local/share/nashmic/runtime

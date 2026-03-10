@@ -1,0 +1,11 @@
+=== yimkin<T> — Optional Type ===
+
+find_even(4) = 4
+find_even(7) = nothing
+
+iza fi binding:
+  found even: 10
+  no even number
+
+first_positive(-5, 3) = 3
+first_positive(-1, -2) = none

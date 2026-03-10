@@ -619,22 +619,34 @@ make</code></pre></div>
 <div class="section" id="sec-optionals">
 <div class="content">
 <h1>Optionals</h1>
-<span class="status-badge wip">Parser complete, codegen in progress</span>
+<span class="status-badge working">Working</span>
 <p class="section-desc">NashmiC has no null. If a value might be absent, use <code class="inline-code">yimkin&lt;T&gt;</code>.</p>
 
 <h2><code class="inline-code">fi</code> and <code class="inline-code">mafi</code></h2>
 <p><code class="inline-code">fi</code> means "there is." <code class="inline-code">mafi</code> means "there isn't." Ask "fi chai?" (is there tea?) and the answer is "fi" or "mafi." NashmiC uses the same logic.</p>
-<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">dalle</span> <span class="c-fn">find_user</span>(id: <span class="c-type">adad</span>) -> <span class="c-type">yimkin</span>&lt;<span class="c-type">User</span>&gt; {
-    <span class="c-kw">iza</span> id == <span class="c-num">0</span> { <span class="c-kw">rajje3</span> <span class="c-kw">mafi</span> }
-    <span class="c-kw">rajje3</span> <span class="c-fn">fi</span>(users[id])
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">dalle</span> <span class="c-fn">find_even</span>(n: <span class="c-type">adad64</span>) -> <span class="c-type">yimkin</span>&lt;<span class="c-type">adad64</span>&gt; {
+    <span class="c-kw">iza</span> n % <span class="c-num">2</span> == <span class="c-num">0</span> {
+        <span class="c-kw">rajje3</span> <span class="c-fn">fi</span>(n)
+    }
+    <span class="c-kw">rajje3</span> <span class="c-kw">mafi</span>
 }</code></pre></div>
 
 <h2><code class="inline-code">iza fi</code> binding</h2>
-<p>You must check before accessing the inner value.</p>
-<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">iza</span> <span class="c-kw">fi</span> user = <span class="c-fn">find_user</span>(<span class="c-num">42</span>) {
-    <span class="c-fn">itba3</span>(<span class="c-str">"found: {user.name}\n"</span>)
+<p>Safely unwrap an optional — bind the value if present, run the else branch if not.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">iza</span> <span class="c-kw">fi</span> result = <span class="c-fn">find_even</span>(<span class="c-num">10</span>) {
+    <span class="c-fn">itba3</span>(<span class="c-str">"found even: %lld\n"</span>, result)
 } <span class="c-kw">wala</span> {
-    <span class="c-fn">itba3</span>(<span class="c-str">"user not found\n"</span>)
+    <span class="c-fn">itba3</span>(<span class="c-str">"no even number\n"</span>)
+}</code></pre></div>
+
+<h2>Pattern Matching</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">hasab</span> <span class="c-fn">find_even</span>(<span class="c-num">7</span>) {
+    <span class="c-kw">hale</span> <span class="c-fn">fi</span>(val) => {
+        <span class="c-fn">itba3</span>(<span class="c-str">"%lld\n"</span>, val)
+    }
+    <span class="c-kw">hale</span> <span class="c-kw">mafi</span> => {
+        <span class="c-fn">itba3</span>(<span class="c-str">"nothing\n"</span>)
+    }
 }</code></pre></div>
 
 <div class="footer">

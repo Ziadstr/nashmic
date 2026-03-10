@@ -1,6 +1,6 @@
 # Optionals
 
-> **Status:** Parser complete, codegen in progress. The syntax below is final, but you cannot compile optional programs yet.
+> **Status:** Working. See `examples/yimkin.nsh`.
 
 ## No Null in NashmiC
 

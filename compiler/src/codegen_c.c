@@ -44,6 +44,11 @@ typedef struct {
     /* collected natije<T> types for struct generation */
     char *result_types[64];
     int result_type_count;
+    /* optional type tracking */
+    char *current_option_type;  /* inner type of current function's yimkin<T>, or NULL */
+    /* collected yimkin<T> types for struct generation */
+    char *option_types[64];
+    int option_type_count;
 } Emitter;
 
 static void emit(Emitter *e, const char *fmt, ...) {
@@ -71,6 +76,8 @@ static void emit_line(Emitter *e, const char *fmt, ...) {
 /* Forward declarations for result type helpers */
 static const char *extract_natije_inner(const char *type);
 static const char *result_struct_name(const char *inner_nsh);
+static const char *extract_yimkin_inner(const char *type_str);
+static const char *option_struct_name(const char *inner_nsh);
 
 /* ── Type Mapping (Franco-only) ──────────────────────────────── */
 
@@ -105,10 +112,16 @@ static const char *map_type(const char *nsh_type) {
         }
     }
 
-    /* yimkin<T> → struct nsh_option_T (handled later) */
+    /* yimkin<T> → struct nsh_option_T */
     if (strncmp(nsh_type, "yimkin<", 7) == 0) {
-        /* placeholder — will be wired in Phase 1.4 */
-        return "int";
+        const char *inner = extract_yimkin_inner(nsh_type);
+        if (inner) {
+            const char *sname = option_struct_name(inner);
+            char *buf = map_type_bufs[map_type_idx];
+            map_type_idx = (map_type_idx + 1) % MAP_TYPE_BUFS;
+            snprintf(buf, MAP_TYPE_BUF_SIZE, "struct %s", sname);
+            return buf;
+        }
     }
 
     /* User-defined types: prepend "struct " */
@@ -202,6 +215,58 @@ static void emit_result_struct(Emitter *e, const char *inner_nsh) {
     emit(e, "};\n\n");
 }
 
+/* ── yimkin<T> Optional Type Helpers ─────────────────────────── */
+
+/* Extract inner type from "yimkin<T>" → "T" */
+static const char *extract_yimkin_inner(const char *type_str) {
+    if (!type_str || strncmp(type_str, "yimkin<", 7) != 0) return NULL;
+    const char *start = type_str + 7;
+    const char *end = strchr(start, '>');
+    if (!end) return NULL;
+    static char inner_buf[128];
+    int len = (int)(end - start);
+    if (len >= 128) len = 127;
+    memcpy(inner_buf, start, len);
+    inner_buf[len] = '\0';
+    return inner_buf;
+}
+
+/* Get C struct name for an option type: "adad64" → "nsh_option_int64_t" */
+static const char *option_struct_name(const char *inner_nsh) {
+    static char buf[256];
+    const char *c_type = map_type(inner_nsh);
+    char sanitized[128];
+    int j = 0;
+    for (int i = 0; c_type[i] && j < 126; i++) {
+        if (c_type[i] == ' ') sanitized[j++] = '_';
+        else if (c_type[i] == '*') sanitized[j++] = 'p';
+        else sanitized[j++] = c_type[i];
+    }
+    sanitized[j] = '\0';
+    snprintf(buf, sizeof(buf), "nsh_option_%s", sanitized);
+    return buf;
+}
+
+/* Register a yimkin<T> type if not already registered */
+static void register_option_type(Emitter *e, const char *inner_nsh) {
+    for (int i = 0; i < e->option_type_count; i++) {
+        if (strcmp(e->option_types[i], inner_nsh) == 0) return;
+    }
+    if (e->option_type_count < 64) {
+        e->option_types[e->option_type_count++] = strdup(inner_nsh);
+    }
+}
+
+/* Emit an option struct definition */
+static void emit_option_struct(Emitter *e, const char *inner_nsh) {
+    const char *c_type = map_type(inner_nsh);
+    const char *sname = option_struct_name(inner_nsh);
+    emit(e, "struct %s {\n", sname);
+    emit(e, "    int _has_value;\n");
+    emit(e, "    %s _value;\n", c_type);
+    emit(e, "};\n\n");
+}
+
 /* ── Expression Codegen ──────────────────────────────────────── */
 
 static void emit_expr(Emitter *e, NshNode *node);
@@ -264,7 +329,13 @@ static void emit_expr(Emitter *e, NshNode *node) {
         break;
 
     case NODE_NULL_LIT:
-        emit(e, "NULL");
+        if (e->current_option_type) {
+            /* mafi in yimkin context */
+            const char *sname = option_struct_name(e->current_option_type);
+            emit(e, "(struct %s){._has_value = 0}", sname);
+        } else {
+            emit(e, "NULL");
+        }
         break;
 
     case NODE_IDENT: {
@@ -413,9 +484,16 @@ static void emit_expr(Emitter *e, NshNode *node) {
         break;
 
     case NODE_RESULT_WRAP: {
-        /* tamam(expr) or ghalat(expr) */
+        /* tamam(expr)/ghalat(expr) for natije, fi(expr) for yimkin */
+        if (e->current_option_type && node->as.result_wrap.is_ok) {
+            /* fi(expr) in yimkin context */
+            const char *sname = option_struct_name(e->current_option_type);
+            emit(e, "(struct %s){._has_value = 1, ._value = ", sname);
+            emit_expr(e, node->as.result_wrap.value);
+            emit(e, "}");
+            break;
+        }
         if (!e->current_result_type) {
-            /* Fallback: no tracked result type */
             emit(e, "/* tamam/ghalat outside natije context */0");
             break;
         }
@@ -568,6 +646,44 @@ static void emit_stmt(Emitter *e, NshNode *node) {
         }
         break;
 
+    case NODE_OPTIONAL_BIND: {
+        /* iza fi x = expr { ... } wala { ... }
+         * Emits: { typeof(expr) _nsh_opt = expr; if (_nsh_opt._has_value) { T x = _nsh_opt._value; ... } else { ... } } */
+        emit_indent(e);
+        emit(e, "{\n");
+        e->indent++;
+        emit_indent(e);
+        emit(e, "typeof(");
+        emit_expr(e, node->as.optional_bind.expr);
+        emit(e, ") _nsh_opt = ");
+        emit_expr(e, node->as.optional_bind.expr);
+        emit(e, ";\n");
+        emit_indent(e);
+        emit(e, "if (_nsh_opt._has_value) {\n");
+        e->indent++;
+        emit_indent(e);
+        emit(e, "typeof(_nsh_opt._value) %s = _nsh_opt._value;\n",
+             node->as.optional_bind.var_name);
+        if (node->as.optional_bind.then_block->type == NODE_BLOCK) {
+            for (int i = 0; i < node->as.optional_bind.then_block->as.block.stmts.count; i++)
+                emit_stmt(e, node->as.optional_bind.then_block->as.block.stmts.items[i]);
+        } else {
+            emit_stmt(e, node->as.optional_bind.then_block);
+        }
+        e->indent--;
+        emit_indent(e);
+        emit(e, "}");
+        if (node->as.optional_bind.else_block) {
+            emit(e, " else ");
+            emit_block(e, node->as.optional_bind.else_block);
+        }
+        emit(e, "\n");
+        e->indent--;
+        emit_indent(e);
+        emit(e, "}\n");
+        break;
+    }
+
     case NODE_WHILE:
         emit_indent(e);
         emit(e, "while ");
@@ -646,13 +762,17 @@ static void emit_stmt(Emitter *e, NshNode *node) {
     case NODE_MATCH: {
         /* hasab expr { hale Pattern(x) => body, ... } */
 
-        /* Detect natije match: first non-default arm is tamam or ghalat */
+        /* Detect natije or yimkin match by checking arm patterns */
         int is_natije_match = 0;
+        int is_yimkin_match = 0;
         for (int i = 0; i < node->as.match.arms.count; i++) {
             NshNode *arm = node->as.match.arms.items[i];
             const char *p = arm->as.match_arm.pattern_name;
             if (strcmp(p, "tamam") == 0 || strcmp(p, "ghalat") == 0) {
                 is_natije_match = 1; break;
+            }
+            if (strcmp(p, "fi") == 0 || strcmp(p, "mafi") == 0) {
+                is_yimkin_match = 1; break;
             }
         }
 
@@ -689,6 +809,52 @@ static void emit_stmt(Emitter *e, NshNode *node) {
                         emit(e, "const char* %s = _nsh_match._v._err;\n",
                              arm->as.match_arm.bindings.items[0]->as.ident.name);
                     }
+                } else {
+                    emit(e, "else {\n");
+                    e->indent++;
+                }
+                if (arm->as.match_arm.body->type == NODE_BLOCK) {
+                    for (int j = 0; j < arm->as.match_arm.body->as.block.stmts.count; j++)
+                        emit_stmt(e, arm->as.match_arm.body->as.block.stmts.items[j]);
+                } else {
+                    emit_stmt(e, arm->as.match_arm.body);
+                }
+                e->indent--;
+                emit_indent(e);
+                emit(e, "}\n");
+            }
+            e->indent--;
+            emit_indent(e);
+            emit(e, "}\n");
+            break;
+        }
+
+        if (is_yimkin_match) {
+            /* yimkin match: emit if/else on _has_value */
+            emit_indent(e);
+            emit(e, "{\n");
+            e->indent++;
+            emit_indent(e);
+            emit(e, "typeof(");
+            emit_expr(e, node->as.match.subject);
+            emit(e, ") _nsh_match = ");
+            emit_expr(e, node->as.match.subject);
+            emit(e, ";\n");
+            for (int i = 0; i < node->as.match.arms.count; i++) {
+                NshNode *arm = node->as.match.arms.items[i];
+                const char *pat = arm->as.match_arm.pattern_name;
+                emit_indent(e);
+                if (strcmp(pat, "fi") == 0) {
+                    emit(e, "%sif (_nsh_match._has_value) {\n", i > 0 ? "else " : "");
+                    e->indent++;
+                    if (arm->as.match_arm.bindings.count > 0) {
+                        emit_indent(e);
+                        emit(e, "typeof(_nsh_match._value) %s = _nsh_match._value;\n",
+                             arm->as.match_arm.bindings.items[0]->as.ident.name);
+                    }
+                } else if (strcmp(pat, "mafi") == 0) {
+                    emit(e, "%sif (!_nsh_match._has_value) {\n", i > 0 ? "else " : "");
+                    e->indent++;
                 } else {
                     emit(e, "else {\n");
                     e->indent++;
@@ -914,6 +1080,11 @@ static void emit_func_decl(Emitter *e, NshNode *node) {
     const char *inner = extract_natije_inner(node->as.func_decl.return_type);
     e->current_result_type = inner ? strdup(inner) : NULL;
 
+    /* Track yimkin<T> return type for fi/mafi codegen */
+    char *saved_option_type = e->current_option_type;
+    const char *opt_inner = extract_yimkin_inner(node->as.func_decl.return_type);
+    e->current_option_type = opt_inner ? strdup(opt_inner) : NULL;
+
     if (node->as.func_decl.is_yalla) {
         /* yalla() becomes main() */
         emit(e, "int main(void) {\n");
@@ -947,9 +1118,11 @@ static void emit_func_decl(Emitter *e, NshNode *node) {
     }
     e->defer_count = saved_defer_count;
 
-    /* Restore result type context */
+    /* Restore result/option type context */
     free(e->current_result_type);
     e->current_result_type = saved_result_type;
+    free(e->current_option_type);
+    e->current_option_type = saved_option_type;
 }
 
 /* ── Public API ──────────────────────────────────────────────── */
@@ -961,7 +1134,8 @@ int codegen_c_emit(NshNode *program, FILE *out) {
     }
 
     Emitter e = {.out = out, .indent = 0, .defer_count = 0, .in_function = 0,
-                  .variant_count = 0, .current_result_type = NULL, .result_type_count = 0};
+                  .variant_count = 0, .current_result_type = NULL, .result_type_count = 0,
+                  .current_option_type = NULL, .option_type_count = 0};
 
     /* C preamble */
     emit(&e, "/* Generated by mansaf — NashmiC Compiler */\n");
@@ -978,18 +1152,25 @@ int codegen_c_emit(NshNode *program, FILE *out) {
     emit(&e, "static inline void _nsh_print_str(const char *v) { printf(\"%%s\", v); }\n");
     emit(&e, "\n");
 
-    /* Pre-scan: collect all natije<T> types used in function signatures */
+    /* Pre-scan: collect all natije<T> and yimkin<T> types used in function signatures */
     for (int i = 0; i < program->as.program.decls.count; i++) {
         NshNode *decl = program->as.program.decls.items[i];
         if (decl->type == NODE_FUNC_DECL && decl->as.func_decl.return_type) {
             const char *inner = extract_natije_inner(decl->as.func_decl.return_type);
             if (inner) register_result_type(&e, inner);
+            const char *opt_inner = extract_yimkin_inner(decl->as.func_decl.return_type);
+            if (opt_inner) register_option_type(&e, opt_inner);
         }
     }
 
     /* Emit result struct definitions */
     for (int i = 0; i < e.result_type_count; i++) {
         emit_result_struct(&e, e.result_types[i]);
+    }
+
+    /* Emit option struct definitions */
+    for (int i = 0; i < e.option_type_count; i++) {
+        emit_option_struct(&e, e.option_types[i]);
     }
 
     /* Emit struct declarations first (before functions that use them) */
