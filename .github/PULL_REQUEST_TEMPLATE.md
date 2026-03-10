@@ -17,8 +17,8 @@ What problem does this solve or what feature does it add?
 ## Checklist
 
 - [ ] `make` builds without warnings
-- [ ] `make run-all` passes all examples
-- [ ] New examples added (if new language feature)
+- [ ] `make test` passes all tests
+- [ ] New examples + expected output added (if new language feature)
 - [ ] Docs updated (if user-facing change)
 
 ## Test plan

@@ -72,7 +72,7 @@ tests/            # Test suite
 
 1. Write a minimal `.nsh` file that reproduces the issue
 2. Fix the bug with minimal changes
-3. Verify `make run-all` still passes
+3. Verify `make test` still passes
 4. Add a test case if applicable
 
 ### Documentation
@@ -105,7 +105,7 @@ chore: clean up unused AST nodes
 1. Fork the repo
 2. Create a branch from `main`: `git checkout -b feat/my-feature main`
 3. Make your changes
-4. Verify: `make clean && make && make run-all`
+4. Verify: `make clean && make && make test`
 5. Push and open a PR against `main`
 
 ## Franco-Arab Naming Guidelines

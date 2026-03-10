@@ -23,6 +23,12 @@ marhaba_arabic
 # Docs build output
 docs/book/
 
+# Internal / private
+PLAN.md
+TODO.md
+NOTES.md
+.claude/
+
 # OS
 .DS_Store
 Thumbs.db
