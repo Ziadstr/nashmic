@@ -1,87 +1,89 @@
 # NashmiC for Visual Studio Code
 
-Language support for [NashmiC](https://github.com/nashmic/nashmic), the Jordanian programming language using Franco-Arab (Arabizi) keywords that transpiles to C.
+> The first Franco-Arab programming language — now in your editor.
+
+[![VS Code Marketplace](https://img.shields.io/visual-studio-marketplace/v/ziadstr.nashmic?label=VS%20Code%20Marketplace&color=007ACC)](https://marketplace.visualstudio.com/items?itemName=ziadstr.nashmic)
+[![GitHub](https://img.shields.io/github/stars/Ziadstr/nashmic?style=social)](https://github.com/Ziadstr/nashmic)
+
+Language support for [NashmiC](https://github.com/Ziadstr/nashmic), the Jordanian programming language that uses Franco-Arab (Arabizi) keywords and transpiles to C.
+
+**Easy like Python. Powerful like Go. Jordanian to the bone.**
 
 ## Features
 
 ### Syntax Highlighting
 
-Full TextMate grammar covering all NashmiC keywords and constructs:
+Full TextMate grammar with 80+ keywords across all NashmiC constructs:
 
-- **Control flow:** `iza`, `wala`, `wala_iza`, `lakol`, `tool_ma`, `liff`, `hasab`, `hale`, `3adi`, `khalas`, `kammel`, `rajje3`
-- **Declarations:** `dalle`, `khalli`, `thabet`, `yalla`, `tabbe2`, `sife`, `sammi`, `jeeb`, `sadder`, `qesm`
-- **Types:** `adad`, `adad64`, `fasle`, `fasle64`, `mante2`, `harf`, `nass`, `saff`, `haikal`, `ta3dad`, `natije`, `yimkin`
-- **Error handling:** `jarreb`, `imsek`, `irmi`, `tamam`, `ghalat`, `faz3a`, `ba3dain`, `binhayto`, `wala?`
-- **Concurrency:** `shaghghel`, `istanna`, `qanah`, `ib3ath`, `istalam`, `3al_tayer`, `khait`
-- **Memory:** `ihjez`, `hares`, `3al_3amyani`, `jdeed`, `fukk`
-- **Values:** `ah`, `la`, `wala_ishi`
-- **String interpolation:** `"marhaba ya {name}!"` with embedded expressions
-- **Comments:** `// single-line`
+| Category | Keywords |
+|----------|----------|
+| Control flow | `iza`, `wala`, `wala_iza`, `lakol`, `tool_ma`, `liff`, `hasab`, `hale`, `3adi`, `khalas`, `kammel`, `rajje3` |
+| Declarations | `dalle`, `khalli`, `thabet`, `yalla`, `tabbe2`, `sife`, `sammi`, `jeeb`, `sadder`, `qesm` |
+| Types | `adad`, `adad64`, `fasle`, `fasle64`, `mante2`, `harf`, `nass`, `saff`, `haikal`, `ta3dad`, `natije`, `yimkin` |
+| Error handling | `jarreb`, `imsek`, `irmi`, `tamam`, `ghalat`, `faz3a`, `ba3dain`, `binhayto`, `wala?` |
+| Values | `ah`, `la`, `wala_ishi`, `fi`, `mafi` |
+| I/O | `itba3`, `i2ra`, `itla3` |
+| Operators | `w` (and), `aw` (or), `mish` (not), `..` (range), `=>`, `->` |
+
+Plus string interpolation (`"marhaba ya {name}!"`), comments, numbers, and operators.
 
 ### Snippets
 
-Quick-start templates for common patterns:
+Type a prefix and hit Tab to expand:
 
-| Prefix     | Description                        |
-|------------|------------------------------------|
-| `yalla`    | Main function entry point          |
-| `dalle`    | Function declaration               |
-| `iza`      | If/else block                      |
-| `lakol`    | For-each loop                      |
-| `tool_ma`  | While loop                         |
-| `hasab`    | Pattern matching (match/case)      |
-| `natije`   | Result-returning function          |
-| `haikal`   | Struct definition                  |
-| `ta3dad`   | Enum definition                    |
-| `tabbe2`   | Impl block                        |
-| `khalli`   | Variable declaration               |
-| `thabet`   | Constant declaration               |
-| `jarreb`   | Try/catch block                    |
-| `itba3`    | Print statement                    |
-| `sife`     | Trait definition                   |
+| Prefix | Expands to |
+|--------|-----------|
+| `yalla` | Main function `yalla() { ... }` |
+| `dalle` | Function declaration |
+| `iza` | If/else block |
+| `lakol` | For-each loop with range |
+| `tool_ma` | While loop |
+| `hasab` | Pattern match block |
+| `natije` | Result-returning function with `tamam`/`ghalat` |
+| `haikal` | Struct definition |
+| `ta3dad` | Enum definition |
+| `tabbe2` | Impl block with method |
+| `khalli` | Variable declaration |
+| `thabet` | Constant declaration |
+| `jarreb` | Try/catch block |
+| `itba3` | Print statement |
 
-### Bracket Matching & Folding
+### Other Features
 
-Auto-closing and matching for `{}`, `()`, `[]`, and `""`. Code folding based on braces.
-
-### Comment Toggling
-
-`Ctrl+/` (`Cmd+/` on macOS) toggles `//` line comments.
+- **Bracket matching & auto-closing** for `{}`, `()`, `[]`, `""`
+- **Code folding** based on braces
+- **Comment toggling** with `Ctrl+/` (`Cmd+/` on macOS)
+- **Auto-indentation** after `{` and before `}`
 
 ## Installation
 
-### From Source
+### From VS Code Marketplace
 
-1. Clone or copy the `editor/vscode-nashmic/` directory
-2. Copy it to your VS Code extensions directory:
-   - **Linux:** `~/.vscode/extensions/nashmic/`
-   - **macOS:** `~/.vscode/extensions/nashmic/`
-   - **Windows:** `%USERPROFILE%\.vscode\extensions\nashmic\`
-3. Restart VS Code
-4. Open any `.nsh` file to activate
-
-### From VSIX (packaged)
+Search for **"NashmiC"** in the Extensions panel (`Ctrl+Shift+X`), or:
 
 ```bash
-# Install vsce if you don't have it
-pnpm install -g @vscode/vsce
+code --install-extension ziadstr.nashmic
+```
 
-# Package the extension
+### From Source (development)
+
+```bash
 cd editor/vscode-nashmic
+pnpm install -g @vscode/vsce
 vsce package
-
-# Install the .vsix
 code --install-extension nashmic-0.1.0.vsix
 ```
 
-## File Association
+### Debug / Test
 
-The extension automatically activates for files with the `.nsh` extension.
+1. Open `editor/vscode-nashmic/` in VS Code
+2. Press `F5` to launch an Extension Development Host
+3. Open any `.nsh` file to see highlighting in action
 
 ## Example
 
-```
-// fibonacci.nsh
+```nashmic
+// NashmiC — Fibonacci
 dalle fibonacci(n: adad64) -> adad64 {
     iza n <= 1 {
         rajje3 n
@@ -95,3 +97,18 @@ yalla() {
     }
 }
 ```
+
+## What is NashmiC?
+
+NashmiC is the first programming language to use **Franco-Arab (Arabizi)** — the way 400M+ Arabs actually text. No RTL issues, no special keyboard needed. Just code the way you talk.
+
+- [GitHub](https://github.com/Ziadstr/nashmic)
+- [Documentation](https://ziadstr.github.io/nashmic/)
+
+## Contributing
+
+Found a missing keyword or highlighting bug? [Open an issue](https://github.com/Ziadstr/nashmic/issues) or submit a PR.
+
+## License
+
+MIT

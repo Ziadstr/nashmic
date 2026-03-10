@@ -1,9 +1,10 @@
 {
   "name": "nashmic",
-  "displayName": "NashmiC",
-  "description": "NashmiC language support — Franco-Arab programming",
+  "displayName": "NashmiC — Franco-Arab Programming Language",
+  "description": "Syntax highlighting, snippets, and language support for NashmiC — the first Franco-Arab programming language. Easy like Python, powerful like Go, Jordanian to the bone.",
   "version": "0.1.0",
-  "publisher": "nashmic",
+  "publisher": "ziadstr",
+  "license": "MIT",
   "icon": "icon.png",
   "engines": {
     "vscode": "^1.75.0"
@@ -12,17 +13,36 @@
     "Programming Languages",
     "Snippets"
   ],
+  "keywords": [
+    "nashmic",
+    "arabic",
+    "franco-arab",
+    "arabizi",
+    "jordanian",
+    "transpiler",
+    "c-language",
+    "programming-language"
+  ],
+  "galleryBanner": {
+    "color": "#1a1a2e",
+    "theme": "dark"
+  },
   "repository": {
     "type": "git",
-    "url": "https://github.com/nashmic/nashmic"
+    "url": "https://github.com/Ziadstr/nashmic"
   },
+  "bugs": {
+    "url": "https://github.com/Ziadstr/nashmic/issues"
+  },
+  "homepage": "https://ziadstr.github.io/nashmic/",
   "contributes": {
     "languages": [
       {
         "id": "nashmic",
         "aliases": [
           "NashmiC",
-          "nashmic"
+          "nashmic",
+          "nsh"
         ],
         "extensions": [
           ".nsh"
