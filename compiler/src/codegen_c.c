@@ -578,6 +578,11 @@ static void emit_expr(Emitter *e, NshNode *node) {
         break;
     }
 
+    case NODE_TUPLE_LIT:
+        fprintf(stderr, "⚠️  tuples are not yet supported — coming soon inshallah\n");
+        emit(e, "0 /* tuple not supported */");
+        break;
+
     default:
         emit(e, "/* unknown expr */0");
         break;
