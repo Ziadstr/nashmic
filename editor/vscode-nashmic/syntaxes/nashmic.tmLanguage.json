@@ -1,0 +1,211 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "NashmiC",
+  "scopeName": "source.nashmic",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#keywords-control" },
+    { "include": "#keywords-declaration" },
+    { "include": "#keywords-type" },
+    { "include": "#keywords-value" },
+    { "include": "#keywords-error" },
+    { "include": "#keywords-memory" },
+    { "include": "#keywords-logical" },
+    { "include": "#keywords-concurrency" },
+    { "include": "#keywords-io" },
+    { "include": "#keywords-extra" },
+    { "include": "#keywords-optional" },
+    { "include": "#numbers" },
+    { "include": "#operators" },
+    { "include": "#punctuation" },
+    { "include": "#function-call" },
+    { "include": "#identifiers" }
+  ],
+  "repository": {
+    "comments": {
+      "name": "comment.line.double-slash.nashmic",
+      "match": "//.*$"
+    },
+    "strings": {
+      "name": "string.quoted.double.nashmic",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.nashmic",
+          "match": "\\\\(?:[\\\\\"nrt0]|x[0-9a-fA-F]{2})"
+        },
+        {
+          "name": "constant.character.escape.nashmic",
+          "match": "\\{\\{"
+        },
+        {
+          "name": "constant.character.escape.nashmic",
+          "match": "\\}\\}"
+        },
+        {
+          "begin": "\\{",
+          "end": "\\}",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.interpolation.begin.nashmic" }
+          },
+          "endCaptures": {
+            "0": { "name": "punctuation.definition.interpolation.end.nashmic" }
+          },
+          "name": "meta.interpolation.nashmic",
+          "contentName": "meta.embedded.expression.nashmic",
+          "patterns": [
+            { "include": "source.nashmic" }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.float.nashmic",
+          "match": "\\b[0-9]+\\.[0-9]+\\b"
+        },
+        {
+          "name": "constant.numeric.hex.nashmic",
+          "match": "\\b0[xX][0-9a-fA-F]+\\b"
+        },
+        {
+          "name": "constant.numeric.integer.nashmic",
+          "match": "\\b[0-9]+\\b"
+        }
+      ]
+    },
+    "keywords-control": {
+      "match": "\\b(iza|wala_iza|wala|tool_ma|lakol|liff|khalas|kammel|rajje3|hasab|hale|3adi)\\b",
+      "name": "keyword.control.nashmic"
+    },
+    "keywords-declaration": {
+      "match": "\\b(khalli|thabet|dalle|aam|khas|sadder|jeeb|qesm|kharji|jdeed|fukk)\\b",
+      "name": "keyword.declaration.nashmic"
+    },
+    "keywords-type": {
+      "match": "\\b(adad64|adad|fasle64|fasle|mante2|harf|bait|nass|fadi|mu2shr|saff|haikal|ta3dad|natije|yimkin)\\b",
+      "name": "storage.type.nashmic"
+    },
+    "keywords-value": {
+      "match": "\\b(ah|la|wala_ishi)\\b",
+      "name": "constant.language.nashmic"
+    },
+    "keywords-error": {
+      "match": "\\b(jarreb|imsek|irmi|faz3a|tamam|ghalat|ba3dain|binhayto)\\b",
+      "name": "keyword.control.error.nashmic"
+    },
+    "keywords-memory": {
+      "match": "\\b(ihjez|hares|3al_3amyani)\\b",
+      "name": "keyword.other.memory.nashmic"
+    },
+    "keywords-logical": {
+      "match": "\\b(w|aw|mish|hajm|no3)\\b",
+      "name": "keyword.operator.logical.nashmic"
+    },
+    "keywords-concurrency": {
+      "match": "\\b(shaghghel|istanna|qanah|ib3ath|istalam|i2fel|iftah|3al_tayer|khait)\\b",
+      "name": "keyword.control.concurrency.nashmic"
+    },
+    "keywords-io": {
+      "match": "\\b(itba3|i2ra|itla3|akked|fahas)\\b",
+      "name": "support.function.nashmic"
+    },
+    "keywords-extra": {
+      "patterns": [
+        {
+          "match": "\\b(yalla)\\b",
+          "name": "keyword.declaration.entry.nashmic"
+        },
+        {
+          "match": "\\b(had)\\b",
+          "name": "variable.language.self.nashmic"
+        },
+        {
+          "match": "\\b(tabe2|tabbe2|sife|sammi|zanakh)\\b",
+          "name": "keyword.declaration.nashmic"
+        },
+        {
+          "match": "\\b(7utt|sheel|zeed)\\b",
+          "name": "support.function.nashmic"
+        }
+      ]
+    },
+    "keywords-optional": {
+      "match": "\\b(fi|mafi)\\b",
+      "name": "keyword.control.optional.nashmic"
+    },
+    "operators": {
+      "patterns": [
+        {
+          "match": "=>",
+          "name": "keyword.operator.fat-arrow.nashmic"
+        },
+        {
+          "match": "->",
+          "name": "keyword.operator.arrow.nashmic"
+        },
+        {
+          "match": "wala\\?",
+          "name": "keyword.operator.propagation.nashmic"
+        },
+        {
+          "match": "\\.\\.",
+          "name": "keyword.operator.range.nashmic"
+        },
+        {
+          "match": "==|!=|<=|>=|<|>",
+          "name": "keyword.operator.comparison.nashmic"
+        },
+        {
+          "match": "=",
+          "name": "keyword.operator.assignment.nashmic"
+        },
+        {
+          "match": "[+\\-*/%]",
+          "name": "keyword.operator.arithmetic.nashmic"
+        },
+        {
+          "match": "[&|^~!]",
+          "name": "keyword.operator.bitwise.nashmic"
+        }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        {
+          "match": "[{}()\\[\\]]",
+          "name": "punctuation.bracket.nashmic"
+        },
+        {
+          "match": ";",
+          "name": "punctuation.terminator.nashmic"
+        },
+        {
+          "match": ",",
+          "name": "punctuation.separator.nashmic"
+        },
+        {
+          "match": ":",
+          "name": "punctuation.separator.colon.nashmic"
+        },
+        {
+          "match": "\\.",
+          "name": "punctuation.accessor.nashmic"
+        }
+      ]
+    },
+    "function-call": {
+      "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()",
+      "captures": {
+        "1": { "name": "entity.name.function.nashmic" }
+      }
+    },
+    "identifiers": {
+      "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b",
+      "name": "variable.other.nashmic"
+    }
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "Main Function": {
+    "prefix": "yalla",
+    "body": [
+      "yalla() {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Main entry point — yalla()"
+  },
+  "Function Declaration": {
+    "prefix": "dalle",
+    "body": [
+      "dalle ${1:name}(${2:params}) -> ${3:adad64} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Function declaration — dalle"
+  },
+  "If/Else": {
+    "prefix": "iza",
+    "body": [
+      "iza ${1:condition} {",
+      "\t$2",
+      "} wala {",
+      "\t$0",
+      "}"
+    ],
+    "description": "If/else — iza/wala"
+  },
+  "For Loop": {
+    "prefix": "lakol",
+    "body": [
+      "lakol ${1:i} fi ${2:0..10} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "For-each loop — lakol"
+  },
+  "Result Type Function": {
+    "prefix": "natije",
+    "body": [
+      "dalle ${1:name}(${2:params}) -> natije<${3:adad64}> {",
+      "\tiza ${4:condition} {",
+      "\t\trajje3 ghalat(\"${5:error message}\")",
+      "\t}",
+      "\trajje3 tamam($0)",
+      "}"
+    ],
+    "description": "Function returning natije<T> (Result type)"
+  },
+  "Match Expression": {
+    "prefix": "hasab",
+    "body": [
+      "hasab ${1:value} {",
+      "\thale ${2:pattern} => {",
+      "\t\t$3",
+      "\t}",
+      "\thale ${4:pattern} => {",
+      "\t\t$0",
+      "\t}",
+      "}"
+    ],
+    "description": "Pattern matching — hasab/hale"
+  },
+  "Struct Definition": {
+    "prefix": "haikal",
+    "body": [
+      "haikal ${1:Name} {",
+      "\t${2:field}: ${3:type},",
+      "\t$0",
+      "}"
+    ],
+    "description": "Struct definition — haikal"
+  },
+  "Enum Definition": {
+    "prefix": "ta3dad",
+    "body": [
+      "ta3dad ${1:Name} {",
+      "\t${2:Variant1},",
+      "\t${3:Variant2},",
+      "\t$0",
+      "}"
+    ],
+    "description": "Enum definition — ta3dad"
+  },
+  "Impl Block": {
+    "prefix": "tabbe2",
+    "body": [
+      "tabbe2 ${1:Type} {",
+      "\tdalle ${2:method}(had${3:, params}) -> ${4:type} {",
+      "\t\t$0",
+      "\t}",
+      "}"
+    ],
+    "description": "Impl block — tabbe2"
+  },
+  "Variable Declaration": {
+    "prefix": "khalli",
+    "body": [
+      "khalli ${1:name}: ${2:type} = ${0:value}"
+    ],
+    "description": "Variable declaration — khalli"
+  },
+  "Constant Declaration": {
+    "prefix": "thabet",
+    "body": [
+      "thabet ${1:NAME}: ${2:type} = ${0:value}"
+    ],
+    "description": "Constant declaration — thabet"
+  },
+  "While Loop": {
+    "prefix": "tool_ma",
+    "body": [
+      "tool_ma ${1:condition} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "While loop — tool_ma"
+  },
+  "Try/Catch": {
+    "prefix": "jarreb",
+    "body": [
+      "jarreb {",
+      "\t$1",
+      "} imsek ${2:err} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Try/catch — jarreb/imsek"
+  },
+  "Print": {
+    "prefix": "itba3",
+    "body": [
+      "itba3(\"${1:message}\\n\"${0})"
+    ],
+    "description": "Print — itba3"
+  },
+  "Trait Definition": {
+    "prefix": "sife",
+    "body": [
+      "sife ${1:Name} {",
+      "\tdalle ${2:method}(${3:params}) -> ${4:type}",
+      "\t$0",
+      "}"
+    ],
+    "description": "Trait definition — sife"
+  }
+}

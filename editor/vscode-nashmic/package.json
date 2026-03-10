@@ -1,0 +1,51 @@
+{
+  "name": "nashmic",
+  "displayName": "NashmiC",
+  "description": "NashmiC language support — Franco-Arab programming",
+  "version": "0.1.0",
+  "publisher": "nashmic",
+  "icon": "icon.png",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nashmic/nashmic"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "nashmic",
+        "aliases": [
+          "NashmiC",
+          "nashmic"
+        ],
+        "extensions": [
+          ".nsh"
+        ],
+        "configuration": "./language-configuration.json",
+        "icon": {
+          "light": "./icon.png",
+          "dark": "./icon.png"
+        }
+      }
+    ],
+    "grammars": [
+      {
+        "language": "nashmic",
+        "scopeName": "source.nashmic",
+        "path": "./syntaxes/nashmic.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "nashmic",
+        "path": "./snippets/nashmic.json"
+      }
+    ]
+  }
+}
