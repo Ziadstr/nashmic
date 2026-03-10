@@ -1,10 +1,10 @@
 # Methods & Impl Blocks
 
-> **Status:** Parser complete, codegen in progress. This feature is coming soon.
+> **Status:** Parser complete, codegen written but untested. This feature is coming soon.
 
-## `tabbe2` -- Impl Blocks
+## `tabbe2` - Impl Blocks
 
-`tabbe2` means "apply" or "implement" in Jordanian dialect. It attaches methods to a struct type.
+`tabbe2` (طبّق) means "apply" or "implement" in Jordanian dialect. It attaches methods to a struct type.
 
 ```
 haikal Point {
@@ -25,9 +25,9 @@ tabbe2 Point {
 }
 ```
 
-## `had` -- The Self Reference
+## `had` - The Self Reference
 
-`had` means "this" or "this thing" in Jordanian dialect. It's the receiver -- the instance the method is called on. Equivalent to `self` in Rust or `this` in Java/C++.
+`had` (هاد) means "this" or "this thing" in Jordanian dialect. It's the receiver: the instance the method is called on. Equivalent to `self` in Rust or `this` in Java/C++.
 
 ```
 tabbe2 Point {
@@ -41,7 +41,7 @@ tabbe2 Point {
 
 ## Calling Methods
 
-Use dot notation to call methods on struct instances:
+Dot notation:
 
 ```
 khalli p: Point = Point{ x: 3.0, y: 4.0 }
@@ -55,7 +55,7 @@ The instance before the dot becomes the `had` parameter.
 
 ## Static Methods
 
-Methods without `had` as the first parameter are static -- they belong to the type, not an instance:
+Methods without `had` as the first parameter are static. They belong to the type, not an instance:
 
 ```
 tabbe2 Point {
@@ -65,13 +65,18 @@ tabbe2 Point {
 }
 ```
 
-Static methods would be called on the type directly (calling convention for static methods is still being finalized).
+The calling convention for static methods is still being finalized.
 
 ## Multiple Methods
 
 A single `tabbe2` block can contain any number of methods:
 
 ```
+haikal Rectangle {
+    width: fasle64,
+    height: fasle64,
+}
+
 tabbe2 Rectangle {
     dalle area(had) -> fasle64 {
         rajje3 had.width * had.height
@@ -87,18 +92,42 @@ tabbe2 Rectangle {
 }
 ```
 
+## Full Example
+
+```
+haikal Point {
+    x: fasle64,
+    y: fasle64,
+}
+
+tabbe2 Point {
+    dalle magnitude(had) -> fasle64 {
+        rajje3 sqrt(had.x * had.x + had.y * had.y)
+    }
+
+    dalle distance(had, other: Point) -> fasle64 {
+        khalli dx: fasle64 = had.x - other.x
+        khalli dy: fasle64 = had.y - other.y
+        rajje3 sqrt(dx * dx + dy * dy)
+    }
+}
+
+yalla() {
+    khalli p: Point = Point{ x: 3.0, y: 4.0 }
+    khalli q: Point = Point{ x: 6.0, y: 8.0 }
+    itba3("p magnitude: {p.magnitude()}\n")
+    itba3("distance p to q: {p.distance(q)}\n")
+}
+```
+
 ## Under the Hood
 
 In the generated C code, methods become regular functions with the struct passed as the first argument:
 
-```
-// NashmiC
-tabbe2 Point {
-    dalle distance(had, other: Point) -> fasle64 { ... }
-}
-
-// Generated C (conceptual)
+```c
+// NashmiC: p.distance(q)
+// Generated C: Point_distance(&p, q)
 double Point_distance(struct Point *had, struct Point other) { ... }
 ```
 
-The method call `p.distance(q)` becomes `Point_distance(&p, q)` in C. The dot syntax is syntactic sugar that the compiler translates.
+The dot syntax is syntactic sugar that the compiler translates.

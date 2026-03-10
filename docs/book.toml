@@ -1,6 +1,6 @@
 [book]
 title = "NashmiC Documentation"
-authors = ["Ziad Al-Sharif"]
+authors = ["Ziad Al Sharif"]
 language = "en"
 src = "src"
 
@@ -8,3 +8,5 @@ src = "src"
 default-theme = "coal"
 preferred-dark-theme = "coal"
 git-repository-url = "https://github.com/Ziadstr/nashmic"
+additional-css = ["theme/custom.css"]
+additional-js = []

@@ -1,10 +1,10 @@
 # Pattern Matching
 
-> **Status:** Parser complete, codegen in progress. This feature is coming soon.
+> **Status:** Parser complete, codegen in progress. The syntax below is final, but you cannot compile pattern matching programs yet.
 
-## `hasab` / `hale` -- Match Expressions
+## `hasab` / `hale`
 
-`hasab` means "depending on" or "according to" in Jordanian dialect. `hale` means "case" or "situation." Together, they form NashmiC's pattern matching construct.
+`hasab` (حسب) means "depending on" or "according to." `hale` (حالة) means "case" or "situation." Together, they form NashmiC's pattern matching construct.
 
 ```
 hasab shape {
@@ -34,11 +34,11 @@ dalle describe(animal: Animal) {
 }
 ```
 
-Each `hale` arm destructures the variant, binding its payload to local variables that are available in the arm body.
+Each `hale` arm destructures the variant, binding its payload to local variables available in the arm body.
 
 ## The Default Case: `3adi`
 
-`3adi` means "whatever" or "normal" -- the Jordanian catch-all response. It's the default arm that matches anything not covered by previous arms.
+`3adi` (عادي) means "whatever" or "normal." It's the Jordanian catch-all response and serves as the default arm that matches anything not covered by previous arms.
 
 ```
 hasab value {
@@ -50,7 +50,7 @@ hasab value {
 
 ## Exhaustiveness Checking
 
-The compiler checks that all variants of an enum are covered. If you match on a `ta3dad` and miss a variant without providing a `3adi` default, the compiler reports an error.
+The compiler checks that all variants are covered. Missing a variant without a `3adi` default is a compiler error.
 
 ```
 ta3dad Direction {
@@ -66,7 +66,7 @@ hasab dir {
     hale South => itba3("down\n")
 }
 
-// Fix: add remaining variants or use 3adi
+// Fix: cover all variants or add 3adi
 hasab dir {
     hale North => itba3("up\n")
     hale South => itba3("down\n")
@@ -87,7 +87,7 @@ hasab parse_number(input) {
 
 ## Matching on Optionals
 
-Similarly, match on `yimkin<T>`:
+Match on `yimkin<T>`:
 
 ```
 hasab find_user(42) {
@@ -96,6 +96,27 @@ hasab find_user(42) {
 }
 ```
 
-## Why `hasab`?
+## Full Example
 
-In Jordan, "hasab" is how you start a conditional explanation: "hasab il-mawqef" means "depending on the situation." It maps directly to pattern matching -- your code does different things depending on the shape of the data. And `hale` (case/situation) is what follows naturally: "in the case that..."
+```
+ta3dad Shape {
+    Da2ira(fasle64),
+    Mustateel(fasle64, fasle64),
+    Noqta,
+}
+
+dalle area(shape: Shape) -> fasle64 {
+    hasab shape {
+        hale Da2ira(r) => rajje3 3.14159 * r * r
+        hale Mustateel(w, h) => rajje3 w * h
+        hale Noqta => rajje3 0.0
+    }
+}
+
+yalla() {
+    khalli circle: Shape = Da2ira(5.0)
+    khalli rect: Shape = Mustateel(3.0, 4.0)
+    itba3("circle area: {area(circle)}\n")
+    itba3("rect area: {area(rect)}\n")
+}
+```

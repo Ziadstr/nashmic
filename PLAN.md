@@ -1,9 +1,9 @@
-# NashmiC — Language Design & Roadmap
+# NashmiC: Language Design & Roadmap
 
-> **نشمي** (Nashmi) = brave, noble, valiant — the ultimate Jordanian compliment.
+> **نشمي** (Nashmi) = brave, noble, valiant. The ultimate Jordanian compliment.
 >
 > A programming language from Jordan. Easy like Python, powerful like Go, Jordanian to the bone.
-> Franco-Arab keywords — code the way you text. Not textbook Arabic, real Jordanian dialect.
+> Franco-Arab keywords. Code the way you text. Not textbook Arabic, real Jordanian dialect.
 
 ---
 
@@ -24,27 +24,27 @@
 
 ### Identity
 
-- **Franco-Arab only** — no Arabic script keywords. `iza` not `اذا`. Code the way Jordanians text.
-- Arabic script works fine in strings and comments — just not as keywords.
+- **Franco-Arab only:** no Arabic script keywords. `iza` not `اذا`. Code the way Jordanians text.
+- Arabic script works fine in strings and comments, just not as keywords.
 - Every keyword is a word you'd actually say in Amman.
 
 ### Design Principles
 
-1. **Easy like Python** — no semicolons, string interpolation, clean syntax
-2. **Powerful like Go** — strong types, explicit error handling, no hidden magic
-3. **No null** — `yimkin<T>` for optionals, `natije<T>` for errors
-4. **Compiler with personality** — errors come with Jordanian proverbs
-5. **Cultural identity** — easter eggs, build messages, and proverbs baked in
+1. **Easy like Python:** no semicolons, string interpolation, clean syntax
+2. **Powerful like Go:** strong types, explicit error handling, no hidden magic
+3. **No null:** `yimkin<T>` for optionals, `natije<T>` for errors
+4. **Compiler with personality:** errors come with Jordanian proverbs
+5. **Cultural identity:** easter eggs, build messages, and proverbs baked in
 
 ### File Extension
 
-- `.nsh` — NashmiC source files
+- `.nsh` - NashmiC source files
 
 ---
 
 ## 2. Language Design
 
-### Error Model — `natije<T>` + `wala?`
+### Error Model: `natije<T>` + `wala?`
 
 NashmiC's unique error handling. No exceptions, no try/catch. Errors are values.
 
@@ -61,9 +61,9 @@ dalle read_config(path: nass) -> natije<nass> {
 - `ghalat(msg)` = error (like Rust's `Err`)
 - `wala?` = unwrap or propagate. If error, return it up the chain.
 - `wala? "msg"` = unwrap or propagate with context wrapping
-- **Mandatory handling** — ignoring a `natije` is a compiler error, not a warning
+- **Mandatory handling:** ignoring a `natije` is a compiler error, not a warning
 
-### No Null — `yimkin<T>`
+### No Null: `yimkin<T>`
 
 NashmiC has no null. Optional values use `yimkin<T>`:
 
@@ -81,9 +81,9 @@ iza fi u = find_user(42) {
 }
 ```
 
-- `fi(value)` = Some — "there is"
-- `mafi` = None — "there isn't"
-- `iza fi x = expr` = optional binding — must unwrap before use
+- `fi(value)` = Some, "there is"
+- `mafi` = None, "there isn't"
+- `iza fi x = expr` = optional binding, must unwrap before use
 - Accessing `.field` on `yimkin<T>` without checking = compiler error
 
 ### String Interpolation
@@ -100,7 +100,7 @@ itba3("marhaba ya {name}, age {age}, next year {age + 1}\n")
 - Type-aware: automatically uses the right format for strings, ints, floats
 - `{{` for literal brace
 
-### Structs — `haikal`
+### Structs: `haikal`
 
 ```
 haikal Point {
@@ -112,7 +112,7 @@ khalli p: Point = Point{ x: 3.0, y: 4.0 }
 itba3("Point: ({p.x}, {p.y})\n")
 ```
 
-### Methods — `tabbe2` (impl blocks)
+### Methods: `tabbe2` (impl blocks)
 
 ```
 tabbe2 Point {
@@ -126,10 +126,10 @@ tabbe2 Point {
 khalli d = p.distance(q)
 ```
 
-- `had` = self/this — "this thing"
+- `had` = self/this, "this thing"
 - Methods become `TypeName_methodname(TypeName *had, ...)` in generated C
 
-### Tagged Unions — `ta3dad` (enum)
+### Tagged Unions: `ta3dad` (enum)
 
 ```
 ta3dad Shape {
@@ -139,7 +139,7 @@ ta3dad Shape {
 }
 ```
 
-### Pattern Matching — `hasab`/`hale`
+### Pattern Matching: `hasab`/`hale`
 
 ```
 hasab shape {
@@ -150,11 +150,11 @@ hasab shape {
 }
 ```
 
-- Exhaustiveness checking — compiler error if not all variants covered and no `3adi` default
+- Exhaustiveness checking: compiler error if not all variants covered and no `3adi` default
 
-### Defer — `ba3dain`
+### Defer: `ba3dain`
 
-"Later" — procrastination as a feature. Runs on scope exit, LIFO order.
+"Later." Procrastination as a feature. Runs on scope exit, LIFO order.
 
 ```
 khalli f = iftah("data.txt")
@@ -246,10 +246,10 @@ liff {
 |---------|---------|
 | `ah` | true |
 | `la` | false |
-| `tamam(x)` | Ok(x) — success result |
-| `ghalat(x)` | Err(x) — error result |
-| `fi(x)` | Some(x) — optional has value |
-| `mafi` | None — optional is empty |
+| `tamam(x)` | Ok(x), success result |
+| `ghalat(x)` | Err(x), error result |
+| `fi(x)` | Some(x), optional has value |
+| `mafi` | None, optional is empty |
 
 ### Error Handling
 
@@ -292,14 +292,14 @@ liff {
 | Keywords | `compiler/src/keywords.c/h` | Franco-Arab keyword registration |
 | Parser | `compiler/src/parser.c/h` | Recursive descent + Pratt precedence climbing |
 | AST | `compiler/src/ast.c/h` | All node types including enums, impl, match, interpolation |
-| Codegen | `compiler/src/codegen_c.c/h` | C transpiler — emits C11 code |
+| Codegen | `compiler/src/codegen_c.c/h` | C transpiler, emits C11 code |
 | Diagnostics | `compiler/src/diagnostics.c/h` | Errors with Jordanian proverbs |
 | UTF-8 | `compiler/src/utf8.c/h` | UTF-8 encoding/decoding |
 | Spans | `compiler/src/span.h` | Source locations |
 
 ### Lexer Details
 
-- UTF-8 aware — handles Arabic identifiers and string content
+- UTF-8 aware, handles Arabic identifiers and string content
 - FNV-1a hash table for O(1) keyword lookup
 - Franco-Arab keywords only (Arabic script words become regular identifiers)
 - Compound token: `wala?` lexed as single `TOK_WALA_QUESTION`
@@ -315,7 +315,7 @@ liff {
 
 ### Codegen Details
 
-- C11 target — uses `_Generic` for type dispatch in string interpolation
+- C11 target, uses `_Generic` for type dispatch in string interpolation
 - Statement expressions `({ ... })` for inline interpolation
 - Struct types prefixed with `struct` for uppercase user-defined names
 - `open_memstream` for defer statement capture
@@ -348,24 +348,24 @@ The runtime is linked at compile time. Generated C code `#include`s `nsh_runtime
 - [x] Franco-only keywords (Arabic script → regular identifiers)
 - [x] Functions, variables, constants (`dalle`, `khalli`, `thabet`)
 - [x] Control flow (`iza`/`wala`/`wala_iza`, `tool_ma`, `lakol..fi`, `liff`, `khalas`, `kammel`)
-- [x] Range iteration (`lakol i fi 0..20`) — reads actual range bounds
-- [x] String interpolation (`"hello {name}, age {age + 1}"`) — C11 `_Generic` type dispatch
-- [x] Structs (`haikal`) — declaration, literals, member access, function params
+- [x] Range iteration (`lakol i fi 0..20`): reads actual range bounds
+- [x] String interpolation (`"hello {name}, age {age + 1}`): C11 `_Generic` type dispatch
+- [x] Structs (`haikal`): declaration, literals, member access, function params
 - [x] Recursive functions
 - [x] Operator precedence (Pratt parsing)
-- [x] Cultural diagnostics — errors with Jordanian proverbs
-- [x] Build personality — success quips, first-build ASCII banner, `--tarab` flag
-- [x] Easter egg runtime functions — `drobi()`, `mansaf()`, `sahteen()`, `nashmi()`
-- [x] 6 working examples — marhaba, fibonacci, ranges, interpolation, structs, easter_eggs
+- [x] Cultural diagnostics: errors with Jordanian proverbs
+- [x] Build personality: success quips, first-build ASCII banner, `--tarab` flag
+- [x] Easter egg runtime functions: `drobi()`, `mansaf()`, `sahteen()`, `nashmi()`
+- [x] 6 working examples: marhaba, fibonacci, ranges, interpolation, structs, easter_eggs
 
 ### Parser Done, Codegen In Progress
 
-- [ ] `natije<T>` + `wala?` — full C struct generation + propagation logic
-- [ ] `yimkin<T>` — full C struct generation + `iza fi` binding codegen
-- [ ] `ta3dad` enums — tagged union C codegen (scaffolded)
-- [ ] `hasab`/`hale` pattern matching — switch on tag + payload extraction
-- [ ] `tabbe2` impl blocks — method dispatch codegen (written, untested)
-- [ ] `ba3dain` defer — goto-chain cleanup (partially implemented)
+- [ ] `natije<T>` + `wala?`: full C struct generation + propagation logic
+- [ ] `yimkin<T>`: full C struct generation + `iza fi` binding codegen
+- [ ] `ta3dad` enums: tagged union C codegen (scaffolded)
+- [ ] `hasab`/`hale` pattern matching: switch on tag + payload extraction
+- [ ] `tabbe2` impl blocks: method dispatch codegen (written, untested)
+- [ ] `ba3dain` defer: goto-chain cleanup (partially implemented)
 
 ### Not Yet Started
 
@@ -431,7 +431,7 @@ These are long-term goals, not current priorities:
 | LLVM backend | Optimized native binaries, cross-compilation |
 | Module system | `jeeb riyadiyat` imports, `mansaf.toml` manifests |
 | Standard library | Collections, math, file I/O, networking, time |
-| Package manager | `souq` — install, publish, search packages |
+| Package manager | `souq` - install, publish, search packages |
 | Concurrency | Green threads, channels (`qanah`), `shaghghel`/`istanna` |
 | Generics | Parametric polymorphism |
 | Editor support | Tree-sitter grammar, VS Code extension, LSP |
@@ -439,4 +439,4 @@ These are long-term goals, not current priorities:
 
 ---
 
-Built by Ziad Al-Sharif
+Built by Ziad Al Sharif

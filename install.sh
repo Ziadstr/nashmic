@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-#  NashmiC Installer — يلا نبلّش
+#  NashmiC Installer - يلا نبلّش
 #  Install the NashmiC programming language and mansaf compiler
 #
 #  Usage:
@@ -8,7 +8,7 @@
 #    ./install.sh
 #    ./install.sh --uninstall
 #
-#  NashmiC — لغة برمجة أردنية 🇯🇴
+#  NashmiC - لغة برمجة أردنية 🇯🇴
 # ============================================================================
 
 set -euo pipefail
@@ -60,7 +60,7 @@ banner() {
     printf "  ║   ██║ ╚████║██║  ██║███████║██║  ██║██║   ██║║\n"
     printf "  ║   ╚═╝  ╚═══╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝   ╚═╝║\n"
     printf "  ║                                              ║\n"
-    printf "  ║       لغة برمجة أردنية — NashmiC             ║\n"
+    printf "  ║       لغة برمجة أردنية - NashmiC              ║\n"
     printf "  ║                                              ║\n"
     printf "  ╚══════════════════════════════════════════════╝\n"
     printf "${RESET}\n"
@@ -79,11 +79,11 @@ trap cleanup EXIT
 
 uninstall() {
     printf "\n"
-    step "NashmiC Uninstaller — بدك تفك ارتباط؟"
+    step "NashmiC Uninstaller - بدك تفك ارتباط؟"
     printf "\n"
 
     if [ ! -d "${NASHMIC_HOME}" ]; then
-        warn "NashmiC is not installed at ${NASHMIC_HOME} — مش ملاقيها"
+        warn "NashmiC is not installed at ${NASHMIC_HOME} (مش ملاقيها)"
         exit 0
     fi
 
@@ -94,7 +94,7 @@ uninstall() {
     printf "${BOLD}Are you sure? (y/N): ${RESET}"
     read -r confirm
     if [ "${confirm}" != "y" ] && [ "${confirm}" != "Y" ]; then
-        info "Cancelled — الحمدلله، ضلّت معنا"
+        info "Cancelled. الحمدلله، ضلّت معنا"
         exit 0
     fi
 
@@ -106,7 +106,7 @@ uninstall() {
     success "Cleaned up shell profiles"
 
     printf "\n"
-    printf "${GREEN}${BOLD}  NashmiC has been removed — الله يسهّلك وين ما رحت${RESET}\n"
+    printf "${GREEN}${BOLD}  NashmiC has been removed. الله يسهّلك وين ما رحت${RESET}\n"
     printf "${DIM}  Restart your shell or run: source ~/.bashrc${RESET}\n"
     printf "\n"
     exit 0
@@ -154,7 +154,7 @@ add_shell_config() {
 
     for profile in ${profiles}; do
         if grep -qF "${SHELL_CONFIG_MARKER}" "${profile}" 2>/dev/null; then
-            info "Shell config already in ${profile} — skipping"
+            info "Shell config already in ${profile}, skipping"
         else
             printf "\n%s\n" "${SHELL_CONFIG_BLOCK}" >> "${profile}"
             success "Updated ${profile}"
@@ -186,7 +186,7 @@ check_command() {
 }
 
 check_dependencies() {
-    step "Checking dependencies — نشوف شو عنّا..."
+    step "Checking dependencies... نشوف شو عنّا"
     local missing=()
 
     # Check for C compiler
@@ -216,7 +216,7 @@ check_dependencies() {
 
     if [ ${#missing[@]} -gt 0 ]; then
         printf "\n"
-        error "Missing required dependencies — ناقصنا أشياء:"
+        error "Missing required dependencies (ناقصنا أشياء):"
         for dep in "${missing[@]}"; do
             printf "  ${RED}•${RESET} %s\n" "${dep}"
         done
@@ -236,12 +236,12 @@ check_dependencies() {
 # ── Installation ───────────────────────────────────────────────────────────
 
 clone_repo() {
-    step "Downloading NashmiC — منجيب المنسف..."
+    step "Downloading NashmiC... منجيب المنسف"
 
     mkdir -p "${TMPDIR_INSTALL}"
 
     if ! git clone --depth 1 "${NASHMIC_REPO}" "${TMPDIR_INSTALL}/nashmic" 2>&1; then
-        error "Failed to clone repository — ما زبطت، حاول مرة ثانية"
+        error "Failed to clone repository. ما زبطت، حاول مرة ثانية"
         exit 1
     fi
 
@@ -250,17 +250,17 @@ clone_repo() {
 }
 
 build_compiler() {
-    step "Building mansaf compiler — نطبخ المنسف..."
+    step "Building mansaf compiler... نطبخ المنسف"
 
     cd "${TMPDIR_INSTALL}/nashmic"
 
     if ! make all 2>&1; then
-        error "Build failed — المنسف ما استوى، شوف الأخطاء فوق"
+        error "Build failed. المنسف ما استوى، شوف الأخطاء فوق"
         exit 1
     fi
 
     if [ ! -f "build/mansaf" ]; then
-        error "Build produced no binary — وين المنسف؟"
+        error "Build produced no binary. وين المنسف؟"
         exit 1
     fi
 
@@ -269,7 +269,7 @@ build_compiler() {
 }
 
 install_files() {
-    step "Installing NashmiC — نحطّها بمحلّها..."
+    step "Installing NashmiC... نحطّها بمحلّها"
 
     # Create directory structure
     mkdir -p "${NASHMIC_BIN}"
@@ -312,13 +312,13 @@ install_files() {
 }
 
 configure_shell() {
-    step "Configuring shell — نظبط الإعدادات..."
+    step "Configuring shell... نظبط الإعدادات"
     add_shell_config
     printf "\n"
 }
 
 verify_installation() {
-    step "Verifying installation — نتأكد إنها زابطة..."
+    step "Verifying installation... نتأكد إنها زابطة"
 
     # Source the new config to test
     export NASHMIC_ROOT="${NASHMIC_HOME}"
@@ -334,11 +334,11 @@ verify_installation() {
     if [ -f "${NASHMIC_RUNTIME}/nsh_runtime.h" ]; then
         success "Runtime headers in place"
     else
-        warn "Runtime headers not found — some features may not work"
+        warn "Runtime headers not found, some features may not work"
     fi
 
     if [ -f "${NASHMIC_EXAMPLES}/marhaba.nsh" ]; then
-        success "Examples installed — try: mansaf run ~/.nashmic/examples/marhaba.nsh"
+        success "Examples installed. Try: mansaf run ~/.nashmic/examples/marhaba.nsh"
     fi
 
     printf "\n"
@@ -348,7 +348,7 @@ print_success() {
     printf "${GREEN}${BOLD}"
     printf "  ╔══════════════════════════════════════════════════════╗\n"
     printf "  ║                                                      ║\n"
-    printf "  ║   🇯🇴  !NashmiC installed — مبروك، تمّ التنصيب       ║\n"
+    printf "  ║   🇯🇴  !NashmiC installed - مبروك، تمّ التنصيب        ║\n"
     printf "  ║                                                      ║\n"
     printf "  ╚══════════════════════════════════════════════════════╝\n"
     printf "${RESET}\n"
@@ -373,7 +373,7 @@ print_success() {
     printf "    ${DIM}Runtime:${RESET}  ${NASHMIC_RUNTIME}/\n"
     printf "    ${DIM}Examples:${RESET} ${NASHMIC_EXAMPLES}/\n"
     printf "\n"
-    printf "  ${MAGENTA}${BOLD}يلا نكتب كود — Let's write some code!${RESET}\n"
+    printf "  ${MAGENTA}${BOLD}يلا نكتب كود! Let's write some code!${RESET}\n"
     printf "\n"
 }
 
@@ -398,7 +398,7 @@ main() {
         if [ -t 0 ]; then
             read -r confirm
             if [ "${confirm}" != "y" ] && [ "${confirm}" != "Y" ]; then
-                info "Cancelled — يلا المرة الجاي"
+                info "Cancelled. يلا المرة الجاي"
                 exit 0
             fi
         else

@@ -15,17 +15,17 @@
 
 ## Composite Types
 
-| NashmiC | Category | Description |
-|---------|----------|-------------|
-| `haikal` | Struct | Named product type with typed fields |
-| `ta3dad` | Tagged Union | Sum type with variants that can carry data |
+| NashmiC | Keyword | Description |
+|---------|---------|-------------|
+| Struct | `haikal` | Named product type with typed fields |
+| Tagged Union | `ta3dad` | Sum type with variants that can carry data |
 
 ## Generic Types
 
 | NashmiC | Equivalent | Description |
 |---------|-----------|-------------|
-| `natije<T>` | `Result<T, String>` | Result type -- `tamam(T)` or `ghalat(nass)` |
-| `yimkin<T>` | `Option<T>` | Optional type -- `fi(T)` or `mafi` |
+| `natije<T>` | `Result<T, String>` | Result type: `tamam(T)` or `ghalat(nass)` |
+| `yimkin<T>` | `Option<T>` | Optional type: `fi(T)` or `mafi` |
 
 ## Boolean Values
 
@@ -38,15 +38,15 @@
 
 | NashmiC | Meaning | When to use |
 |---------|---------|-------------|
-| `tamam(value)` | "all good" -- success | Function succeeded, wraps the return value |
-| `ghalat(message)` | "wrong" -- error | Function failed, wraps an error message |
+| `tamam(value)` | "all good" - success | Function succeeded, wraps the return value |
+| `ghalat(message)` | "wrong" - error | Function failed, wraps an error message |
 
 ## Optional Values
 
 | NashmiC | Meaning | When to use |
 |---------|---------|-------------|
-| `fi(value)` | "there is" -- present | Value exists, wraps it |
-| `mafi` | "there isn't" -- absent | No value |
+| `fi(value)` | "there is" - present | Value exists, wraps it |
+| `mafi` | "there isn't" - absent | No value |
 
 ## Numeric Ranges
 
@@ -57,15 +57,17 @@
 | `fasle` | ~1.2e-38 | ~3.4e+38 |
 | `fasle64` | ~2.2e-308 | ~1.8e+308 |
 
-## Type Naming Convention
+## Type Naming Origins
 
-NashmiC type names come from Arabic/Jordanian words:
+Each type name comes from Arabic/Jordanian vocabulary:
 
-- **`adad`** (عدد) = number
-- **`fasle`** (فاصلة) = decimal point / comma
-- **`mante2`** (منطقي) = logical
-- **`harf`** (حرف) = letter / character
-- **`nass`** (نص) = text
-- **`fadi`** (فاضي) = empty / free
-- **`natije`** (نتيجة) = result / outcome
-- **`yimkin`** (يمكن) = maybe / possibly
+| NashmiC | Arabic | Meaning |
+|---------|--------|---------|
+| `adad` | عدد | number |
+| `fasle` | فاصلة | decimal point / comma |
+| `mante2` | منطقي | logical |
+| `harf` | حرف | letter / character |
+| `nass` | نص | text |
+| `fadi` | فاضي | empty / free |
+| `natije` | نتيجة | result / outcome |
+| `yimkin` | يمكن | maybe / possibly |

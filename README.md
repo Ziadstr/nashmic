@@ -1,10 +1,10 @@
 # NashmiC 🇯🇴
 
-**نشمي** — A programming language from Jordan.
+**نشمي** - A programming language from Jordan.
 
 Easy like Python. Powerful like Go. Jordanian to the bone.
 
-NashmiC speaks Franco-Arab — code the way you text. Every keyword is a word you'd actually say in Amman. Not textbook Arabic, real Jordanian dialect.
+NashmiC speaks Franco-Arab. Code the way you text. Every keyword is a word you'd actually say in Amman. Not textbook Arabic, real Jordanian dialect.
 
 ```
 yalla() {
@@ -15,16 +15,16 @@ yalla() {
 
 ## Features
 
-- **Franco-Arab keywords** — `iza`, `wala`, `khalli`, `dalle`, `rajje3`, `yalla`
-- **String interpolation** — `"marhaba ya {name}"` with type-aware formatting
-- **`natije<T>` + `wala?`** — mandatory error handling with inline propagation
-- **`yimkin<T>`** — no null, ever. `fi`/`mafi` for optionals
-- **`ba3dain` defer** — cleanup that runs on scope exit
-- **Pattern matching** — `hasab`/`hale` with destructuring
-- **Structs + methods** — `haikal` with `tabbe2` impl blocks
-- **Tagged unions** — `ta3dad` with typed variants
-- **Compiler personality** — errors come with Jordanian proverbs
-- **Easter eggs** — `drobi()` for proverbs, `mansaf()` for the recipe
+- **Franco-Arab keywords:** `iza`, `wala`, `khalli`, `dalle`, `rajje3`, `yalla`
+- **String interpolation:** `"marhaba ya {name}"` with type-aware formatting
+- **`natije<T>` + `wala?`:** mandatory error handling with inline propagation
+- **`yimkin<T>`:** no null, ever. `fi`/`mafi` for optionals
+- **`ba3dain` defer:** cleanup that runs on scope exit
+- **Pattern matching:** `hasab`/`hale` with destructuring
+- **Structs + methods:** `haikal` with `tabbe2` impl blocks
+- **Tagged unions:** `ta3dad` with typed variants
+- **Compiler personality:** errors come with Jordanian proverbs
+- **Easter eggs:** `drobi()` for proverbs, `mansaf()` for the recipe
 
 ## Installation
 
@@ -106,8 +106,7 @@ make run-all
 
 ```
 yalla() {
-    itba3("مرحبا يا عالم! 🇯🇴\n")
-    itba3("Welcome to NashmiC — ya nashmi!\n")
+    itba3("Welcome to NashmiC, ya nashmi!\n")
 }
 ```
 
@@ -214,10 +213,10 @@ yalla() {
 |---------|---------|
 | `ah` | true |
 | `la` | false |
-| `tamam(x)` | Ok(x) — success result |
-| `ghalat(x)` | Err(x) — error result |
-| `fi(x)` | Some(x) — optional has value |
-| `mafi` | None — optional is empty |
+| `tamam(x)` | Ok(x), success result |
+| `ghalat(x)` | Err(x), error result |
+| `fi(x)` | Some(x), optional has value |
+| `mafi` | None, optional is empty |
 
 ### Error Handling
 
@@ -246,21 +245,21 @@ yalla() {
 NashmiC errors come with Jordanian proverbs:
 
 ```
-خطأ[E0001]: expected expression — شو هاد الحكي؟
+error[E0001]: expected expression
   --> src/main.nsh:12:18
      |
   12 |     khalli x = ???
      |                ^^^
      |
-      = اصبر على الحصرم تاكله عنب — patience turns sour to sweet
+      = patience turns sour to sweet (isbir 3al hasrim ta2klo 3inab)
 ```
 
 Build success messages rotate randomly:
 
 ```
-✓ تم! زي الفل
-✓ تم! نشمي والله
-✓ تم! والله ما قصرت
+done! zay il ful
+done! nashmi wallah
+done! wallah ma 2assart
 ```
 
 ## Documentation
@@ -334,18 +333,18 @@ NashmiC is in active development. The compiler handles:
 - ✅ Operator precedence (Pratt parsing)
 - ✅ Cultural compiler messages with proverbs
 - ✅ Easter egg runtime functions
-- 🔨 Error handling (`natije<T>` + `wala?`) — parser done, codegen in progress
-- 🔨 Optional types (`yimkin<T>`) — parser done, codegen in progress
-- 🔨 Enums + pattern matching — parser done, codegen in progress
-- 🔨 Impl blocks (methods) — parser done, codegen in progress
+- 🔨 Error handling (`natije<T>` + `wala?`): parser done, codegen in progress
+- 🔨 Optional types (`yimkin<T>`): parser done, codegen in progress
+- 🔨 Enums + pattern matching: parser done, codegen in progress
+- 🔨 Impl blocks (methods): parser done, codegen in progress
 - 📋 Defer codegen
 - 📋 Multiple return values
 - 📋 Semicolon-free syntax
 
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE).
 
 ## Author
 
-Built by Ziad Al-Sharif 🇯🇴
+Built by [Ziad Al Sharif](https://github.com/Ziadstr) (ziadstr) 🇯🇴

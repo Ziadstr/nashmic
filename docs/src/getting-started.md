@@ -4,35 +4,53 @@
 
 - A C11 compiler (`gcc` or `clang`)
 - `make`
+- `git`
 - Linux or macOS
 
 ## Installation
 
-### Build from Source
+### One-liner (recommended)
 
 ```bash
-git clone https://github.com/ziadstr/nashmic.git
+curl -fsSL https://raw.githubusercontent.com/Ziadstr/nashmic/dev/install.sh | bash
+```
+
+This checks for dependencies, clones and builds the compiler, installs to `~/.nashmic/`, and adds `mansaf` to your PATH. No sudo needed.
+
+### Build from source
+
+```bash
+git clone https://github.com/Ziadstr/nashmic.git
 cd nashmic
 make
 ```
 
 This builds the `mansaf` compiler binary in `build/`.
 
-### Install Globally
+To install globally:
 
 ```bash
 sudo make install
 ```
 
-After installation, set the `NASHMIC_ROOT` environment variable so the compiler can find the runtime:
+Or set the environment manually:
 
 ```bash
-export NASHMIC_ROOT=~/work/nashmic
+export NASHMIC_ROOT=~/path/to/nashmic
+export PATH="$NASHMIC_ROOT/build:$PATH"
 ```
 
-Add that line to your `.bashrc` or `.zshrc` to make it permanent.
+Add those lines to your `.bashrc` or `.zshrc` to make them permanent.
 
-## Your First Program
+### Uninstall
+
+```bash
+~/.nashmic/bin/install.sh --uninstall
+# or from the source directory:
+./uninstall.sh
+```
+
+## Write Your First Program
 
 Create a file called `marhaba.nsh`:
 
@@ -42,52 +60,93 @@ yalla() {
 }
 ```
 
-Every NashmiC program needs a `yalla()` function -- it's the entry point. The name literally means "let's go!" in Jordanian dialect.
+Every NashmiC program needs a `yalla()` function. It's the entry point, like `main` in C. The word means "let's go!" in Jordanian dialect.
 
-`itba3` is the print function. It means "spit it out" -- direct, no nonsense, very Jordanian.
+`itba3` is the print function. It means "spit it out" (اطبع) - direct, no nonsense, very Jordanian.
 
-## Running Your Code
-
-### Run directly
+## Run It
 
 ```bash
-NASHMIC_ROOT=. build/mansaf run marhaba.nsh
+mansaf run marhaba.nsh
 ```
 
-This compiles and runs in one step. You should see:
+Output:
 
 ```
 marhaba ya 3alam!
 ```
 
-### Build a binary
+`mansaf run` compiles and executes in one step. If you built from source and haven't installed globally, use:
 
 ```bash
-NASHMIC_ROOT=. build/mansaf build marhaba.nsh
+NASHMIC_ROOT=. build/mansaf run marhaba.nsh
+```
+
+## Build a Binary
+
+```bash
+mansaf build marhaba.nsh
 ./marhaba
 ```
 
-This produces a native binary you can distribute.
-
-### Build with celebration
+This produces a native binary you can distribute. Add `--tarab` for celebratory audio on success:
 
 ```bash
-NASHMIC_ROOT=. build/mansaf build --tarab marhaba.nsh
+mansaf build --tarab marhaba.nsh
 ```
 
-The `--tarab` flag attempts to play celebratory audio on a successful build. Because shipping code deserves a party.
+"Tarab" (طرب) means musical ecstasy. Because shipping code deserves a party.
 
-### Debug: dump tokens
+## Try String Interpolation
+
+Create `greet.nsh`:
+
+```
+yalla() {
+    khalli name: nass = "Ziad"
+    khalli age: adad64 = 23
+
+    itba3("marhaba ya {name}!\n")
+    itba3("age: {age}, next year: {age + 1}\n")
+}
+```
+
+Run it:
 
 ```bash
-NASHMIC_ROOT=. build/mansaf lex marhaba.nsh
+mansaf run greet.nsh
 ```
 
-This prints the token stream for debugging the lexer.
+Output:
 
-## A More Interesting Program
+```
+marhaba ya Ziad!
+age: 23, next year: 24
+```
 
-Let's write Fibonacci with string interpolation:
+`khalli` means "let there be" (خلّي). It declares a variable. The `{expr}` syntax inside strings evaluates any expression inline, no format specifiers needed.
+
+## Try a Loop
+
+Create `counting.nsh`:
+
+```
+yalla() {
+    lakol i fi 0..10 {
+        itba3("{i}\n")
+    }
+}
+```
+
+Run it:
+
+```bash
+mansaf run counting.nsh
+```
+
+This prints 0 through 9. `lakol` means "for each" (لكل), `fi` means "in" (في). The range `0..10` goes from 0 up to (but not including) 10.
+
+## A Bigger Example: Fibonacci
 
 ```
 dalle fibonacci(n: adad64) -> adad64 {
@@ -105,31 +164,40 @@ yalla() {
 ```
 
 This demonstrates:
-- `dalle` -- function declaration ("a function")
-- `iza` -- if statement
-- `rajje3` -- return ("bring back")
-- `lakol i fi 0..15` -- for-each over a range ("for each i in 0 to 15")
-- `{expr}` -- string interpolation with arbitrary expressions
+- `dalle` (دالّة) - function declaration, means "a function"
+- `iza` (اذا) - if statement
+- `rajje3` (رجّع) - return, means "bring back"
+- `lakol i fi 0..15` - for-each over a range
+- `{fibonacci(i)}` - function calls inside string interpolation
 
-## Running the Examples
+## Running the Shipped Examples
 
-NashmiC ships with six example programs:
+NashmiC comes with six example programs:
 
 ```bash
 # Run all examples at once
 make run-all
 
 # Or individually:
-NASHMIC_ROOT=. build/mansaf run examples/marhaba.nsh
-NASHMIC_ROOT=. build/mansaf run examples/fibonacci.nsh
-NASHMIC_ROOT=. build/mansaf run examples/ranges.nsh
-NASHMIC_ROOT=. build/mansaf run examples/interpolation.nsh
-NASHMIC_ROOT=. build/mansaf run examples/structs.nsh
-NASHMIC_ROOT=. build/mansaf run examples/easter_eggs.nsh
+mansaf run examples/marhaba.nsh        # Hello world
+mansaf run examples/fibonacci.nsh      # Recursive fibonacci
+mansaf run examples/ranges.nsh         # Range iteration
+mansaf run examples/interpolation.nsh  # String interpolation
+mansaf run examples/structs.nsh        # Struct basics
+mansaf run examples/easter_eggs.nsh    # Cultural easter eggs
 ```
 
-## Next Steps
+## Debug: Dump Tokens
 
-- [Variables & Constants](basics/variables.md) -- declaring data with `khalli` and `thabet`
-- [Functions](basics/functions.md) -- defining functions with `dalle`
-- [Control Flow](basics/control-flow.md) -- `iza`, `wala`, loops, and more
+```bash
+mansaf lex marhaba.nsh
+```
+
+This prints the token stream, useful for understanding how the lexer processes your code.
+
+## Where to Go Next
+
+- [Variables & Constants](basics/variables.md) - declaring data with `khalli` and `thabet`
+- [Functions](basics/functions.md) - defining functions with `dalle`
+- [Control Flow](basics/control-flow.md) - `iza`, `wala`, loops, and more
+- [Strings & Interpolation](basics/strings.md) - string interpolation and type-aware formatting

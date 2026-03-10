@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ============================================================================
-#  NashmiC Uninstaller — بدك تفك ارتباط؟
+#  NashmiC Uninstaller - بدك تفك ارتباط؟
 #  Cleanly removes NashmiC from your system
 #
 #  Usage:
@@ -77,13 +77,13 @@ remove_shell_config() {
 
 main() {
     printf "\n"
-    step "NashmiC Uninstaller — بدك تفك ارتباط؟"
+    step "NashmiC Uninstaller - بدك تفك ارتباط؟"
     printf "\n"
 
     # Check if installed
     if [ ! -d "${NASHMIC_HOME}" ]; then
         warn "NashmiC is not installed at ${NASHMIC_HOME}"
-        info "Nothing to remove — مش ملاقيها أصلاً"
+        info "Nothing to remove. مش ملاقيها أصلاً"
         exit 0
     fi
 
@@ -118,7 +118,7 @@ main() {
 
     if [ "${confirm}" != "y" ] && [ "${confirm}" != "Y" ]; then
         printf "\n"
-        info "Cancelled — الحمدلله، ضلّت معنا"
+        info "Cancelled. الحمدلله، ضلّت معنا"
         printf "\n"
         exit 0
     fi
@@ -135,7 +135,7 @@ main() {
     remove_shell_config
 
     printf "\n"
-    printf "${GREEN}${BOLD}  NashmiC has been removed — الله يسهّلك وين ما رحت${RESET}\n"
+    printf "${GREEN}${BOLD}  NashmiC has been removed. الله يسهّلك وين ما رحت${RESET}\n"
     printf "\n"
     printf "  ${DIM}Restart your shell or run:${RESET}\n"
     printf "  ${CYAN}source ~/.bashrc${RESET}  ${DIM}# or source ~/.zshrc${RESET}\n"

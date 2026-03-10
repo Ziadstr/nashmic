@@ -4,27 +4,27 @@ NashmiC provides built-in functions for I/O and a few cultural extras. These are
 
 ## Core I/O
 
-### `itba3(...)` -- Print
+### `itba3(...)` - Print
 
-Prints to stdout. The name means "spit it out" in Jordanian dialect.
+Prints to stdout. The name means "spit it out" (اطبع) in Jordanian dialect.
 
 ```
 itba3("marhaba ya 3alam!\n")
 itba3("name: {name}, age: {age}\n")
 ```
 
-`itba3` supports string interpolation -- expressions in `{braces}` are evaluated and formatted based on their type. See [Strings & Interpolation](../basics/strings.md) for details.
+`itba3` supports string interpolation: expressions in `{braces}` are evaluated and formatted based on their type. See [Strings & Interpolation](../basics/strings.md) for details.
 
-You can also use printf-style format specifiers for raw control:
+Printf-style format specifiers also work for raw control:
 
 ```
 itba3("%lld ", value)
 itba3("Point: (%g, %g)\n", p.x, p.y)
 ```
 
-### `i2ra()` -- Read
+### `i2ra()` - Read
 
-Reads a line from stdin. The name means "read" (Franco-Arab for اقرأ).
+Reads a line from stdin. The name is Franco-Arab for "read" (اقرأ). The `2` represents hamza (ء).
 
 ```
 khalli input: nass = i2ra()
@@ -33,9 +33,9 @@ itba3("you said: {input}\n")
 
 Returns a `nass` (string) with the line content.
 
-### `itla3(code)` -- Exit
+### `itla3(code)` - Exit
 
-Exits the program with the given exit code. The name means "get out."
+Exits the program with the given exit code. The name means "get out" (اطلع).
 
 ```
 itla3(0)    // success
@@ -44,11 +44,11 @@ itla3(1)    // error
 
 ## Easter Eggs
 
-NashmiC wouldn't be Jordanian without some personality baked in.
+NashmiC wouldn't be Jordanian without personality baked in.
 
-### `nashmi()` -- About NashmiC
+### `nashmi()` - About NashmiC
 
-Prints the NashmiC manifesto -- what the language is, why it exists, and the philosophy behind it.
+Prints the NashmiC manifesto: what the language is, why it exists, the philosophy behind it.
 
 ```
 yalla() {
@@ -56,9 +56,9 @@ yalla() {
 }
 ```
 
-The word "nashmi" (نشمي) means brave, noble, valiant. It's the ultimate Jordanian compliment. Calling someone "nashmi" is calling them a person of character and honor.
+"nashmi" (نشمي) means brave, noble, valiant. The ultimate Jordanian compliment.
 
-### `drobi()` -- Random Proverb
+### `drobi()` - Random Proverb
 
 Prints a random Jordanian proverb. The name means "hit me" (as in "hit me with a proverb").
 
@@ -68,11 +68,11 @@ yalla() {
 }
 ```
 
-Each call gives you a different proverb from a curated collection. Call it enough times (more than 5) and the runtime starts roasting you for being addicted to proverbs.
+Each call gives you a different proverb from a curated collection. Call it more than 5 times in a row and the runtime starts roasting you for being addicted to proverbs.
 
-### `mansaf()` -- Mansaf Recipe
+### `mansaf()` - Mansaf Recipe
 
-Prints the mansaf recipe in ASCII art. Mansaf is Jordan's national dish -- lamb cooked in dried yogurt (jameed), served over rice. It's not just food; it's a cultural institution.
+Prints the mansaf recipe in ASCII art. Mansaf is Jordan's national dish: lamb cooked in dried yogurt (jameed), served over rice. Not just food; a cultural institution.
 
 ```
 yalla() {
@@ -80,9 +80,9 @@ yalla() {
 }
 ```
 
-### `sahteen()` -- Bon Appetit
+### `sahteen()` - Bon Appetit
 
-Prints "صحتين" (sahteen) -- the Jordanian way of saying "bon appetit." Literally means "two healths." Usually follows mansaf.
+Prints "صحتين" (sahteen), the Jordanian "bon appetit." Literally means "two healths." Usually follows mansaf.
 
 ```
 yalla() {
@@ -91,30 +91,24 @@ yalla() {
 }
 ```
 
-## Example: All Easter Eggs
+## Complete Easter Eggs Example
 
 ```
 yalla() {
     itba3("=== NashmiC Easter Eggs ===\n\n")
-
-    // About NashmiC
     nashmi()
 
-    // Random proverb
     itba3("--- Random proverb ---\n")
     drobi()
 
-    // Mansaf recipe
     mansaf()
-
-    // Bon appetit
     sahteen()
 }
 ```
 
-## Runtime Details
+## Runtime Mapping
 
-All built-in functions are implemented in C in `runtime/nsh_runtime.c`. The generated C code includes `nsh_runtime.h` and links against the runtime at compile time. The mapping:
+All built-in functions map to C functions in `runtime/nsh_runtime.c`:
 
 | NashmiC | C Function | Description |
 |---------|-----------|-------------|

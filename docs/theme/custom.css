@@ -1,0 +1,364 @@
+/* NashmiC Documentation — Custom Dark Theme
+ * Accent: Warm gold/amber (#e8a838) — Jordan identity
+ * Base: GitHub-dark-inspired (#0d1117)
+ */
+
+:root {
+  --nashmic-bg: #0d1117;
+  --nashmic-bg-secondary: #161b22;
+  --nashmic-bg-tertiary: #1c2128;
+  --nashmic-sidebar-bg: #010409;
+  --nashmic-accent: #e8a838;
+  --nashmic-accent-hover: #f0b94d;
+  --nashmic-accent-dim: rgba(232, 168, 56, 0.15);
+  --nashmic-text: #e6edf3;
+  --nashmic-text-muted: #8b949e;
+  --nashmic-border: #30363d;
+  --nashmic-code-bg: #161b22;
+  --nashmic-inline-code-bg: rgba(232, 168, 56, 0.08);
+}
+
+/* Top accent bar */
+body::before {
+  content: "";
+  display: block;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--nashmic-accent), #d4943a, var(--nashmic-accent));
+  z-index: 9999;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Override Coal theme colors */
+.coal {
+  --bg: var(--nashmic-bg);
+  --fg: var(--nashmic-text);
+  --sidebar-bg: var(--nashmic-sidebar-bg);
+  --sidebar-fg: var(--nashmic-text-muted);
+  --sidebar-active: var(--nashmic-accent);
+  --links: var(--nashmic-accent);
+  --inline-code-color: var(--nashmic-accent);
+  --theme-popup-bg: var(--nashmic-bg-secondary);
+  --theme-popup-border: var(--nashmic-border);
+  --quote-bg: var(--nashmic-bg-secondary);
+  --quote-border: var(--nashmic-accent);
+  --table-border-color: var(--nashmic-border);
+  --table-header-bg: var(--nashmic-bg-secondary);
+  --table-alternate-bg: var(--nashmic-bg-tertiary);
+  --searchbar-border-color: var(--nashmic-border);
+  --searchbar-bg: var(--nashmic-bg-secondary);
+  --searchbar-fg: var(--nashmic-text);
+  --searchresults-header-fg: var(--nashmic-accent);
+  --searchresults-border-color: var(--nashmic-border);
+}
+
+/* Body and content area */
+.coal .content {
+  padding-top: 12px;
+}
+
+/* Typography */
+.coal .content main {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--nashmic-text);
+  max-width: 52rem;
+}
+
+/* Headings */
+.coal .content main h1,
+.coal .content main h2,
+.coal .content main h3,
+.coal .content main h4,
+.coal .content main h5,
+.coal .content main h6 {
+  color: var(--nashmic-text);
+  font-weight: 600;
+  border-bottom: none;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.coal .content main h1 {
+  font-size: 2em;
+  color: var(--nashmic-accent);
+  padding-bottom: 0.4em;
+  border-bottom: 2px solid var(--nashmic-accent-dim);
+}
+
+.coal .content main h2 {
+  font-size: 1.5em;
+  color: var(--nashmic-accent);
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--nashmic-border);
+}
+
+.coal .content main h3 {
+  font-size: 1.25em;
+  color: var(--nashmic-accent-hover);
+}
+
+/* Links */
+.coal .content main a {
+  color: var(--nashmic-accent);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.coal .content main a:hover {
+  color: var(--nashmic-accent-hover);
+  border-bottom-color: var(--nashmic-accent-hover);
+}
+
+/* Inline code */
+.coal .content main code {
+  background: var(--nashmic-inline-code-bg);
+  border: 1px solid var(--nashmic-border);
+  border-radius: 4px;
+  padding: 0.15em 0.4em;
+  font-family: "JetBrains Mono", "Fira Code", "Cascadia Code", ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.88em;
+  color: var(--nashmic-accent);
+}
+
+/* Code blocks */
+.coal .content main pre {
+  background: var(--nashmic-code-bg) !important;
+  border: 1px solid var(--nashmic-border);
+  border-radius: 8px;
+  padding: 1em 1.2em;
+  margin: 1.2em 0;
+  overflow-x: auto;
+}
+
+.coal .content main pre code {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--nashmic-text);
+  font-size: 0.88em;
+  line-height: 1.6;
+}
+
+/* Code block buttons (copy, etc.) */
+.coal .content main pre .buttons {
+  border: none;
+  background: transparent;
+}
+
+.coal .content main pre .buttons button {
+  color: var(--nashmic-text-muted);
+  border: 1px solid var(--nashmic-border);
+  border-radius: 4px;
+  background: var(--nashmic-bg-tertiary);
+}
+
+.coal .content main pre .buttons button:hover {
+  color: var(--nashmic-accent);
+  border-color: var(--nashmic-accent);
+}
+
+/* Tables */
+.coal .content main table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.2em 0;
+  font-size: 0.95em;
+}
+
+.coal .content main table th {
+  background: var(--nashmic-bg-secondary);
+  color: var(--nashmic-accent);
+  font-weight: 600;
+  text-align: left;
+  padding: 0.7em 1em;
+  border-bottom: 2px solid var(--nashmic-accent-dim);
+}
+
+.coal .content main table td {
+  padding: 0.6em 1em;
+  border-bottom: 1px solid var(--nashmic-border);
+}
+
+.coal .content main table tr:hover td {
+  background: var(--nashmic-accent-dim);
+}
+
+/* Blockquotes */
+.coal .content main blockquote {
+  border-left: 3px solid var(--nashmic-accent);
+  background: var(--nashmic-bg-secondary);
+  padding: 0.8em 1.2em;
+  margin: 1.2em 0;
+  border-radius: 0 6px 6px 0;
+  color: var(--nashmic-text-muted);
+}
+
+.coal .content main blockquote p {
+  margin: 0;
+}
+
+/* Sidebar */
+.coal .sidebar {
+  background: var(--nashmic-sidebar-bg);
+  border-right: 1px solid var(--nashmic-border);
+  padding-top: 12px;
+}
+
+.coal .sidebar .sidebar-scrollbox {
+  padding: 0 10px;
+}
+
+.coal .sidebar ol.chapter li a {
+  color: var(--nashmic-text-muted);
+  padding: 6px 14px;
+  border-radius: 6px;
+  transition: background 0.15s ease, color 0.15s ease;
+  display: block;
+}
+
+.coal .sidebar ol.chapter li a:hover {
+  color: var(--nashmic-text);
+  background: var(--nashmic-accent-dim);
+}
+
+.coal .sidebar ol.chapter li.chapter-item.expanded a,
+.coal .sidebar ol.chapter li a.active {
+  color: var(--nashmic-accent);
+  background: var(--nashmic-accent-dim);
+  font-weight: 600;
+}
+
+/* Sidebar section headers */
+.coal .sidebar .chapter-title {
+  color: var(--nashmic-accent);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.75em;
+  letter-spacing: 0.1em;
+  padding: 10px 14px 4px;
+}
+
+/* Nav buttons (previous/next) */
+.coal .nav-chapters {
+  color: var(--nashmic-text-muted);
+  opacity: 1;
+  transition: color 0.2s ease;
+}
+
+.coal .nav-chapters:hover {
+  color: var(--nashmic-accent);
+}
+
+/* Menu bar */
+.coal #menu-bar {
+  background: var(--nashmic-bg);
+  border-bottom: 1px solid var(--nashmic-border);
+}
+
+.coal #menu-bar i {
+  color: var(--nashmic-text-muted);
+}
+
+.coal #menu-bar i:hover {
+  color: var(--nashmic-accent);
+}
+
+/* Search */
+.coal #searchbar {
+  background: var(--nashmic-bg-secondary);
+  border: 1px solid var(--nashmic-border);
+  border-radius: 6px;
+  color: var(--nashmic-text);
+  padding: 8px 12px;
+}
+
+.coal #searchbar:focus {
+  border-color: var(--nashmic-accent);
+  box-shadow: 0 0 0 2px var(--nashmic-accent-dim);
+  outline: none;
+}
+
+.coal .searchresults a {
+  color: var(--nashmic-accent) !important;
+}
+
+/* Horizontal rules */
+.coal .content main hr {
+  border: none;
+  border-top: 1px solid var(--nashmic-border);
+  margin: 2em 0;
+}
+
+/* Lists */
+.coal .content main ul,
+.coal .content main ol {
+  padding-left: 1.5em;
+}
+
+.coal .content main li {
+  margin-bottom: 0.3em;
+}
+
+.coal .content main li::marker {
+  color: var(--nashmic-accent);
+}
+
+/* Scrollbar styling */
+.coal ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.coal ::-webkit-scrollbar-track {
+  background: var(--nashmic-bg);
+}
+
+.coal ::-webkit-scrollbar-thumb {
+  background: var(--nashmic-border);
+  border-radius: 4px;
+}
+
+.coal ::-webkit-scrollbar-thumb:hover {
+  background: var(--nashmic-text-muted);
+}
+
+/* Selection */
+.coal ::selection {
+  background: var(--nashmic-accent);
+  color: var(--nashmic-bg);
+}
+
+/* Mobile tweaks */
+@media (max-width: 768px) {
+  .coal .content main {
+    font-size: 15px;
+    padding: 0 1em;
+  }
+
+  .coal .content main h1 {
+    font-size: 1.6em;
+  }
+
+  .coal .content main h2 {
+    font-size: 1.3em;
+  }
+
+  .coal .content main pre {
+    padding: 0.8em;
+    font-size: 0.85em;
+  }
+
+  .coal .content main table {
+    font-size: 0.85em;
+  }
+}

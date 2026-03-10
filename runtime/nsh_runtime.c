@@ -133,6 +133,6 @@ void nsh_nashmi(void) {
     printf("  • Compiler proverbs — learn wisdom with your errors\n");
     printf("  • drobi() — when you need a laugh\n");
     printf("\n");
-    printf("  Built by Ziad Al-Sharif 🇯🇴\n");
+    printf("  Built by Ziad Al Sharif 🇯🇴\n");
     printf("\n");
 }

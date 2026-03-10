@@ -2,7 +2,7 @@
 
 ## Declaring Structs with `haikal`
 
-`haikal` means "structure" or "skeleton" in Arabic. It declares a struct type with named fields.
+`haikal` (هيكل) means "structure" or "skeleton" in Arabic. It declares a struct type with named fields.
 
 ```
 haikal Point {
@@ -11,7 +11,7 @@ haikal Point {
 }
 ```
 
-Fields are declared with `name: type` syntax, separated by commas.
+Fields use `name: type` syntax, separated by commas.
 
 ```
 haikal Person {
@@ -23,7 +23,7 @@ haikal Person {
 
 ## Creating Struct Instances
 
-Use the struct name followed by `{` field initializers `}`:
+Use the struct name followed by `{ field: value }`:
 
 ```
 khalli p: Point = Point{ x: 3.0, y: 4.0 }
@@ -34,7 +34,7 @@ All fields must be initialized at creation. There are no default values.
 
 ## Accessing Fields
 
-Use dot notation to access struct fields:
+Dot notation:
 
 ```
 khalli p: Point = Point{ x: 3.0, y: 4.0 }
@@ -43,7 +43,7 @@ itba3("x = {p.x}, y = {p.y}\n")
 
 ## Structs as Function Parameters
 
-Structs can be passed to functions. They are passed by value (copied):
+Structs can be passed to and returned from functions. They are passed by value (copied).
 
 ```
 haikal Point {
@@ -64,9 +64,11 @@ yalla() {
 }
 ```
 
+> **Note:** Field-level arithmetic on struct fields in return expressions is not yet supported in codegen. The example above returns a zeroed Point. Full struct field arithmetic in expressions is planned.
+
 ## Structs and String Interpolation
 
-You can interpolate struct fields directly:
+Struct fields work directly in interpolation:
 
 ```
 khalli p: Point = Point{ x: 3.0, y: 4.0 }
@@ -91,4 +93,4 @@ khalli line: Line = Line{
 
 ## Methods on Structs
 
-See [Methods & Impl Blocks](../advanced/methods.md) for how to add methods to structs using `tabbe2`.
+You can attach methods to structs using `tabbe2` (impl blocks). See [Methods & Impl Blocks](../advanced/methods.md) for details.

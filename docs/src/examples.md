@@ -1,10 +1,10 @@
 # Examples
 
-NashmiC ships with six working examples in the `examples/` directory. Each one demonstrates different language features. Run them all with `make run-all` or individually with `mansaf run examples/<name>.nsh`.
+NashmiC ships with six working examples in the `examples/` directory. Run them all with `make run-all` or individually with `mansaf run examples/<name>.nsh`.
 
 ## 1. Hello World (`marhaba.nsh`)
 
-The classic first program. Demonstrates `yalla()` entry point and `itba3()` printing with Arabic script.
+The classic first program. Arabic script and emoji in strings, `yalla()` entry point, `itba3()` printing.
 
 ```
 // marhaba.nsh — مرحبا يا عالم
@@ -16,18 +16,18 @@ yalla() {
 }
 ```
 
-**Run it:**
 ```bash
-NASHMIC_ROOT=. build/mansaf run examples/marhaba.nsh
+mansaf run examples/marhaba.nsh
 ```
 
-**Output:**
+Output:
+
 ```
 مرحبا يا عالم! 🇯🇴
 Welcome to NashmiC — ya nashmi!
 ```
 
-**What it shows:** NashmiC handles UTF-8 natively. Arabic text and emoji work in strings. `yalla()` is the entry point. `itba3` prints to stdout.
+**Features:** UTF-8 strings, Arabic text, emoji, `yalla()` entry point, `itba3()`.
 
 ---
 
@@ -53,12 +53,12 @@ yalla() {
 }
 ```
 
-**Run it:**
 ```bash
-NASHMIC_ROOT=. build/mansaf run examples/fibonacci.nsh
+mansaf run examples/fibonacci.nsh
 ```
 
-**Output:**
+Output:
+
 ```
 fib(0) = 0
 fib(1) = 1
@@ -77,13 +77,13 @@ fib(13) = 233
 fib(14) = 377
 ```
 
-**What it shows:** Function declarations with `dalle`, recursion, return with `rajje3`, range iteration with `lakol..fi`, and string interpolation with function calls inside `{braces}`.
+**Features:** `dalle` function declaration, recursion, `rajje3` return, `lakol..fi` range iteration, `{expr}` interpolation with function calls.
 
 ---
 
 ## 3. Ranges (`ranges.nsh`)
 
-Demonstrates range iteration with different start and end values.
+Range iteration with different start/end values and mutable variable reassignment.
 
 ```
 // ranges.nsh — Fixed range iteration with lakol..fi
@@ -114,18 +114,17 @@ yalla() {
 }
 ```
 
-**Run it:**
 ```bash
-NASHMIC_ROOT=. build/mansaf run examples/ranges.nsh
+mansaf run examples/ranges.nsh
 ```
 
-**What it shows:** Ranges with different bounds (`0..10`, `5..15`), mutable variables with reassignment, and iterative Fibonacci as an alternative to the recursive version. Also shows that `itba3` supports printf-style format specifiers alongside interpolation.
+**Features:** Ranges with different bounds (`0..10`, `5..15`), mutable variables with reassignment, iterative Fibonacci, printf-style format specifiers.
 
 ---
 
 ## 4. String Interpolation (`interpolation.nsh`)
 
-Focused demonstration of NashmiC's string interpolation features.
+All the ways string interpolation works.
 
 ```
 // interpolation.nsh — String interpolation demo
@@ -148,12 +147,12 @@ yalla() {
 }
 ```
 
-**Run it:**
 ```bash
-NASHMIC_ROOT=. build/mansaf run examples/interpolation.nsh
+mansaf run examples/interpolation.nsh
 ```
 
-**Output:**
+Output:
+
 ```
 marhaba ya Ziad!
 age: 23, next year: 24
@@ -161,7 +160,7 @@ no interpolation here
 this is a literal {brace}
 ```
 
-**What it shows:** Variable interpolation, expression interpolation (arithmetic inside braces), plain strings without interpolation, and escaped braces with `{{`.
+**Features:** Variable interpolation, expression interpolation (arithmetic inside braces), plain strings, escaped braces with `{{`.
 
 ---
 
@@ -194,12 +193,11 @@ yalla() {
 }
 ```
 
-**Run it:**
 ```bash
-NASHMIC_ROOT=. build/mansaf run examples/structs.nsh
+mansaf run examples/structs.nsh
 ```
 
-**What it shows:** Defining structs with `haikal`, creating instances with `TypeName{ field: value }` syntax, accessing fields with dot notation, and passing structs as function parameters.
+**Features:** `haikal` struct declaration, `TypeName{ field: value }` creation syntax, dot-notation field access, structs as function parameters and return values.
 
 ---
 
@@ -228,15 +226,14 @@ yalla() {
 }
 ```
 
-**Run it:**
 ```bash
-NASHMIC_ROOT=. build/mansaf run examples/easter_eggs.nsh
+mansaf run examples/easter_eggs.nsh
 ```
 
-**What it shows:** The four cultural built-in functions:
-- `nashmi()` -- prints the NashmiC manifesto
-- `drobi()` -- prints a random Jordanian proverb (call it more than 5 times and it starts roasting you)
-- `mansaf()` -- prints the mansaf recipe in ASCII art
-- `sahteen()` -- prints "bon appetit" in Arabic
+**Features:** The four cultural built-in functions:
+- `nashmi()` - prints the NashmiC manifesto
+- `drobi()` - prints a random Jordanian proverb (call it more than 5 times and it starts roasting you)
+- `mansaf()` - prints the mansaf recipe in ASCII art
+- `sahteen()` - prints "bon appetit" in Arabic
 
-These aren't just novelties. They're a statement: programming languages carry culture, and NashmiC carries Jordan's.
+These aren't novelties. They're a statement: programming languages carry culture, and NashmiC carries Jordan's.

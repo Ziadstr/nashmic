@@ -2,7 +2,7 @@
 
 ## Declaring Functions with `dalle`
 
-`dalle` declares a function. The word means "a function" or "a purpose" in Jordanian dialect.
+`dalle` (دالّة) means "a function" in Arabic. It declares a function.
 
 ```
 dalle greet(name: nass) {
@@ -20,11 +20,11 @@ dalle add(a: adad64, b: adad64) -> adad64 {
 }
 ```
 
-`rajje3` means "bring back" -- it's the return statement.
+`rajje3` (رجّع) means "bring back." It's the return statement.
 
 ### Without a return type
 
-Functions that don't return a value simply omit the `->` annotation:
+Functions that don't return a value omit the `->` annotation:
 
 ```
 dalle say_hello() {
@@ -34,7 +34,7 @@ dalle say_hello() {
 
 ## The `yalla()` Entry Point
 
-Every NashmiC program needs a `yalla()` function. It's the entry point -- the first thing that runs. The word means "let's go!" and is probably the most universally recognized Jordanian/Arabic expression.
+Every NashmiC program needs a `yalla()` function. It's the entry point, the first thing that runs. `yalla` (يلّا) means "let's go!" - probably the most universally recognized Jordanian/Arabic expression.
 
 ```
 yalla() {
@@ -46,7 +46,7 @@ yalla() {
 
 ## Parameters
 
-Parameters are declared with `name: type` syntax, separated by commas:
+Parameters use `name: type` syntax, separated by commas:
 
 ```
 dalle describe(name: nass, age: adad64, height: fasle64) {
@@ -54,7 +54,7 @@ dalle describe(name: nass, age: adad64, height: fasle64) {
 }
 ```
 
-Parameters are passed by value. Struct parameters receive a copy of the struct.
+Parameters are passed by value. Struct parameters receive a copy:
 
 ```
 dalle print_point(p: Point) {
@@ -64,7 +64,7 @@ dalle print_point(p: Point) {
 
 ## Recursion
 
-NashmiC supports recursive functions:
+Recursive functions work as expected:
 
 ```
 dalle fibonacci(n: adad64) -> adad64 {
@@ -96,8 +96,8 @@ yalla() {
 }
 ```
 
-Functions must be declared before they are called (no forward declarations yet).
+Functions must be declared before they are called. Forward declarations are not supported yet.
 
 ## Functions as First-Class Values
 
-Functions are not first-class values in NashmiC (yet). You cannot pass functions as arguments or store them in variables. This may change in a future version.
+Functions are not first-class values in NashmiC yet. You cannot pass functions as arguments or store them in variables. This may change in a future version.

@@ -1,6 +1,6 @@
 # Keyword Reference
 
-Every NashmiC keyword is a word you'd actually say in Amman. Franco-Arab only -- no Arabic script keywords. The `3` represents ain (ع), `2` represents hamza (ء).
+Every NashmiC keyword is a word you'd actually say in Amman. Franco-Arab only: no Arabic script keywords. The `3` represents ain (ع), `2` represents hamza (ء).
 
 ## Control Flow
 
@@ -56,6 +56,7 @@ Every NashmiC keyword is a word you'd actually say in Amman. Franco-Arab only --
 | `ghalat` | gha-lat | "wrong" / "mistake" | `Err` |
 | `fi` | fee | "there is" | `Some` |
 | `mafi` | ma-fi | "there isn't" | `None` |
+| `had` | had | "this" / "this thing" | `self` / `this` |
 
 ## Error Handling
 
@@ -73,14 +74,14 @@ Every NashmiC keyword is a word you'd actually say in Amman. Franco-Arab only --
 
 ## Cultural Notes
 
-- **`khalas`** is THE Jordanian stop word. Parents say it, teachers say it, everyone says it. When someone says khalas, you stop what you're doing. Perfect for `break`.
+**`khalas`** is THE Jordanian stop word. Parents say it, teachers say it, everyone says it. When someone says khalas, you stop what you're doing. Perfect for `break`.
 
-- **`yalla`** is universally recognized across the Arab world. It means "come on" / "let's go" -- the perfect way to start a program.
+**`yalla`** is universally recognized across the Arab world. It means "come on" / "let's go" - the perfect way to start a program.
 
-- **`ba3dain`** is the Jordanian art of procrastination. "I'll do it ba3dain" is a national motto. As a language feature, it schedules work for later -- but unlike real life, `ba3dain` in NashmiC actually keeps its promise.
+**`ba3dain`** is the Jordanian art of procrastination. "I'll do it ba3dain" is a national motto. As a language feature, it schedules work for later. Unlike real life, `ba3dain` in NashmiC actually keeps its promise.
 
-- **`3adi`** is the most Jordanian response possible. "How was the exam?" "3adi." "How's work?" "3adi." It means "normal" / "whatever" / "nothing special" -- the perfect default case.
+**`3adi`** is the most Jordanian response possible. "How was the exam?" "3adi." "How's work?" "3adi." It means "normal" / "whatever" - the perfect default case.
 
-- **`tamam`/`ghalat`** -- Jordanians evaluate everything this way. "Tamam?" "Tamam." Or "ghalat, fix it."
+**`tamam`/`ghalat`** - Jordanians evaluate everything this way. "Tamam?" "Tamam." Or "ghalat, fix it."
 
-- **`fi`/`mafi`** -- The universal Jordanian existence check. "Fi chai?" (Is there tea?) "Mafi." (There isn't.) Now it checks for the existence of values instead of beverages.
+**`fi`/`mafi`** - The universal Jordanian existence check. "Fi chai?" (Is there tea?) "Mafi." (There isn't.) Now it checks for values instead of beverages.

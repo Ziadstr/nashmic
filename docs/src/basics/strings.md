@@ -2,7 +2,7 @@
 
 ## String Basics
 
-Strings in NashmiC use the `nass` type (meaning "text") and are declared with double quotes:
+Strings in NashmiC use the `nass` type ("nass" (نص) means "text") and are declared with double quotes:
 
 ```
 khalli message: nass = "marhaba ya 3alam"
@@ -16,9 +16,9 @@ khalli greeting: nass = "مرحبا يا عالم!"
 
 ## String Interpolation
 
-NashmiC uses `{expr}` inside strings to embed expressions. No format specifiers, no string concatenation -- just put the expression in braces.
+Put expressions in `{braces}` inside strings. No format specifiers, no string concatenation.
 
-### Simple variable interpolation
+### Variable interpolation
 
 ```
 khalli name: nass = "Ziad"
@@ -29,7 +29,7 @@ Output: `marhaba ya Ziad!`
 
 ### Expression interpolation
 
-You can put any expression inside the braces, not just variable names:
+Any expression works inside the braces, not just variable names:
 
 ```
 khalli age: adad64 = 23
@@ -53,20 +53,40 @@ yalla() {
 
 Output: `double of 21 is 42`
 
+### Struct fields in interpolation
+
+```
+khalli p: Point = Point{ x: 3.0, y: 4.0 }
+itba3("Point: ({p.x}, {p.y})\n")
+```
+
+Output: `Point: (3, 4)`
+
 ## Type-Aware Formatting
 
-Interpolation is type-aware. The compiler uses C11 `_Generic` to dispatch the correct format for each type:
+Interpolation is type-aware. The compiler uses C11 `_Generic` to pick the correct format for each type:
 
-- `adad` / `adad64` -- formatted as integers
-- `fasle` / `fasle64` -- formatted as floating-point numbers
-- `nass` -- formatted as strings
-- `mante2` -- formatted as boolean
+| Type | Format |
+|------|--------|
+| `adad` / `adad64` | integer |
+| `fasle` / `fasle64` | floating-point |
+| `nass` | string |
+| `mante2` | boolean |
 
-You don't need to specify format codes. The compiler handles it.
+You never specify format codes. The compiler handles it.
+
+## Printf-Style Fallback
+
+`itba3` also supports printf-style format specifiers when you need direct control:
+
+```
+itba3("%lld ", value)
+itba3("Point: (%g, %g)\n", p.x, p.y)
+```
+
+The older example files (`ranges.nsh`, `structs.nsh`) use this style. Both approaches work.
 
 ## Escape Sequences
-
-Standard escape sequences work in NashmiC strings:
 
 | Sequence | Meaning |
 |----------|---------|
@@ -77,7 +97,7 @@ Standard escape sequences work in NashmiC strings:
 
 ## Literal Braces
 
-To print a literal `{` or `}` in a string, double them:
+To print a literal `{` in a string, double it:
 
 ```
 itba3("this is a literal {{brace}}\n")
@@ -85,9 +105,32 @@ itba3("this is a literal {{brace}}\n")
 
 Output: `this is a literal {brace}`
 
-## How It Works Under the Hood
+## Complete Example
 
-String interpolation is not a runtime feature -- it's a compile-time transformation. The lexer recognizes `{` inside a string and triggers expression sub-lexing. The parser builds an interpolation AST node. The C codegen emits a `_Generic`-based format string that resolves types at C compile time.
+```
+yalla() {
+    khalli name: nass = "Ziad"
+    khalli age: adad64 = 23
+
+    itba3("marhaba ya {name}!\n")
+    itba3("age: {age}, next year: {age + 1}\n")
+    itba3("no interpolation here\n")
+    itba3("this is a literal {{brace}}\n")
+}
+```
+
+Output:
+
+```
+marhaba ya Ziad!
+age: 23, next year: 24
+no interpolation here
+this is a literal {brace}
+```
+
+## Under the Hood
+
+String interpolation is a compile-time transformation, not a runtime feature. The lexer recognizes `{` inside a string and triggers expression sub-lexing. The parser builds an interpolation AST node. The C codegen emits a `_Generic`-based format dispatch that resolves types at C compile time.
 
 For a string like `"hello {name}, age {age}"`, the compiler generates something equivalent to:
 
@@ -95,4 +138,4 @@ For a string like `"hello {name}, age {age}"`, the compiler generates something 
 printf("hello %s, age %lld", name, age);
 ```
 
-But with `_Generic` dispatch so the format specifier matches the actual type.
+The format specifier is selected by `_Generic` to match the actual type of each expression.
