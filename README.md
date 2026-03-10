@@ -354,7 +354,7 @@ NashmiC is in active development. The compiler handles:
 - ✅ Error handling (`natije<T>` + `wala?`)
 - ✅ Optional types (`yimkin<T>` + `iza fi`)
 - ✅ Enums (tagged unions) + pattern matching (`hasab`/`hale`)
-- 🔨 Impl blocks (methods): parser done, codegen in progress
+- ✅ Impl blocks (methods with `tabbe2`)
 - 📋 Defer codegen
 - 📋 Multiple return values
 - 📋 Semicolon-free syntax

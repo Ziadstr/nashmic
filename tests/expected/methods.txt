@@ -1,0 +1,7 @@
+=== tabbe2 — Methods ===
+
+Point: (3, 4)
+Distance from origin: 5
+After translate(1, -1): (4, 3)
+Counter is at 42
+Value: 42

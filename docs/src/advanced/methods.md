@@ -1,6 +1,6 @@
 # Methods & Impl Blocks
 
-> **Status:** Parser complete, codegen written but untested. This feature is coming soon.
+> **Status:** Working. See `examples/methods.nsh`.
 
 ## `tabbe2` - Impl Blocks
 

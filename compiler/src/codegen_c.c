@@ -25,6 +25,13 @@ typedef struct {
     int tag_index;
 } VariantInfo;
 
+/* Method registry — populated from impl blocks */
+#define MAX_METHODS 256
+typedef struct {
+    char *method_name;
+    char *type_name;
+} MethodInfo;
+
 /* ── Code Emitter State ──────────────────────────────────────── */
 
 #define MAX_DEFERS 64
@@ -44,6 +51,11 @@ typedef struct {
     /* collected natije<T> types for struct generation */
     char *result_types[64];
     int result_type_count;
+    /* method registry — populated from impl blocks */
+    MethodInfo methods[MAX_METHODS];
+    int method_count;
+    /* impl block context: track that 'had' is a pointer */
+    int in_impl_method;
     /* optional type tracking */
     char *current_option_type;  /* inner type of current function's yimkin<T>, or NULL */
     /* collected yimkin<T> types for struct generation */
@@ -153,6 +165,23 @@ static VariantInfo *find_variant(Emitter *e, const char *name) {
     for (int i = 0; i < e->variant_count; i++) {
         if (strcmp(e->variants[i].variant_name, name) == 0)
             return &e->variants[i];
+    }
+    return NULL;
+}
+
+/* ── Method Registry Helpers ─────────────────────────────────── */
+
+static void register_method(Emitter *e, const char *method_name, const char *type_name) {
+    if (e->method_count >= MAX_METHODS) return;
+    e->methods[e->method_count].method_name = strdup(method_name);
+    e->methods[e->method_count].type_name = strdup(type_name);
+    e->method_count++;
+}
+
+static MethodInfo *find_method(Emitter *e, const char *name) {
+    for (int i = 0; i < e->method_count; i++) {
+        if (strcmp(e->methods[i].method_name, name) == 0)
+            return &e->methods[i];
     }
     return NULL;
 }
@@ -404,6 +433,22 @@ static void emit_expr(Emitter *e, NshNode *node) {
                 break;
             }
         }
+        /* Check if this is a method call: obj.method(args) → TypeName_method(&obj, args) */
+        if (node->as.call.callee->type == NODE_MEMBER) {
+            NshNode *obj = node->as.call.callee->as.member.object;
+            const char *method_name = node->as.call.callee->as.member.field;
+            MethodInfo *mi = find_method(e, method_name);
+            if (mi) {
+                emit(e, "%s_%s(&", mi->type_name, method_name);
+                emit_expr(e, obj);
+                for (int i = 0; i < node->as.call.args.count; i++) {
+                    emit(e, ", ");
+                    emit_expr(e, node->as.call.args.items[i]);
+                }
+                emit(e, ")");
+                break;
+            }
+        }
         emit_expr(e, node->as.call.callee);
         emit(e, "(");
         for (int i = 0; i < node->as.call.args.count; i++) {
@@ -423,7 +468,14 @@ static void emit_expr(Emitter *e, NshNode *node) {
 
     case NODE_MEMBER:
         emit_expr(e, node->as.member.object);
-        emit(e, ".%s", node->as.member.field);
+        /* In impl methods, 'had' is a pointer — use -> instead of . */
+        if (e->in_impl_method &&
+            node->as.member.object->type == NODE_IDENT &&
+            strcmp(node->as.member.object->as.ident.name, "had") == 0) {
+            emit(e, "->%s", node->as.member.field);
+        } else {
+            emit(e, ".%s", node->as.member.field);
+        }
         break;
 
     case NODE_ASSIGN:
@@ -1063,7 +1115,9 @@ static void emit_impl_block(Emitter *e, NshNode *node) {
             emit(e, ", %s %s", map_type(p->type_name), p->name);
         }
         emit(e, ") ");
+        e->in_impl_method = 1;
         emit_block(e, method->as.func_decl.body);
+        e->in_impl_method = 0;
         emit(e, "\n");
     }
 }
@@ -1134,7 +1188,8 @@ int codegen_c_emit(NshNode *program, FILE *out) {
     }
 
     Emitter e = {.out = out, .indent = 0, .defer_count = 0, .in_function = 0,
-                  .variant_count = 0, .current_result_type = NULL, .result_type_count = 0,
+                  .variant_count = 0, .method_count = 0, .in_impl_method = 0,
+                  .current_result_type = NULL, .result_type_count = 0,
                   .current_option_type = NULL, .option_type_count = 0};
 
     /* C preamble */
@@ -1143,6 +1198,7 @@ int codegen_c_emit(NshNode *program, FILE *out) {
     emit(&e, "#include <stdint.h>\n");
     emit(&e, "#include <stddef.h>\n");
     emit(&e, "#include <string.h>\n");
+    emit(&e, "#include <math.h>\n");
     emit(&e, "#include \"nsh_runtime.h\"\n");
     emit(&e, "\n");
     /* Helper macros for string interpolation type dispatch */
@@ -1202,7 +1258,7 @@ int codegen_c_emit(NshNode *program, FILE *out) {
         }
     }
 
-    /* Forward declarations for impl block methods */
+    /* Forward declarations for impl block methods + register in method registry */
     for (int i = 0; i < program->as.program.decls.count; i++) {
         NshNode *decl = program->as.program.decls.items[i];
         if (decl->type == NODE_IMPL_BLOCK) {
@@ -1210,6 +1266,7 @@ int codegen_c_emit(NshNode *program, FILE *out) {
             for (int j = 0; j < decl->as.impl_block.methods.count; j++) {
                 NshNode *method = decl->as.impl_block.methods.items[j];
                 if (method->type != NODE_FUNC_DECL) continue;
+                register_method(&e, method->as.func_decl.name, type_name);
                 const char *ret = map_type(method->as.func_decl.return_type);
                 emit(&e, "%s %s_%s(struct %s *had",
                      ret, type_name, method->as.func_decl.name, type_name);
