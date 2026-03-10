@@ -106,6 +106,7 @@ make run-all
 
 ```
 yalla() {
+    itba3("مرحبا يا عالم!\n")
     itba3("Welcome to NashmiC, ya nashmi!\n")
 }
 ```
@@ -245,21 +246,22 @@ yalla() {
 NashmiC errors come with Jordanian proverbs:
 
 ```
-error[E0001]: expected expression
+خطأ[E0001]: expected expression
   --> src/main.nsh:12:18
      |
   12 |     khalli x = ???
      |                ^^^
      |
-      = patience turns sour to sweet (isbir 3al hasrim ta2klo 3inab)
+      = اصبر على الحصرم تاكله عنب
+      = patience turns sour to sweet
 ```
 
 Build success messages rotate randomly:
 
 ```
-done! zay il ful
-done! nashmi wallah
-done! wallah ma 2assart
+✓ تم! زي الفل
+✓ تم! نشمي والله
+✓ تم! والله ما قصرت
 ```
 
 ## Documentation
