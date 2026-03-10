@@ -838,9 +838,21 @@ static NshNode *parse_match_stmt(NshParser *p) {
             NshSpan arm_sp = token_span(&p->previous);
             NshNode *arm = node_new(NODE_MATCH_ARM, arm_sp);
 
-            /* Pattern: variant name or 3adi (default) */
+            /* Pattern: variant name, tamam, ghalat, fi, mafi, or 3adi (default) */
             if (check(p, TOK_3ADI)) {
                 arm->as.match_arm.pattern_name = strdup("_");
+                advance(p);
+            } else if (check(p, TOK_TAMAM)) {
+                arm->as.match_arm.pattern_name = strdup("tamam");
+                advance(p);
+            } else if (check(p, TOK_GHALAT)) {
+                arm->as.match_arm.pattern_name = strdup("ghalat");
+                advance(p);
+            } else if (check(p, TOK_FI)) {
+                arm->as.match_arm.pattern_name = strdup("fi");
+                advance(p);
+            } else if (check(p, TOK_MAFI)) {
+                arm->as.match_arm.pattern_name = strdup("mafi");
                 advance(p);
             } else {
                 expect(p, TOK_IDENT, "expected pattern name after 'hale'");

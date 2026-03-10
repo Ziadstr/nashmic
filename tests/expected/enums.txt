@@ -1,0 +1,11 @@
+=== Enums (ta3dad) ===
+
+Da2ira (circle) with radius 5
+Mustateel (rectangle) with width 3
+Noqta (just a point)
+
+=== Colors ===
+
+ahmar (red)
+azra2 (blue)
+akhdar (green)

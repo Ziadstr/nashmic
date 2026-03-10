@@ -648,28 +648,35 @@ make</code></pre></div>
 <div class="section" id="sec-natije">
 <div class="content">
 <h1>Result Type (<code class="inline-code">natije</code>)</h1>
-<span class="status-badge wip">Parser complete, codegen in progress</span>
+<span class="status-badge working">Working</span>
 <p class="section-desc">No exceptions. No try/catch. Errors are values.</p>
 
 <h2><code class="inline-code">tamam</code> and <code class="inline-code">ghalat</code></h2>
 <p><code class="inline-code">tamam</code> means "all good." <code class="inline-code">ghalat</code> means "wrong." Every function that can fail returns <code class="inline-code">natije&lt;T&gt;</code>.</p>
-<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">dalle</span> <span class="c-fn">parse_number</span>(input: <span class="c-type">nass</span>) -> <span class="c-type">natije</span>&lt;<span class="c-type">adad64</span>&gt; {
-    <span class="c-kw">iza</span> success {
-        <span class="c-kw">rajje3</span> <span class="c-fn">tamam</span>(parsed_value)
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">dalle</span> <span class="c-fn">divide</span>(a: <span class="c-type">fasle64</span>, b: <span class="c-type">fasle64</span>) -> <span class="c-type">natije</span>&lt;<span class="c-type">fasle64</span>&gt; {
+    <span class="c-kw">iza</span> b == <span class="c-num">0.0</span> {
+        <span class="c-kw">rajje3</span> <span class="c-fn">ghalat</span>(<span class="c-str">"ya zalameh, division by zero!"</span>)
     }
-    <span class="c-kw">rajje3</span> <span class="c-fn">ghalat</span>(<span class="c-str">"not a number"</span>)
+    <span class="c-kw">rajje3</span> <span class="c-fn">tamam</span>(a / b)
 }</code></pre></div>
 
 <h2><code class="inline-code">wala?</code> propagation</h2>
 <p>If error, return it up the chain automatically.</p>
-<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">dalle</span> <span class="c-fn">read_config</span>(path: <span class="c-type">nass</span>) -> <span class="c-type">natije</span>&lt;<span class="c-type">nass</span>&gt; {
-    <span class="c-kw">khalli</span> f = <span class="c-fn">iftah</span>(path) <span class="c-kw">wala?</span> <span class="c-str">"failed to open"</span>
-    <span class="c-kw">khalli</span> content = <span class="c-fn">i2ra_kol</span>(f) <span class="c-kw">wala?</span>
-    <span class="c-kw">rajje3</span> <span class="c-fn">tamam</span>(content)
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">dalle</span> <span class="c-fn">safe_math</span>(x: <span class="c-type">fasle64</span>) -> <span class="c-type">natije</span>&lt;<span class="c-type">fasle64</span>&gt; {
+    <span class="c-kw">khalli</span> result: <span class="c-type">fasle64</span> = <span class="c-fn">divide</span>(x, <span class="c-num">2.0</span>) <span class="c-kw">wala?</span>
+    <span class="c-kw">rajje3</span> <span class="c-fn">tamam</span>(result + <span class="c-num">1.0</span>)
 }</code></pre></div>
 
-<h2>Mandatory Handling</h2>
-<p>Ignoring a <code class="inline-code">natije</code> is a <strong>compiler error</strong>, not a warning. You must <code class="inline-code">wala?</code> it, match it, or explicitly unwrap it.</p>
+<h2>Pattern Matching on Results</h2>
+<p>Match on <code class="inline-code">tamam</code>/<code class="inline-code">ghalat</code> directly:</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">hasab</span> <span class="c-fn">divide</span>(<span class="c-num">10.0</span>, <span class="c-num">0.0</span>) {
+    <span class="c-kw">hale</span> <span class="c-fn">tamam</span>(val) => {
+        <span class="c-fn">itba3</span>(<span class="c-str">"%g\n"</span>, val)
+    }
+    <span class="c-kw">hale</span> <span class="c-fn">ghalat</span>(msg) => {
+        <span class="c-fn">itba3</span>(<span class="c-str">"Error: %s\n"</span>, msg)
+    }
+}</code></pre></div>
 
 <div class="footer">
 <span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>

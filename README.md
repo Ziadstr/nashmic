@@ -351,7 +351,7 @@ NashmiC is in active development. The compiler handles:
 - ✅ Operator precedence (Pratt parsing)
 - ✅ Cultural compiler messages with proverbs
 - ✅ Easter egg runtime functions
-- 🔨 Error handling (`natije<T>` + `wala?`): parser done, codegen in progress
+- ✅ Error handling (`natije<T>` + `wala?`)
 - 🔨 Optional types (`yimkin<T>`): parser done, codegen in progress
 - ✅ Enums (tagged unions) + pattern matching (`hasab`/`hale`)
 - 🔨 Impl blocks (methods): parser done, codegen in progress

@@ -1,0 +1,47 @@
+=== NashmiC Easter Eggs ===
+
+
+  NashmiC — نشمي
+  ═══════════════
+  A programming language from Jordan.
+  Easy like Python. Powerful like Go.
+  Jordanian to the bone.
+
+  نشمي (Nashmi) = brave, noble, honorable.
+  The highest compliment in Jordanian culture.
+
+  Features:
+  • Franco-Arab keywords — code the way you text
+  • natije<T> + wala? — error handling with personality
+  • yimkin<T> — no null, ever
+  • String interpolation — "marhaba ya {name}"
+  • Compiler proverbs — learn wisdom with your errors
+  • drobi() — when you need a laugh
+
+  Built by Ziad Al Sharif 🇯🇴
+
+--- Random proverb ---
+حبل الكذب قصير
+
+  ╔══════════════════════════════════════╗
+  ║         🍚 وصفة المنسف 🍚           ║
+  ╠══════════════════════════════════════╣
+  ║  المقادير:                           ║
+  ║  • ٢ كيلو لحم غنم                   ║
+  ║  • ٤ أكواب جميد                     ║
+  ║  • ٣ أكواب أرز                      ║
+  ║  • خبز شراك                         ║
+  ║  • سمن بلدي، لوز وصنوبر             ║
+  ╠══════════════════════════════════════╣
+  ║  الطريقة:                            ║
+  ║  ١. اسلق اللحم مع البهارات          ║
+  ║  ٢. ذوّب الجميد واطبخه مع المرق     ║
+  ║  ٣. اطبخ الأرز بمرق اللحم           ║
+  ║  ٤. رتّب: شراك، أرز، لحم            ║
+  ║  ٥. زيّن باللوز والصنوبر المحمّص    ║
+  ║  ٦. صبّ الجميد على الوجه             ║
+  ╠══════════════════════════════════════╣
+  ║        صحتين وعافية 🇯🇴              ║
+  ╚══════════════════════════════════════╝
+
+صحتين — bon appetit! 🍽️

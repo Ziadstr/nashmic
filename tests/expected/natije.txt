@@ -1,0 +1,6 @@
+=== natije<T> — Result Type ===
+
+10 / 3 = 3.33333
+10 / 0 = Error: ya zalameh, division by zero!
+
+safe_math(8) = 5

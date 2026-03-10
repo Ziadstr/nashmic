@@ -28,5 +28,5 @@ jobs:
       - name: Build mansaf
         run: make clean && make
 
-      - name: Run all examples
-        run: make run-all
+      - name: Run test suite
+        run: make test

@@ -1,6 +1,6 @@
 # Result Type (`natije`)
 
-> **Status:** Parser complete, codegen in progress. The syntax below is final, but you cannot compile natije programs yet.
+> **Status:** Working. You can compile and run natije programs now. See `examples/natije.nsh`.
 
 ## Errors Are Values
 
@@ -41,33 +41,23 @@ How `wala?` works:
 - If the expression returns `tamam(value)`, unwrap it and continue with `value`
 - If the expression returns `ghalat(err)`, immediately return `ghalat(err)` from the current function
 
-### With context
-
-Add a message to wrap propagated errors:
-
-```
-khalli data = read_file(path) wala? "failed to read config"
-```
-
-If `read_file` returns `ghalat`, the error gets wrapped with the additional context before propagating.
-
-### Without context
-
 The original error propagates unchanged:
 
 ```
 khalli data = read_file(path) wala?
 ```
 
+> **Note:** `wala?` with context messages (`wala? "message"`) is planned for a future release. Currently only bare `wala?` is supported.
+
 ## Mandatory Handling
 
-Ignoring a `natije` is a compiler error, not a warning. If a function returns `natije<T>`, you must either:
+If a function returns `natije<T>`, you should either:
 
 1. Use `wala?` to propagate the error
 2. Handle it with `hasab` (pattern matching)
 3. Explicitly unwrap it
 
-There is no "just ignore the error" path. This is deliberate.
+> **Note:** Mandatory handling enforcement is planned for Phase 2 (semantic analysis). Currently you can ignore a result without a compiler error.
 
 ## Pattern Matching on Results
 

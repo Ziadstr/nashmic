@@ -2,7 +2,7 @@
 # Builds the mansaf compiler
 
 CC = cc
-CFLAGS = -std=c11 -Wall -Wextra -pedantic -g -O2
+CFLAGS = -std=gnu11 -Wall -Wextra -g -O2
 CFLAGS += -I compiler/src -I runtime
 
 # Source files
@@ -20,7 +20,7 @@ COMPILER_SRC = \
 BUILD_DIR = build
 MANSAF = $(BUILD_DIR)/mansaf
 
-.PHONY: all clean test run-hello run-fib run-enums run-all
+.PHONY: all clean test run-hello run-fib run-enums run-natije run-all test
 
 all: $(MANSAF)
 
@@ -32,6 +32,10 @@ $(MANSAF): $(COMPILER_SRC) | $(BUILD_DIR)
 
 clean:
 	rm -rf $(BUILD_DIR)
+
+# Run test suite — compares example outputs against expected
+test: $(MANSAF)
+	@bash tests/run_tests.sh
 
 # Quick test: lex the hello world example
 test-lex: $(MANSAF)
@@ -59,6 +63,9 @@ run-easter: $(MANSAF)
 run-enums: $(MANSAF)
 	NASHMIC_ROOT=. $(MANSAF) run examples/enums.nsh
 
+run-natije: $(MANSAF)
+	NASHMIC_ROOT=. $(MANSAF) run examples/natije.nsh
+
 # Run all examples
 run-all: $(MANSAF)
 	@echo "=== marhaba ==="
@@ -75,6 +82,8 @@ run-all: $(MANSAF)
 	@NASHMIC_ROOT=. $(MANSAF) run examples/easter_eggs.nsh
 	@echo "\n=== enums ==="
 	@NASHMIC_ROOT=. $(MANSAF) run examples/enums.nsh
+	@echo "\n=== natije ==="
+	@NASHMIC_ROOT=. $(MANSAF) run examples/natije.nsh
 
 install: $(MANSAF)
 	cp $(MANSAF) /usr/local/bin/mansaf

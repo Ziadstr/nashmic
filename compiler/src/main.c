@@ -212,7 +212,7 @@ static int cmd_build(const char *filename, int run_after, int tarab) {
 
     char cmd[2048];
     snprintf(cmd, sizeof(cmd),
-             "cc -std=c11 -O2 -o %s %s %s/runtime/nsh_runtime.c "
+             "cc -std=gnu11 -O2 -o %s %s %s/runtime/nsh_runtime.c "
              "-I%s/runtime -lm 2>&1",
              out_name, c_path, nashmic_root, nashmic_root);
 
