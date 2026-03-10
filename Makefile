@@ -13,6 +13,7 @@ COMPILER_SRC = \
 	compiler/src/parser.c \
 	compiler/src/ast.c \
 	compiler/src/codegen_c.c \
+	compiler/src/sema.c \
 	compiler/src/diagnostics.c \
 	compiler/src/utf8.c
 

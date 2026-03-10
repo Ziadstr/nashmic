@@ -16,6 +16,7 @@
 #include "parser.h"
 #include "ast.h"
 #include "codegen_c.h"
+#include "sema.h"
 #include "diagnostics.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -227,6 +228,14 @@ static int cmd_build(const char *filename, int run_after, int tarab) {
         free(source);
         keywords_free();
         return 1;
+    }
+
+    /* Semantic analysis */
+    int sema_errors = sema_check(ast, source, filename);
+    if (sema_errors > 0) {
+        fprintf(stderr, YELLOW "تحذير" RESET ": %d semantic issue(s) found\n\n",
+                sema_errors);
+        /* Soft — don't block codegen, just warn */
     }
 
     /* Generate C code to temp file */
