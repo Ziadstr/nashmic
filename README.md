@@ -1,6 +1,6 @@
 # NashmiC 🇯🇴
 
-**نشمي** - A programming language from Jordan.
+A programming language from Jordan. **(نشمي)**
 
 Easy like Python. Powerful like Go. Jordanian to the bone.
 

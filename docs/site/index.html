@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NashmiC - A Programming Language from Jordan</title>
+<meta name="description" content="NashmiC: Easy like Python. Powerful like Go. Jordanian to the bone. A compiled language with Franco-Arab keywords.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0b0f;
+  --bg-elevated:#111318;
+  --bg-code:#0d0e14;
+  --bg-sidebar:#08090c;
+  --surface:#181a22;
+  --border:#1e2130;
+  --border-subtle:#14161e;
+  --text:#e2e4ed;
+  --text-dim:#8b8fa4;
+  --text-muted:#5c5f73;
+  --gold:#d4a04a;
+  --gold-dim:#b8893f;
+  --gold-glow:rgba(212,160,74,0.08);
+  --gold-glow-strong:rgba(212,160,74,0.15);
+  --kw:#d4a04a;
+  --fn:#7eb6c9;
+  --str:#8fbf7a;
+  --num:#c9917e;
+  --comment:#5c5f73;
+  --type:#b895d6;
+  --op:#e2e4ed;
+  --font-display:'Outfit',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --sidebar-w:280px;
+  --header-h:56px;
+}
+html{scroll-behavior:smooth;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+body{font-family:var(--font-display);background:var(--bg);color:var(--text);line-height:1.65;overflow-x:hidden}
+::selection{background:var(--gold-glow-strong);color:var(--gold)}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:var(--text-muted)}
+
+/* ═══ HEADER ═══ */
+.header{position:fixed;top:0;left:0;right:0;height:var(--header-h);background:rgba(10,11,15,0.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border-subtle);z-index:100;display:flex;align-items:center;padding:0 24px}
+.header-inner{max-width:100%;width:100%;display:flex;align-items:center;justify-content:space-between}
+.logo{font-weight:700;font-size:18px;letter-spacing:-0.02em;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:8px}
+.logo-mark{color:var(--gold);font-size:14px;font-family:var(--font-mono);background:var(--gold-glow);padding:2px 8px;border-radius:4px;border:1px solid rgba(212,160,74,0.12)}
+.header-links{display:flex;align-items:center;gap:20px}
+.header-links a{color:var(--text-dim);text-decoration:none;font-size:14px;font-weight:400;transition:color 0.2s}
+.header-links a:hover{color:var(--gold)}
+.gh-link{display:flex;align-items:center;gap:6px}
+.gh-link svg{width:18px;height:18px;fill:currentColor}
+.menu-btn{display:none;background:none;border:none;color:var(--text-dim);cursor:pointer;padding:8px}
+.menu-btn svg{width:20px;height:20px;fill:currentColor}
+
+/* ═══ LAYOUT ═══ */
+.layout{display:flex;padding-top:var(--header-h)}
+.sidebar{position:fixed;top:var(--header-h);left:0;width:var(--sidebar-w);height:calc(100vh - var(--header-h));overflow-y:auto;background:var(--bg-sidebar);border-right:1px solid var(--border-subtle);padding:24px 0;z-index:50;transition:transform 0.3s ease}
+.main{margin-left:var(--sidebar-w);flex:1;min-width:0}
+.content{max-width:780px;padding:48px 56px 120px}
+
+/* ═══ SIDEBAR NAV ═══ */
+.nav-group{margin-bottom:20px}
+.nav-label{font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:var(--text-muted);padding:0 24px;margin-bottom:6px;font-weight:600}
+.nav-item{display:block;padding:6px 24px;font-size:13.5px;color:var(--text-dim);text-decoration:none;transition:all 0.15s;border-left:2px solid transparent;font-weight:400}
+.nav-item:hover{color:var(--text);background:var(--gold-glow)}
+.nav-item.active{color:var(--gold);border-left-color:var(--gold);background:var(--gold-glow);font-weight:500}
+
+/* ═══ HERO ═══ */
+.hero{padding:80px 56px 64px;max-width:780px;position:relative}
+.hero::before{content:'';position:absolute;top:0;left:0;right:0;height:300px;background:radial-gradient(ellipse at 30% 0%,var(--gold-glow) 0%,transparent 60%);pointer-events:none}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 14px;background:var(--gold-glow);border:1px solid rgba(212,160,74,0.12);border-radius:20px;font-size:12px;color:var(--gold);font-weight:500;margin-bottom:24px;position:relative}
+.hero h1{font-size:52px;font-weight:800;letter-spacing:-0.035em;line-height:1.05;margin-bottom:16px;position:relative}
+.hero h1 span{color:var(--gold)}
+.hero-sub{font-size:18px;color:var(--text-dim);font-weight:300;line-height:1.6;max-width:520px;margin-bottom:40px}
+.install-box{background:var(--bg-code);border:1px solid var(--border);border-radius:8px;padding:14px 18px;font-family:var(--font-mono);font-size:13px;color:var(--text-dim);display:inline-flex;align-items:center;gap:12px;cursor:pointer;transition:all 0.2s;position:relative}
+.install-box:hover{border-color:var(--gold-dim);background:var(--surface)}
+.install-box code{color:var(--str)}
+.install-box .copy-hint{font-size:11px;color:var(--text-muted);transition:color 0.2s}
+.install-box:hover .copy-hint{color:var(--gold)}
+.hero-code{margin-top:48px;position:relative}
+
+/* ═══ TYPOGRAPHY ═══ */
+.content h1{font-size:36px;font-weight:700;letter-spacing:-0.03em;margin-bottom:8px;line-height:1.15}
+.content h2{font-size:24px;font-weight:600;letter-spacing:-0.02em;margin-top:56px;margin-bottom:16px;color:var(--text);padding-bottom:8px;border-bottom:1px solid var(--border-subtle)}
+.content h3{font-size:17px;font-weight:600;margin-top:36px;margin-bottom:12px;color:var(--text)}
+.content p{margin-bottom:16px;color:var(--text-dim);font-size:15px}
+.content p strong{color:var(--text);font-weight:500}
+.content ul,.content ol{margin-bottom:16px;padding-left:20px;color:var(--text-dim);font-size:15px}
+.content li{margin-bottom:6px}
+.content li code{color:var(--gold)}
+.content a{color:var(--gold);text-decoration:none;border-bottom:1px solid transparent;transition:border-color 0.2s}
+.content a:hover{border-bottom-color:var(--gold)}
+.section-desc{font-size:15px;color:var(--text-dim);margin-bottom:24px;font-weight:300}
+.status-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:500;margin-bottom:20px}
+.status-badge.wip{background:rgba(212,160,74,0.1);color:var(--gold);border:1px solid rgba(212,160,74,0.15)}
+.status-badge.done{background:rgba(143,191,122,0.1);color:var(--str);border:1px solid rgba(143,191,122,0.15)}
+
+/* ═══ CODE BLOCKS ═══ */
+.code-block{background:var(--bg-code);border:1px solid var(--border);border-radius:8px;margin:16px 0 24px;overflow-x:auto;position:relative}
+.code-block-header{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--border-subtle);font-size:11px;color:var(--text-muted)}
+.code-block-lang{font-family:var(--font-mono);text-transform:uppercase;letter-spacing:0.05em}
+.copy-btn{background:none;border:1px solid var(--border);color:var(--text-muted);font-size:11px;padding:2px 10px;border-radius:4px;cursor:pointer;font-family:var(--font-mono);transition:all 0.2s}
+.copy-btn:hover{border-color:var(--gold-dim);color:var(--gold)}
+.code-block pre{padding:16px;margin:0;overflow-x:auto;font-family:var(--font-mono);font-size:13.5px;line-height:1.7;color:var(--text)}
+.code-block pre code{font-family:inherit}
+.inline-code{font-family:var(--font-mono);font-size:0.88em;background:var(--surface);padding:2px 7px;border-radius:4px;color:var(--gold);border:1px solid var(--border-subtle)}
+
+/* ═══ TABLES ═══ */
+.table-wrap{overflow-x:auto;margin:16px 0 24px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+thead{border-bottom:2px solid var(--border)}
+th{text-align:left;padding:10px 16px;color:var(--text-muted);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:0.06em}
+td{padding:10px 16px;border-bottom:1px solid var(--border-subtle);color:var(--text-dim)}
+td code{font-family:var(--font-mono);font-size:13px;color:var(--gold)}
+tr:hover td{background:var(--gold-glow)}
+tbody tr:last-child td{border-bottom:none}
+
+/* ═══ CULTURAL NOTE ═══ */
+.note{background:var(--gold-glow);border-left:3px solid var(--gold);padding:14px 18px;border-radius:0 6px 6px 0;margin:16px 0 24px;font-size:14px;color:var(--text-dim)}
+.note strong{color:var(--gold)}
+
+/* ═══ SECTION DIVIDER ═══ */
+.section{display:none;animation:fadeIn 0.3s ease}
+.section.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══ FOOTER ═══ */
+.footer{padding:40px 56px;border-top:1px solid var(--border-subtle);color:var(--text-muted);font-size:13px;display:flex;justify-content:space-between;align-items:center;max-width:780px}
+.footer a{color:var(--gold);text-decoration:none}
+
+/* ═══ MOBILE ═══ */
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%)}
+  .sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}
+  .content,.hero,.footer{padding-left:24px;padding-right:24px}
+  .hero h1{font-size:36px}
+  .menu-btn{display:block}
+  .header-links .hide-mobile{display:none}
+}
+@media(max-width:600px){
+  .hero h1{font-size:28px}
+  .hero-sub{font-size:16px}
+  .content h1{font-size:28px}
+  .content h2{font-size:20px}
+  table{font-size:13px}
+  th,td{padding:8px 10px}
+}
+
+/* ═══ OVERLAY ═══ */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:40}
+.overlay.open{display:block}
+
+/* ═══ TOP ACCENT ═══ */
+.top-accent{position:fixed;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent);z-index:200;opacity:0.6}
+</style>
+</head>
+<body>
+<div class="top-accent"></div>
+
+<header class="header">
+<div class="header-inner">
+  <div style="display:flex;align-items:center;gap:16px">
+    <button class="menu-btn" onclick="toggleSidebar()" aria-label="Menu">
+      <svg viewBox="0 0 20 20"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+    </button>
+    <a href="#" class="logo" onclick="showSection('hero');return false">
+      <span class="logo-mark">.nsh</span>
+      NashmiC
+    </a>
+  </div>
+  <div class="header-links">
+    <a href="#" onclick="showSection('getting-started');return false" class="hide-mobile">Get Started</a>
+    <a href="#" onclick="showSection('reference');return false" class="hide-mobile">Reference</a>
+    <a href="https://github.com/Ziadstr/nashmic" target="_blank" class="gh-link">
+      <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      GitHub
+    </a>
+  </div>
+</div>
+</header>
+
+<div class="overlay" onclick="toggleSidebar()"></div>
+
+<div class="layout">
+<nav class="sidebar" id="sidebar">
+  <div class="nav-group">
+    <div class="nav-label">Start</div>
+    <a class="nav-item active" href="#" data-section="hero" onclick="nav(this);return false">Introduction</a>
+    <a class="nav-item" href="#" data-section="getting-started" onclick="nav(this);return false">Getting Started</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Basics</div>
+    <a class="nav-item" href="#" data-section="variables" onclick="nav(this);return false">Variables & Constants</a>
+    <a class="nav-item" href="#" data-section="functions" onclick="nav(this);return false">Functions</a>
+    <a class="nav-item" href="#" data-section="control-flow" onclick="nav(this);return false">Control Flow</a>
+    <a class="nav-item" href="#" data-section="strings" onclick="nav(this);return false">Strings & Interpolation</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Types</div>
+    <a class="nav-item" href="#" data-section="structs" onclick="nav(this);return false">Structs</a>
+    <a class="nav-item" href="#" data-section="enums" onclick="nav(this);return false">Enums</a>
+    <a class="nav-item" href="#" data-section="optionals" onclick="nav(this);return false">Optionals</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Error Handling</div>
+    <a class="nav-item" href="#" data-section="natije" onclick="nav(this);return false">Result Type (natije)</a>
+    <a class="nav-item" href="#" data-section="defer" onclick="nav(this);return false">Defer (ba3dain)</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Advanced</div>
+    <a class="nav-item" href="#" data-section="pattern-matching" onclick="nav(this);return false">Pattern Matching</a>
+    <a class="nav-item" href="#" data-section="methods" onclick="nav(this);return false">Methods & Impl</a>
+  </div>
+  <div class="nav-group">
+    <div class="nav-label">Reference</div>
+    <a class="nav-item" href="#" data-section="reference" onclick="nav(this);return false">Keywords</a>
+    <a class="nav-item" href="#" data-section="types-ref" onclick="nav(this);return false">Types</a>
+    <a class="nav-item" href="#" data-section="builtins" onclick="nav(this);return false">Built-in Functions</a>
+    <a class="nav-item" href="#" data-section="compiler" onclick="nav(this);return false">Compiler Messages</a>
+  </div>
+</nav>
+
+<div class="main">
+
+<!-- ═══════════ HERO ═══════════ -->
+<div class="section active" id="sec-hero">
+<div class="hero">
+  <div class="hero-badge">Open Source &middot; MIT License</div>
+  <h1>Code in <span>Jordanian.</span></h1>
+  <p class="hero-sub">NashmiC is a compiled programming language with Franco-Arab keywords. Every keyword is a word you'd actually say in Amman. Not textbook Arabic, real dialect.</p>
+  <div class="install-box" onclick="copyInstall(this)">
+    <code>curl -fsSL https://raw.githubusercontent.com/Ziadstr/nashmic/dev/install.sh | bash</code>
+    <span class="copy-hint">copy</span>
+  </div>
+  <div class="hero-code">
+    <div class="code-block">
+      <div class="code-block-header"><span class="code-block-lang">nashmic</span></div>
+      <pre><code><span class="c-kw">dalle</span> <span class="c-fn">fibonacci</span>(<span class="c-param">n</span>: <span class="c-type">adad64</span>) -> <span class="c-type">adad64</span> {
+    <span class="c-kw">iza</span> n <= <span class="c-num">1</span> {
+        <span class="c-kw">rajje3</span> n
+    }
+    <span class="c-kw">rajje3</span> <span class="c-fn">fibonacci</span>(n - <span class="c-num">1</span>) + <span class="c-fn">fibonacci</span>(n - <span class="c-num">2</span>)
+}
+
+<span class="c-fn">yalla</span>() {
+    <span class="c-kw">lakol</span> i <span class="c-kw">fi</span> <span class="c-num">0</span>..<span class="c-num">15</span> {
+        <span class="c-fn">itba3</span>(<span class="c-str">"fib({i}) = {fibonacci(i)}\n"</span>)
+    }
+}</code></pre>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ═══════════ GETTING STARTED ═══════════ -->
+<div class="section" id="sec-getting-started">
+<div class="content">
+<h1>Getting Started</h1>
+<p class="section-desc">Install NashmiC and write your first program in under two minutes.</p>
+
+<h2>Requirements</h2>
+<ul>
+<li>A C11 compiler (<code class="inline-code">gcc</code> or <code class="inline-code">clang</code>)</li>
+<li><code class="inline-code">make</code></li>
+<li><code class="inline-code">git</code></li>
+<li>Linux or macOS</li>
+</ul>
+
+<h2>Install</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code>curl -fsSL https://raw.githubusercontent.com/Ziadstr/nashmic/dev/install.sh | bash</code></pre></div>
+<p>This checks for dependencies, clones and builds the compiler, installs to <code class="inline-code">~/.nashmic/</code>, and adds <code class="inline-code">mansaf</code> to your PATH. No sudo needed.</p>
+
+<h3>Build from source</h3>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code>git clone https://github.com/Ziadstr/nashmic.git
+cd nashmic
+make</code></pre></div>
+
+<h2>Your First Program</h2>
+<p>Create a file called <code class="inline-code">marhaba.nsh</code>:</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-fn">yalla</span>() {
+    <span class="c-fn">itba3</span>(<span class="c-str">"marhaba ya 3alam!\n"</span>)
+}</code></pre></div>
+<p>Every NashmiC program needs a <code class="inline-code">yalla()</code> function. It's the entry point, like <code class="inline-code">main</code> in C. The word means "let's go!" in Jordanian.</p>
+
+<h2>Run It</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code>mansaf run marhaba.nsh</code></pre></div>
+<p><code class="inline-code">mansaf run</code> compiles and executes in one step.</p>
+
+<h2>Build a Binary</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code>mansaf build marhaba.nsh
+./marhaba</code></pre></div>
+<p>Add <code class="inline-code">--tarab</code> for celebratory audio on success. "Tarab" means musical ecstasy. Because shipping code deserves a party.</p>
+
+<h2>Try String Interpolation</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-fn">yalla</span>() {
+    <span class="c-kw">khalli</span> name: <span class="c-type">nass</span> = <span class="c-str">"Ziad"</span>
+    <span class="c-kw">khalli</span> age: <span class="c-type">adad64</span> = <span class="c-num">23</span>
+
+    <span class="c-fn">itba3</span>(<span class="c-str">"marhaba ya {name}!\n"</span>)
+    <span class="c-fn">itba3</span>(<span class="c-str">"age: {age}, next year: {age + 1}\n"</span>)
+}</code></pre></div>
+
+<h2>Try a Loop</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-fn">yalla</span>() {
+    <span class="c-kw">lakol</span> i <span class="c-kw">fi</span> <span class="c-num">0</span>..<span class="c-num">10</span> {
+        <span class="c-fn">itba3</span>(<span class="c-str">"{i}\n"</span>)
+    }
+}</code></pre></div>
+<p><code class="inline-code">lakol</code> means "for each," <code class="inline-code">fi</code> means "in." The range <code class="inline-code">0..10</code> goes from 0 up to (not including) 10.</p>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ VARIABLES ═══════════ -->
+<div class="section" id="sec-variables">
+<div class="content">
+<h1>Variables & Constants</h1>
+<p class="section-desc">Declaring data with <code class="inline-code">khalli</code> and <code class="inline-code">thabet</code>.</p>
+
+<h2>Variables with <code class="inline-code">khalli</code></h2>
+<p><code class="inline-code">khalli</code> means "let there be" in Jordanian dialect. It declares a mutable variable.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">khalli</span> name: <span class="c-type">nass</span> = <span class="c-str">"Ziad"</span>
+<span class="c-kw">khalli</span> age: <span class="c-type">adad64</span> = <span class="c-num">23</span>
+<span class="c-kw">khalli</span> pi: <span class="c-type">fasle64</span> = <span class="c-num">3.14159</span>
+<span class="c-kw">khalli</span> alive: <span class="c-type">mante2</span> = <span class="c-kw">ah</span></code></pre></div>
+<p>The pattern is always: <code class="inline-code">khalli &lt;name&gt;: &lt;type&gt; = &lt;value&gt;</code></p>
+
+<h2>Constants with <code class="inline-code">thabet</code></h2>
+<p><code class="inline-code">thabet</code> means "fixed" or "firm." This value is not going anywhere.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">thabet</span> MAX_USERS: <span class="c-type">adad64</span> = <span class="c-num">1000</span>
+<span class="c-kw">thabet</span> PI: <span class="c-type">fasle64</span> = <span class="c-num">3.14159265</span>
+<span class="c-kw">thabet</span> GREETING: <span class="c-type">nass</span> = <span class="c-str">"marhaba"</span></code></pre></div>
+
+<h2>Types</h2>
+<p>Every variable needs an explicit type annotation. NashmiC does not have type inference yet.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Type</th><th>C Equivalent</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>adad</code></td><td>int32_t</td><td>32-bit integer. "adad" means "number"</td></tr>
+<tr><td><code>adad64</code></td><td>int64_t</td><td>64-bit integer</td></tr>
+<tr><td><code>fasle</code></td><td>float</td><td>32-bit float. "fasle" means "decimal point"</td></tr>
+<tr><td><code>fasle64</code></td><td>double</td><td>64-bit float</td></tr>
+<tr><td><code>mante2</code></td><td>bool</td><td>Boolean. "mante2" means "logical"</td></tr>
+<tr><td><code>harf</code></td><td>char</td><td>Character. "harf" means "letter"</td></tr>
+<tr><td><code>nass</code></td><td>const char*</td><td>String. "nass" means "text"</td></tr>
+<tr><td><code>fadi</code></td><td>void</td><td>No value. "fadi" means "empty"</td></tr>
+</tbody></table></div>
+
+<div class="note"><strong>Boolean values:</strong> <code class="inline-code">ah</code> = true (literally "yeah"), <code class="inline-code">la</code> = false (literally "no").</div>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ FUNCTIONS ═══════════ -->
+<div class="section" id="sec-functions">
+<div class="content">
+<h1>Functions</h1>
+<p class="section-desc">Declaring functions with <code class="inline-code">dalle</code> and returning values with <code class="inline-code">rajje3</code>.</p>
+
+<h2>Declaring Functions</h2>
+<p><code class="inline-code">dalle</code> means "a function" in Arabic. Use <code class="inline-code">-&gt;</code> to specify the return type.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">dalle</span> <span class="c-fn">add</span>(a: <span class="c-type">adad64</span>, b: <span class="c-type">adad64</span>) -> <span class="c-type">adad64</span> {
+    <span class="c-kw">rajje3</span> a + b
+}
+
+<span class="c-kw">dalle</span> <span class="c-fn">greet</span>(name: <span class="c-type">nass</span>) {
+    <span class="c-fn">itba3</span>(<span class="c-str">"marhaba ya {name}!\n"</span>)
+}</code></pre></div>
+<p><code class="inline-code">rajje3</code> means "bring back." It's the return statement.</p>
+
+<h2>The <code class="inline-code">yalla()</code> Entry Point</h2>
+<p>Every program needs <code class="inline-code">yalla()</code>. It's the first thing that runs. "yalla" means "let's go!"</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-fn">yalla</span>() {
+    <span class="c-fn">itba3</span>(<span class="c-str">"the program starts here\n"</span>)
+}</code></pre></div>
+
+<h2>Recursion</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">dalle</span> <span class="c-fn">fibonacci</span>(n: <span class="c-type">adad64</span>) -> <span class="c-type">adad64</span> {
+    <span class="c-kw">iza</span> n <= <span class="c-num">1</span> {
+        <span class="c-kw">rajje3</span> n
+    }
+    <span class="c-kw">rajje3</span> <span class="c-fn">fibonacci</span>(n - <span class="c-num">1</span>) + <span class="c-fn">fibonacci</span>(n - <span class="c-num">2</span>)
+}
+
+<span class="c-fn">yalla</span>() {
+    <span class="c-kw">lakol</span> i <span class="c-kw">fi</span> <span class="c-num">0</span>..<span class="c-num">15</span> {
+        <span class="c-fn">itba3</span>(<span class="c-str">"fib({i}) = {fibonacci(i)}\n"</span>)
+    }
+}</code></pre></div>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ CONTROL FLOW ═══════════ -->
+<div class="section" id="sec-control-flow">
+<div class="content">
+<h1>Control Flow</h1>
+<p class="section-desc">Conditionals, loops, and branching.</p>
+
+<h2>Conditionals: <code class="inline-code">iza</code> / <code class="inline-code">wala</code></h2>
+<p><code class="inline-code">iza</code> means "if." <code class="inline-code">wala</code> means "or else." <code class="inline-code">wala_iza</code> means "or if."</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">iza</span> x > <span class="c-num">0</span> {
+    <span class="c-fn">itba3</span>(<span class="c-str">"positive\n"</span>)
+} <span class="c-kw">wala_iza</span> x == <span class="c-num">0</span> {
+    <span class="c-fn">itba3</span>(<span class="c-str">"zero\n"</span>)
+} <span class="c-kw">wala</span> {
+    <span class="c-fn">itba3</span>(<span class="c-str">"negative\n"</span>)
+}</code></pre></div>
+<p>Conditions don't need parentheses. Body must always be in braces.</p>
+
+<h2>For-Each: <code class="inline-code">lakol..fi</code></h2>
+<p><code class="inline-code">lakol</code> means "for each," <code class="inline-code">fi</code> means "in."</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">lakol</span> i <span class="c-kw">fi</span> <span class="c-num">0</span>..<span class="c-num">10</span> {
+    <span class="c-fn">itba3</span>(<span class="c-str">"{i}\n"</span>)
+}</code></pre></div>
+
+<h2>While: <code class="inline-code">tool_ma</code></h2>
+<p><code class="inline-code">tool_ma</code> means "as long as."</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">khalli</span> count: <span class="c-type">adad64</span> = <span class="c-num">0</span>
+<span class="c-kw">tool_ma</span> count < <span class="c-num">10</span> {
+    <span class="c-fn">itba3</span>(<span class="c-str">"{count}\n"</span>)
+    count = count + <span class="c-num">1</span>
+}</code></pre></div>
+
+<h2>Infinite Loop: <code class="inline-code">liff</code></h2>
+<p><code class="inline-code">liff</code> means "go around" or "spin." Use <code class="inline-code">khalas</code> ("enough!") to break out.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">liff</span> {
+    <span class="c-kw">iza</span> i >= <span class="c-num">10</span> {
+        <span class="c-kw">khalas</span>
+    }
+    i = i + <span class="c-num">1</span>
+}</code></pre></div>
+
+<h2>Continue: <code class="inline-code">kammel</code></h2>
+<p><code class="inline-code">kammel</code> means "keep going." Skip to next iteration.</p>
+
+<h2>FizzBuzz</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">dalle</span> <span class="c-fn">fizzbuzz</span>(n: <span class="c-type">adad64</span>) {
+    <span class="c-kw">lakol</span> i <span class="c-kw">fi</span> <span class="c-num">1</span>..n {
+        <span class="c-kw">iza</span> i % <span class="c-num">15</span> == <span class="c-num">0</span> {
+            <span class="c-fn">itba3</span>(<span class="c-str">"FizzBuzz\n"</span>)
+        } <span class="c-kw">wala_iza</span> i % <span class="c-num">3</span> == <span class="c-num">0</span> {
+            <span class="c-fn">itba3</span>(<span class="c-str">"Fizz\n"</span>)
+        } <span class="c-kw">wala_iza</span> i % <span class="c-num">5</span> == <span class="c-num">0</span> {
+            <span class="c-fn">itba3</span>(<span class="c-str">"Buzz\n"</span>)
+        } <span class="c-kw">wala</span> {
+            <span class="c-fn">itba3</span>(<span class="c-str">"{i}\n"</span>)
+        }
+    }
+}
+
+<span class="c-fn">yalla</span>() {
+    <span class="c-fn">fizzbuzz</span>(<span class="c-num">30</span>)
+}</code></pre></div>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ STRINGS ═══════════ -->
+<div class="section" id="sec-strings">
+<div class="content">
+<h1>Strings & Interpolation</h1>
+<p class="section-desc">No format specifiers. Just put expressions in braces.</p>
+
+<h2>String Basics</h2>
+<p>Strings use the <code class="inline-code">nass</code> type ("nass" means "text") and support full UTF-8.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">khalli</span> message: <span class="c-type">nass</span> = <span class="c-str">"marhaba ya 3alam"</span></code></pre></div>
+
+<h2>Interpolation</h2>
+<p>Put any expression in <code class="inline-code">{braces}</code> inside strings. The compiler figures out the type.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">khalli</span> name: <span class="c-type">nass</span> = <span class="c-str">"Ziad"</span>
+<span class="c-kw">khalli</span> age: <span class="c-type">adad64</span> = <span class="c-num">23</span>
+
+<span class="c-fn">itba3</span>(<span class="c-str">"marhaba ya {name}!\n"</span>)
+<span class="c-fn">itba3</span>(<span class="c-str">"age: {age}, next year: {age + 1}\n"</span>)</code></pre></div>
+<p>Works with variables, arithmetic, function calls, and struct fields.</p>
+
+<h2>Type-Aware Formatting</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Type</th><th>Format</th></tr></thead>
+<tbody>
+<tr><td><code>adad</code> / <code>adad64</code></td><td>integer</td></tr>
+<tr><td><code>fasle</code> / <code>fasle64</code></td><td>floating-point</td></tr>
+<tr><td><code>nass</code></td><td>string</td></tr>
+<tr><td><code>mante2</code></td><td>boolean</td></tr>
+</tbody></table></div>
+<p>You never specify format codes. The compiler uses C11 <code class="inline-code">_Generic</code> to pick the right one.</p>
+
+<h2>Escape Sequences</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Sequence</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>\n</code></td><td>Newline</td></tr>
+<tr><td><code>\t</code></td><td>Tab</td></tr>
+<tr><td><code>\\</code></td><td>Literal backslash</td></tr>
+<tr><td><code>\"</code></td><td>Literal double quote</td></tr>
+<tr><td><code>{{</code></td><td>Literal brace</td></tr>
+</tbody></table></div>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ STRUCTS ═══════════ -->
+<div class="section" id="sec-structs">
+<div class="content">
+<h1>Structs</h1>
+<p class="section-desc">Named data types with typed fields.</p>
+
+<h2>Declaring with <code class="inline-code">haikal</code></h2>
+<p><code class="inline-code">haikal</code> means "structure" or "skeleton" in Arabic.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">haikal</span> <span class="c-type">Point</span> {
+    x: <span class="c-type">fasle64</span>,
+    y: <span class="c-type">fasle64</span>,
+}
+
+<span class="c-fn">yalla</span>() {
+    <span class="c-kw">khalli</span> p: <span class="c-type">Point</span> = <span class="c-type">Point</span>{ x: <span class="c-num">3.0</span>, y: <span class="c-num">4.0</span> }
+    <span class="c-fn">itba3</span>(<span class="c-str">"Point: ({p.x}, {p.y})\n"</span>)
+}</code></pre></div>
+<p>All fields must be initialized at creation. No default values. Access fields with dot notation.</p>
+
+<h2>As Function Parameters</h2>
+<p>Structs are passed by value (copied).</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">dalle</span> <span class="c-fn">print_point</span>(p: <span class="c-type">Point</span>) {
+    <span class="c-fn">itba3</span>(<span class="c-str">"({p.x}, {p.y})\n"</span>)
+}</code></pre></div>
+
+<h2>Nested Structs</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">haikal</span> <span class="c-type">Line</span> {
+    start: <span class="c-type">Point</span>,
+    end: <span class="c-type">Point</span>,
+}</code></pre></div>
+<p>See <a href="#" onclick="showSection('methods');return false">Methods & Impl</a> for attaching behavior to structs.</p>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ ENUMS ═══════════ -->
+<div class="section" id="sec-enums">
+<div class="content">
+<h1>Enums (Tagged Unions)</h1>
+<span class="status-badge wip">Parser complete, codegen in progress</span>
+
+<h2>Declaring with <code class="inline-code">ta3dad</code></h2>
+<p><code class="inline-code">ta3dad</code> means "enumeration." Each variant can optionally carry data.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">ta3dad</span> <span class="c-type">Shape</span> {
+    Da2ira(<span class="c-type">fasle64</span>),
+    Mustateel(<span class="c-type">fasle64</span>, <span class="c-type">fasle64</span>),
+    Noqta,
+}</code></pre></div>
+
+<h2>Creating Values</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">khalli</span> shape: <span class="c-type">Shape</span> = Da2ira(<span class="c-num">5.0</span>)
+<span class="c-kw">khalli</span> color: <span class="c-type">Color</span> = Ahmar</code></pre></div>
+
+<h2>With Pattern Matching</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">hasab</span> shape {
+    <span class="c-kw">hale</span> Da2ira(r) => <span class="c-fn">itba3</span>(<span class="c-str">"Circle: radius {r}\n"</span>)
+    <span class="c-kw">hale</span> Mustateel(w, h) => <span class="c-fn">itba3</span>(<span class="c-str">"Rect: {w}x{h}\n"</span>)
+    <span class="c-kw">hale</span> Noqta => <span class="c-fn">itba3</span>(<span class="c-str">"Point\n"</span>)
+}</code></pre></div>
+<p>The compiler checks that all variants are covered. Missing one without a <code class="inline-code">3adi</code> default is an error.</p>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ OPTIONALS ═══════════ -->
+<div class="section" id="sec-optionals">
+<div class="content">
+<h1>Optionals</h1>
+<span class="status-badge wip">Parser complete, codegen in progress</span>
+<p class="section-desc">NashmiC has no null. If a value might be absent, use <code class="inline-code">yimkin&lt;T&gt;</code>.</p>
+
+<h2><code class="inline-code">fi</code> and <code class="inline-code">mafi</code></h2>
+<p><code class="inline-code">fi</code> means "there is." <code class="inline-code">mafi</code> means "there isn't." Ask "fi chai?" (is there tea?) and the answer is "fi" or "mafi." NashmiC uses the same logic.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">dalle</span> <span class="c-fn">find_user</span>(id: <span class="c-type">adad</span>) -> <span class="c-type">yimkin</span>&lt;<span class="c-type">User</span>&gt; {
+    <span class="c-kw">iza</span> id == <span class="c-num">0</span> { <span class="c-kw">rajje3</span> <span class="c-kw">mafi</span> }
+    <span class="c-kw">rajje3</span> <span class="c-fn">fi</span>(users[id])
+}</code></pre></div>
+
+<h2><code class="inline-code">iza fi</code> binding</h2>
+<p>You must check before accessing the inner value.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">iza</span> <span class="c-kw">fi</span> user = <span class="c-fn">find_user</span>(<span class="c-num">42</span>) {
+    <span class="c-fn">itba3</span>(<span class="c-str">"found: {user.name}\n"</span>)
+} <span class="c-kw">wala</span> {
+    <span class="c-fn">itba3</span>(<span class="c-str">"user not found\n"</span>)
+}</code></pre></div>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ NATIJE ═══════════ -->
+<div class="section" id="sec-natije">
+<div class="content">
+<h1>Result Type (<code class="inline-code">natije</code>)</h1>
+<span class="status-badge wip">Parser complete, codegen in progress</span>
+<p class="section-desc">No exceptions. No try/catch. Errors are values.</p>
+
+<h2><code class="inline-code">tamam</code> and <code class="inline-code">ghalat</code></h2>
+<p><code class="inline-code">tamam</code> means "all good." <code class="inline-code">ghalat</code> means "wrong." Every function that can fail returns <code class="inline-code">natije&lt;T&gt;</code>.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">dalle</span> <span class="c-fn">parse_number</span>(input: <span class="c-type">nass</span>) -> <span class="c-type">natije</span>&lt;<span class="c-type">adad64</span>&gt; {
+    <span class="c-kw">iza</span> success {
+        <span class="c-kw">rajje3</span> <span class="c-fn">tamam</span>(parsed_value)
+    }
+    <span class="c-kw">rajje3</span> <span class="c-fn">ghalat</span>(<span class="c-str">"not a number"</span>)
+}</code></pre></div>
+
+<h2><code class="inline-code">wala?</code> propagation</h2>
+<p>If error, return it up the chain automatically.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">dalle</span> <span class="c-fn">read_config</span>(path: <span class="c-type">nass</span>) -> <span class="c-type">natije</span>&lt;<span class="c-type">nass</span>&gt; {
+    <span class="c-kw">khalli</span> f = <span class="c-fn">iftah</span>(path) <span class="c-kw">wala?</span> <span class="c-str">"failed to open"</span>
+    <span class="c-kw">khalli</span> content = <span class="c-fn">i2ra_kol</span>(f) <span class="c-kw">wala?</span>
+    <span class="c-kw">rajje3</span> <span class="c-fn">tamam</span>(content)
+}</code></pre></div>
+
+<h2>Mandatory Handling</h2>
+<p>Ignoring a <code class="inline-code">natije</code> is a <strong>compiler error</strong>, not a warning. You must <code class="inline-code">wala?</code> it, match it, or explicitly unwrap it.</p>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ DEFER ═══════════ -->
+<div class="section" id="sec-defer">
+<div class="content">
+<h1>Defer (<code class="inline-code">ba3dain</code>)</h1>
+<span class="status-badge wip">Parser complete, codegen partially implemented</span>
+<p class="section-desc"><code class="inline-code">ba3dain</code> means "later." Procrastination as a language feature.</p>
+
+<h2>How It Works</h2>
+<p>Schedule a statement to run when the scope exits. Multiple defers execute in LIFO order.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">khalli</span> f = <span class="c-fn">iftah</span>(<span class="c-str">"data.txt"</span>)
+<span class="c-kw">ba3dain</span> <span class="c-fn">sakker</span>(f)
+<span class="c-comment">// ... use f ...</span>
+<span class="c-comment">// sakker(f) runs automatically when scope exits</span></code></pre></div>
+
+<div class="note"><strong>Cultural note:</strong> "ba3dain" is probably the most-used word in Jordan. "I'll do it ba3dain." Unlike real life, <code class="inline-code">ba3dain</code> in NashmiC actually keeps its promise.</div>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ PATTERN MATCHING ═══════════ -->
+<div class="section" id="sec-pattern-matching">
+<div class="content">
+<h1>Pattern Matching</h1>
+<span class="status-badge wip">Parser complete, codegen in progress</span>
+<p class="section-desc"><code class="inline-code">hasab</code> means "depending on." <code class="inline-code">hale</code> means "case."</p>
+
+<h2>Matching on Enums</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">ta3dad</span> <span class="c-type">Shape</span> {
+    Da2ira(<span class="c-type">fasle64</span>),
+    Mustateel(<span class="c-type">fasle64</span>, <span class="c-type">fasle64</span>),
+    Noqta,
+}
+
+<span class="c-kw">dalle</span> <span class="c-fn">area</span>(shape: <span class="c-type">Shape</span>) -> <span class="c-type">fasle64</span> {
+    <span class="c-kw">hasab</span> shape {
+        <span class="c-kw">hale</span> Da2ira(r) => <span class="c-kw">rajje3</span> <span class="c-num">3.14159</span> * r * r
+        <span class="c-kw">hale</span> Mustateel(w, h) => <span class="c-kw">rajje3</span> w * h
+        <span class="c-kw">hale</span> Noqta => <span class="c-kw">rajje3</span> <span class="c-num">0.0</span>
+    }
+}</code></pre></div>
+
+<h2>Default: <code class="inline-code">3adi</code></h2>
+<p><code class="inline-code">3adi</code> means "whatever." The most Jordanian response possible. It catches anything not matched.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">hasab</span> value {
+    <span class="c-kw">hale</span> <span class="c-num">1</span> => <span class="c-fn">itba3</span>(<span class="c-str">"one\n"</span>)
+    <span class="c-kw">hale</span> <span class="c-num">2</span> => <span class="c-fn">itba3</span>(<span class="c-str">"two\n"</span>)
+    <span class="c-kw">3adi</span> => <span class="c-fn">itba3</span>(<span class="c-str">"something else\n"</span>)
+}</code></pre></div>
+
+<h2>On Results and Optionals</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">hasab</span> <span class="c-fn">parse_number</span>(input) {
+    <span class="c-kw">hale</span> <span class="c-fn">tamam</span>(n) => <span class="c-fn">itba3</span>(<span class="c-str">"got: {n}\n"</span>)
+    <span class="c-kw">hale</span> <span class="c-fn">ghalat</span>(msg) => <span class="c-fn">itba3</span>(<span class="c-str">"error: {msg}\n"</span>)
+}</code></pre></div>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ METHODS ═══════════ -->
+<div class="section" id="sec-methods">
+<div class="content">
+<h1>Methods & Impl Blocks</h1>
+<span class="status-badge wip">Parser complete, codegen written but untested</span>
+<p class="section-desc"><code class="inline-code">tabbe2</code> means "apply" or "implement." <code class="inline-code">had</code> means "this thing."</p>
+
+<h2>Attaching Methods</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">haikal</span> <span class="c-type">Point</span> {
+    x: <span class="c-type">fasle64</span>,
+    y: <span class="c-type">fasle64</span>,
+}
+
+<span class="c-kw">tabbe2</span> <span class="c-type">Point</span> {
+    <span class="c-kw">dalle</span> <span class="c-fn">magnitude</span>(<span class="c-kw">had</span>) -> <span class="c-type">fasle64</span> {
+        <span class="c-kw">rajje3</span> <span class="c-fn">sqrt</span>(<span class="c-kw">had</span>.x * <span class="c-kw">had</span>.x + <span class="c-kw">had</span>.y * <span class="c-kw">had</span>.y)
+    }
+
+    <span class="c-kw">dalle</span> <span class="c-fn">distance</span>(<span class="c-kw">had</span>, other: <span class="c-type">Point</span>) -> <span class="c-type">fasle64</span> {
+        <span class="c-kw">khalli</span> dx: <span class="c-type">fasle64</span> = <span class="c-kw">had</span>.x - other.x
+        <span class="c-kw">khalli</span> dy: <span class="c-type">fasle64</span> = <span class="c-kw">had</span>.y - other.y
+        <span class="c-kw">rajje3</span> <span class="c-fn">sqrt</span>(dx * dx + dy * dy)
+    }
+}</code></pre></div>
+
+<h2>Calling Methods</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">khalli</span> p: <span class="c-type">Point</span> = <span class="c-type">Point</span>{ x: <span class="c-num">3.0</span>, y: <span class="c-num">4.0</span> }
+<span class="c-kw">khalli</span> m: <span class="c-type">fasle64</span> = p.<span class="c-fn">magnitude</span>()</code></pre></div>
+<p>The instance before the dot becomes the <code class="inline-code">had</code> parameter. Under the hood, <code class="inline-code">p.distance(q)</code> becomes <code class="inline-code">Point_distance(&amp;p, q)</code> in C.</p>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ REFERENCE ═══════════ -->
+<div class="section" id="sec-reference">
+<div class="content">
+<h1>Keyword Reference</h1>
+<p class="section-desc">Every keyword is Franco-Arab. The <code class="inline-code">3</code> represents ain, <code class="inline-code">2</code> represents hamza.</p>
+
+<h2>Control Flow</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Keyword</th><th>Pronunciation</th><th>Meaning</th><th>Equivalent</th></tr></thead>
+<tbody>
+<tr><td><code>iza</code></td><td>ee-za</td><td>"if"</td><td>if</td></tr>
+<tr><td><code>wala</code></td><td>wa-la</td><td>"or else"</td><td>else</td></tr>
+<tr><td><code>wala_iza</code></td><td>wa-la ee-za</td><td>"or if"</td><td>else if</td></tr>
+<tr><td><code>tool_ma</code></td><td>tool ma</td><td>"as long as"</td><td>while</td></tr>
+<tr><td><code>lakol</code></td><td>la-kol</td><td>"for each"</td><td>for</td></tr>
+<tr><td><code>fi</code></td><td>fee</td><td>"in" / "there is"</td><td>in / Some</td></tr>
+<tr><td><code>liff</code></td><td>liff</td><td>"go around"</td><td>loop</td></tr>
+<tr><td><code>khalas</code></td><td>kha-las</td><td>"enough!"</td><td>break</td></tr>
+<tr><td><code>kammel</code></td><td>kam-mel</td><td>"keep going"</td><td>continue</td></tr>
+<tr><td><code>rajje3</code></td><td>raj-je3</td><td>"bring back"</td><td>return</td></tr>
+<tr><td><code>hasab</code></td><td>ha-sab</td><td>"depending on"</td><td>match</td></tr>
+<tr><td><code>hale</code></td><td>ha-le</td><td>"case"</td><td>match arm</td></tr>
+<tr><td><code>3adi</code></td><td>aa-di</td><td>"whatever"</td><td>default</td></tr>
+</tbody></table></div>
+
+<h2>Declarations</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Keyword</th><th>Pronunciation</th><th>Meaning</th><th>Equivalent</th></tr></thead>
+<tbody>
+<tr><td><code>khalli</code></td><td>khal-li</td><td>"let there be"</td><td>let</td></tr>
+<tr><td><code>thabet</code></td><td>tha-bet</td><td>"fixed"</td><td>const</td></tr>
+<tr><td><code>dalle</code></td><td>dal-le</td><td>"a function"</td><td>fn / func</td></tr>
+<tr><td><code>haikal</code></td><td>hai-kal</td><td>"skeleton"</td><td>struct</td></tr>
+<tr><td><code>ta3dad</code></td><td>ta-adad</td><td>"enumeration"</td><td>enum</td></tr>
+<tr><td><code>tabbe2</code></td><td>tab-be2</td><td>"implement"</td><td>impl</td></tr>
+</tbody></table></div>
+
+<h2>Types</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Keyword</th><th>Pronunciation</th><th>Meaning</th><th>Equivalent</th></tr></thead>
+<tbody>
+<tr><td><code>adad</code></td><td>a-dad</td><td>"number"</td><td>int32</td></tr>
+<tr><td><code>adad64</code></td><td>a-dad 64</td><td>"number (64-bit)"</td><td>int64</td></tr>
+<tr><td><code>fasle</code></td><td>fas-le</td><td>"decimal"</td><td>float</td></tr>
+<tr><td><code>fasle64</code></td><td>fas-le 64</td><td>"decimal (64-bit)"</td><td>double</td></tr>
+<tr><td><code>mante2</code></td><td>man-te2</td><td>"logical"</td><td>bool</td></tr>
+<tr><td><code>harf</code></td><td>harf</td><td>"letter"</td><td>char</td></tr>
+<tr><td><code>nass</code></td><td>nass</td><td>"text"</td><td>string</td></tr>
+<tr><td><code>fadi</code></td><td>fa-di</td><td>"empty"</td><td>void</td></tr>
+<tr><td><code>natije</code></td><td>na-tee-je</td><td>"result"</td><td>Result&lt;T&gt;</td></tr>
+<tr><td><code>yimkin</code></td><td>yim-kin</td><td>"maybe"</td><td>Optional&lt;T&gt;</td></tr>
+</tbody></table></div>
+
+<h2>Values</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Keyword</th><th>Pronunciation</th><th>Meaning</th><th>Equivalent</th></tr></thead>
+<tbody>
+<tr><td><code>ah</code></td><td>ah</td><td>"yeah"</td><td>true</td></tr>
+<tr><td><code>la</code></td><td>la</td><td>"no"</td><td>false</td></tr>
+<tr><td><code>tamam</code></td><td>ta-mam</td><td>"all good"</td><td>Ok</td></tr>
+<tr><td><code>ghalat</code></td><td>gha-lat</td><td>"wrong"</td><td>Err</td></tr>
+<tr><td><code>fi</code></td><td>fee</td><td>"there is"</td><td>Some</td></tr>
+<tr><td><code>mafi</code></td><td>ma-fi</td><td>"there isn't"</td><td>None</td></tr>
+<tr><td><code>had</code></td><td>had</td><td>"this thing"</td><td>self / this</td></tr>
+</tbody></table></div>
+
+<h2>Error Handling</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Keyword</th><th>Pronunciation</th><th>Meaning</th><th>Equivalent</th></tr></thead>
+<tbody>
+<tr><td><code>wala?</code></td><td>wa-la?</td><td>"or?" (propagate)</td><td>? operator</td></tr>
+<tr><td><code>ba3dain</code></td><td>ba-a-dain</td><td>"later"</td><td>defer</td></tr>
+<tr><td><code>faz3a</code></td><td>faz-a</td><td>"panic"</td><td>panic!</td></tr>
+</tbody></table></div>
+
+<div class="note"><strong>Cultural notes:</strong> <code class="inline-code">khalas</code> is THE Jordanian stop word. <code class="inline-code">yalla</code> is universally recognized across the Arab world. <code class="inline-code">3adi</code> is the most Jordanian response possible. <code class="inline-code">ba3dain</code> is the national motto of procrastination.</div>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ TYPES REF ═══════════ -->
+<div class="section" id="sec-types-ref">
+<div class="content">
+<h1>Type Reference</h1>
+
+<h2>Primitive Types</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>NashmiC</th><th>C Equivalent</th><th>Size</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>adad</code></td><td>int32_t</td><td>4 bytes</td><td>32-bit signed integer</td></tr>
+<tr><td><code>adad64</code></td><td>int64_t</td><td>8 bytes</td><td>64-bit signed integer</td></tr>
+<tr><td><code>fasle</code></td><td>float</td><td>4 bytes</td><td>32-bit float</td></tr>
+<tr><td><code>fasle64</code></td><td>double</td><td>8 bytes</td><td>64-bit float</td></tr>
+<tr><td><code>mante2</code></td><td>bool</td><td>1 byte</td><td>Boolean (ah or la)</td></tr>
+<tr><td><code>harf</code></td><td>char</td><td>1 byte</td><td>ASCII character</td></tr>
+<tr><td><code>nass</code></td><td>const char*</td><td>pointer</td><td>UTF-8 string</td></tr>
+<tr><td><code>fadi</code></td><td>void</td><td>0</td><td>No value</td></tr>
+</tbody></table></div>
+
+<h2>Generic Types</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>NashmiC</th><th>Equivalent</th><th>Description</th></tr></thead>
+<tbody>
+<tr><td><code>natije&lt;T&gt;</code></td><td>Result&lt;T, String&gt;</td><td>tamam(T) or ghalat(nass)</td></tr>
+<tr><td><code>yimkin&lt;T&gt;</code></td><td>Option&lt;T&gt;</td><td>fi(T) or mafi</td></tr>
+</tbody></table></div>
+
+<h2>Naming Origins</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>NashmiC</th><th>Arabic</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>adad</code></td><td>&#1593;&#1583;&#1583;</td><td>number</td></tr>
+<tr><td><code>fasle</code></td><td>&#1601;&#1575;&#1589;&#1604;&#1577;</td><td>decimal point</td></tr>
+<tr><td><code>mante2</code></td><td>&#1605;&#1606;&#1591;&#1602;&#1610;</td><td>logical</td></tr>
+<tr><td><code>harf</code></td><td>&#1581;&#1585;&#1601;</td><td>letter</td></tr>
+<tr><td><code>nass</code></td><td>&#1606;&#1589;</td><td>text</td></tr>
+<tr><td><code>fadi</code></td><td>&#1601;&#1575;&#1590;&#1610;</td><td>empty</td></tr>
+<tr><td><code>natije</code></td><td>&#1606;&#1578;&#1610;&#1580;&#1577;</td><td>result</td></tr>
+<tr><td><code>yimkin</code></td><td>&#1610;&#1605;&#1603;&#1606;</td><td>maybe</td></tr>
+</tbody></table></div>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ BUILTINS ═══════════ -->
+<div class="section" id="sec-builtins">
+<div class="content">
+<h1>Built-in Functions</h1>
+
+<h2>Core I/O</h2>
+<h3><code class="inline-code">itba3(...)</code> - Print</h3>
+<p>Prints to stdout. Supports string interpolation and printf-style format specifiers.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-fn">itba3</span>(<span class="c-str">"marhaba ya {name}!\n"</span>)</code></pre></div>
+
+<h3><code class="inline-code">i2ra()</code> - Read</h3>
+<p>Reads a line from stdin. Returns a <code class="inline-code">nass</code>.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">khalli</span> input: <span class="c-type">nass</span> = <span class="c-fn">i2ra</span>()</code></pre></div>
+
+<h3><code class="inline-code">itla3(code)</code> - Exit</h3>
+<p>Exits the program with the given code.</p>
+
+<h2>Easter Eggs</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Function</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td><code>nashmi()</code></td><td>Prints the NashmiC manifesto</td></tr>
+<tr><td><code>drobi()</code></td><td>Random Jordanian proverb. Roasts you after 5 calls.</td></tr>
+<tr><td><code>mansaf()</code></td><td>Mansaf recipe in ASCII art</td></tr>
+<tr><td><code>sahteen()</code></td><td>"Bon appetit"</td></tr>
+</tbody></table></div>
+
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-fn">yalla</span>() {
+    <span class="c-fn">nashmi</span>()    <span class="c-comment">// about NashmiC</span>
+    <span class="c-fn">drobi</span>()     <span class="c-comment">// random proverb</span>
+    <span class="c-fn">mansaf</span>()    <span class="c-comment">// the recipe</span>
+    <span class="c-fn">sahteen</span>()   <span class="c-comment">// bon appetit</span>
+}</code></pre></div>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ COMPILER ═══════════ -->
+<div class="section" id="sec-compiler">
+<div class="content">
+<h1>Compiler Messages</h1>
+<p class="section-desc">Errors come with Jordanian proverbs. Build successes get celebrated.</p>
+
+<h2>Error Format</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">compiler output</span></div><pre><code>error[E0001]: expected expression
+  --&gt; src/main.nsh:12:18
+     |
+  12 |     khalli x = ???
+     |                ^^^
+     |
+      = patience turns sour to sweet</code></pre></div>
+
+<h2>Proverb Categories</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Error Type</th><th>Proverb</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td>Type mismatch</td><td>The rope of lies is short</td><td>You can't fake types</td></tr>
+<tr><td>Invalid argument</td><td>The dancer blames the floor</td><td>Don't blame the language</td></tr>
+<tr><td>Unreachable code</td><td>Can't reach the grapes? Call them sour</td><td>That code won't run</td></tr>
+<tr><td>Stack overflow</td><td>Dig a pit for your brother, fall in it</td><td>Your recursion caught up</td></tr>
+<tr><td>Unused variable</td><td>"Belgian" (unnecessarily complex)</td><td>Why declare it?</td></tr>
+<tr><td>Unhandled error</td><td>You think you're safe?</td><td>Handle your errors</td></tr>
+</tbody></table></div>
+
+<h2>Build Success</h2>
+<p>The compiler celebrates with random quips:</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">output</span></div><pre><code>done! zay il ful       (everything's perfect)
+done! nashmi wallah    (noble work)
+done! wallah ma 2assart (you didn't fall short)</code></pre></div>
+
+<h2>The <code class="inline-code">--tarab</code> Flag</h2>
+<p>Build with <code class="inline-code">mansaf build --tarab program.nsh</code> for celebratory audio on success. "Tarab" means musical ecstasy.</p>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
+</div><!-- .main -->
+</div><!-- .layout -->
+
+<style>
+.c-kw{color:var(--kw)}
+.c-fn{color:var(--fn)}
+.c-str{color:var(--str)}
+.c-num{color:var(--num)}
+.c-type{color:var(--type)}
+.c-comment{color:var(--comment);font-style:italic}
+.c-op{color:var(--op)}
+.c-param{color:var(--text)}
+</style>
+
+<script>
+function showSection(id){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  const el=document.getElementById('sec-'+id);
+  if(el){el.classList.add('active');window.scrollTo(0,0)}
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  const navEl=document.querySelector(`[data-section="${id}"]`);
+  if(navEl)navEl.classList.add('active');
+  if(window.innerWidth<=900){
+    document.getElementById('sidebar').classList.remove('open');
+    document.querySelector('.overlay').classList.remove('open');
+  }
+  history.replaceState(null,'','#'+id);
+}
+
+function nav(el){
+  const section=el.dataset.section;
+  showSection(section);
+}
+
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.querySelector('.overlay').classList.toggle('open');
+}
+
+function copyCode(btn){
+  const code=btn.closest('.code-block').querySelector('pre code');
+  const text=code.textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    btn.textContent='copied!';
+    setTimeout(()=>btn.textContent='copy',1500);
+  });
+}
+
+function copyInstall(el){
+  const text=el.querySelector('code').textContent;
+  navigator.clipboard.writeText(text).then(()=>{
+    const hint=el.querySelector('.copy-hint');
+    hint.textContent='copied!';
+    setTimeout(()=>hint.textContent='copy',1500);
+  });
+}
+
+// Handle hash on load
+window.addEventListener('load',()=>{
+  const hash=location.hash.slice(1);
+  if(hash)showSection(hash);
+});
+</script>
+</body>
+</html>
