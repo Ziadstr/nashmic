@@ -24,6 +24,54 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <time.h>
+#include <libgen.h>
+#include <limits.h>
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#endif
+
+/* ── Auto-detect NASHMIC_ROOT from binary location ──────────── */
+
+static char *detect_nashmic_root(void) {
+    char exe_path[PATH_MAX];
+
+#ifdef __linux__
+    ssize_t len = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
+    if (len <= 0) return NULL;
+    exe_path[len] = '\0';
+#elif defined(__APPLE__)
+    uint32_t size = sizeof(exe_path);
+    if (_NSGetExecutablePath(exe_path, &size) != 0) return NULL;
+    char resolved[PATH_MAX];
+    if (!realpath(exe_path, resolved)) return NULL;
+    strncpy(exe_path, resolved, PATH_MAX - 1);
+    exe_path[PATH_MAX - 1] = '\0';
+#else
+    return NULL;
+#endif
+
+    /* exe_path = /some/path/build/mansaf or /usr/local/bin/mansaf
+     * We want the parent of the directory containing the binary,
+     * BUT only if runtime/ exists there. */
+    char *dir = dirname(exe_path);   /* build/ or bin/ */
+    char *parent = dirname(dir);     /* project root or /usr/local */
+
+    /* Check if runtime/nsh_runtime.c exists relative to parent */
+    char check_path[PATH_MAX];
+    snprintf(check_path, sizeof(check_path), "%s/runtime/nsh_runtime.c", parent);
+
+    if (access(check_path, F_OK) == 0) {
+        return strdup(parent);
+    }
+
+    /* For installed binaries: check /usr/local/share/nashmic */
+    snprintf(check_path, sizeof(check_path), "/usr/local/share/nashmic/runtime/nsh_runtime.c");
+    if (access(check_path, F_OK) == 0) {
+        return strdup("/usr/local/share/nashmic");
+    }
+
+    return NULL;
+}
 
 /* ANSI colors */
 #define GREEN   "\033[1;32m"
@@ -206,8 +254,10 @@ static int cmd_build(const char *filename, int run_after, int tarab) {
     char *out_name = derive_output_name(filename);
 
     const char *nashmic_root = getenv("NASHMIC_ROOT");
+    char *detected_root = NULL;
     if (!nashmic_root) {
-        nashmic_root = ".";
+        detected_root = detect_nashmic_root();
+        nashmic_root = detected_root ? detected_root : ".";
     }
 
     char cmd[2048];
@@ -220,6 +270,7 @@ static int cmd_build(const char *filename, int run_after, int tarab) {
     if (cc_result != 0) {
         fprintf(stderr, RED "\nفشل التجميع" RESET " — C compiler failed\n");
         fprintf(stderr, "Generated C: %s\n", c_path);
+        free(detected_root);
         free(out_name);
         node_free(ast);
         free(source);
@@ -260,6 +311,7 @@ static int cmd_build(const char *filename, int run_after, int tarab) {
 
         remove(out_name);
 
+        free(detected_root);
         free(out_name);
         node_free(ast);
         free(source);
@@ -267,6 +319,7 @@ static int cmd_build(const char *filename, int run_after, int tarab) {
         return WEXITSTATUS(run_result);
     }
 
+    free(detected_root);
     free(out_name);
     node_free(ast);
     free(source);

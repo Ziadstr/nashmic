@@ -672,9 +672,13 @@ static char *parse_type_annotation(NshParser *p) {
             expect(p, TOK_GT, "expected '>' after generic type parameter");
             /* Build "natije<T>" string */
             if (inner) {
-                size_t tlen = strlen(type) + 1 + strlen(inner) + 1 + 1;
+                size_t tlen = strlen(type) + strlen(inner) + 3; /* type<inner>\0 */
                 char *full = malloc(tlen);
-                snprintf(full, tlen, "%s<%s>", type, inner);
+                memcpy(full, type, strlen(type));
+                full[strlen(type)] = '<';
+                memcpy(full + strlen(type) + 1, inner, strlen(inner));
+                full[tlen - 2] = '>';
+                full[tlen - 1] = '\0';
                 free(type);
                 free(inner);
                 type = full;

@@ -68,14 +68,14 @@ Then either install globally:
 
 ```bash
 sudo make install
-# Now you can use: mansaf run file.nsh
+# Installs mansaf binary + runtime. Works from any directory.
 ```
 
-Or set the environment manually:
+Or run from the source directory:
 
 ```bash
-export NASHMIC_ROOT=~/path/to/nashmic
-export PATH="$NASHMIC_ROOT/build:$PATH"
+export PATH="$PWD/build:$PATH"
+# mansaf auto-detects runtime from its binary location
 ```
 
 ### Uninstall

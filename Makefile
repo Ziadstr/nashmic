@@ -86,5 +86,13 @@ run-all: $(MANSAF)
 	@NASHMIC_ROOT=. $(MANSAF) run examples/natije.nsh
 
 install: $(MANSAF)
+	mkdir -p /usr/local/share/nashmic/runtime
 	cp $(MANSAF) /usr/local/bin/mansaf
+	cp runtime/nsh_runtime.c runtime/nsh_runtime.h /usr/local/share/nashmic/runtime/
 	@echo "✓ mansaf installed to /usr/local/bin/"
+	@echo "✓ runtime installed to /usr/local/share/nashmic/runtime/"
+
+uninstall:
+	rm -f /usr/local/bin/mansaf
+	rm -rf /usr/local/share/nashmic
+	@echo "✓ mansaf uninstalled"

@@ -164,7 +164,7 @@ static const char *extract_natije_inner(const char *type) {
 
 /* Get C struct name for a natije type: "adad64" → "nsh_result_int64_t" */
 static const char *result_struct_name(const char *inner_nsh) {
-    static char buf[128];
+    static char buf[256];
     const char *c_type = map_type(inner_nsh);
     /* Sanitize C type for struct name (replace spaces and *) */
     char sanitized[128];
@@ -224,6 +224,23 @@ static void emit_binop(Emitter *e, NshBinOp op) {
     case BIN_AND: emit(e, " && "); break;
     case BIN_OR:  emit(e, " || "); break;
     case BIN_RANGE: break; /* handled specially */
+    }
+}
+
+/* Check if an expression node already wraps itself in parentheses */
+static int expr_is_parenthesized(NshNode *node) {
+    return node->type == NODE_BINARY || node->type == NODE_UNARY;
+}
+
+/* Emit an expression wrapped in parens for use as a condition.
+ * Avoids double-parens for expressions that already produce them. */
+static void emit_condition(Emitter *e, NshNode *node) {
+    if (expr_is_parenthesized(node)) {
+        emit_expr(e, node);
+    } else {
+        emit(e, "(");
+        emit_expr(e, node);
+        emit(e, ")");
     }
 }
 
@@ -527,17 +544,17 @@ static void emit_stmt(Emitter *e, NshNode *node) {
 
     case NODE_IF:
         emit_indent(e);
-        emit(e, "if (");
-        emit_expr(e, node->as.if_stmt.condition);
-        emit(e, ") ");
+        emit(e, "if ");
+        emit_condition(e, node->as.if_stmt.condition);
+        emit(e, " ");
         emit_block(e, node->as.if_stmt.then_block);
         if (node->as.if_stmt.else_block) {
             emit_indent(e);
             if (node->as.if_stmt.else_block->type == NODE_IF) {
                 emit(e, "else ");
-                emit(e, "if (");
-                emit_expr(e, node->as.if_stmt.else_block->as.if_stmt.condition);
-                emit(e, ") ");
+                emit(e, "if ");
+                emit_condition(e, node->as.if_stmt.else_block->as.if_stmt.condition);
+                emit(e, " ");
                 emit_block(e, node->as.if_stmt.else_block->as.if_stmt.then_block);
                 if (node->as.if_stmt.else_block->as.if_stmt.else_block) {
                     emit_indent(e);
@@ -553,9 +570,9 @@ static void emit_stmt(Emitter *e, NshNode *node) {
 
     case NODE_WHILE:
         emit_indent(e);
-        emit(e, "while (");
-        emit_expr(e, node->as.while_stmt.condition);
-        emit(e, ") ");
+        emit(e, "while ");
+        emit_condition(e, node->as.while_stmt.condition);
+        emit(e, " ");
         emit_block(e, node->as.while_stmt.body);
         break;
 
