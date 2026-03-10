@@ -218,6 +218,29 @@ NshSymbol *scope_lookup(NshScope *scope, const char *name) {
     return NULL;
 }
 
+/* ── Struct/Enum/Impl Registries ─────────────────────────────── */
+/* These hold AST references for field resolution and method lookup.
+ * The AST nodes are owned by the parser — we just borrow pointers. */
+
+#define SEMA_MAX_STRUCTS 128
+#define SEMA_MAX_ENUMS   128
+#define SEMA_MAX_IMPLS   128
+
+typedef struct {
+    const char *name;           /* struct name (borrowed from AST) */
+    NshParamList *fields;       /* borrowed pointer to struct_decl.fields */
+} SemaStructInfo;
+
+typedef struct {
+    const char *name;           /* enum name (borrowed from AST) */
+    NshParamList *variants;     /* borrowed pointer to enum_decl.variants */
+} SemaEnumInfo;
+
+typedef struct {
+    const char *type_name;      /* type this impl is for (borrowed from AST) */
+    NshNodeList *methods;       /* borrowed pointer to impl_block.methods */
+} SemaImplInfo;
+
 /* ── Semantic Checker Context ────────────────────────────────── */
 
 typedef struct {
@@ -227,6 +250,14 @@ typedef struct {
     const char *filename;
     int error_count;
     NshType *current_return_type; /* expected return type of current function */
+
+    /* Registries for type-level lookups */
+    SemaStructInfo structs[SEMA_MAX_STRUCTS];
+    int struct_count;
+    SemaEnumInfo enums[SEMA_MAX_ENUMS];
+    int enum_count;
+    SemaImplInfo impls[SEMA_MAX_IMPLS];
+    int impl_count;
 } SemaCtx;
 
 static void sema_error(SemaCtx *ctx, NshSpan span, const char *msg) {
@@ -236,6 +267,81 @@ static void sema_error(SemaCtx *ctx, NshSpan span, const char *msg) {
 
 static void sema_warn(SemaCtx *ctx, NshSpan span, const char *msg) {
     diag_warning_at(ctx->filename, ctx->source, span, msg);
+}
+
+/* ── Registry Lookup Helpers ──────────────────────────────────── */
+
+/* Find a struct's field list by struct name. Returns NULL if not found. */
+static const SemaStructInfo *find_struct_info(SemaCtx *ctx, const char *name) {
+    for (int i = 0; i < ctx->struct_count; i++) {
+        if (strcmp(ctx->structs[i].name, name) == 0)
+            return &ctx->structs[i];
+    }
+    return NULL;
+}
+
+/* Find a struct field by name. Returns the NshParam or NULL. */
+static const NshParam *find_struct_field(const SemaStructInfo *info,
+                                          const char *field_name) {
+    if (!info || !info->fields) return NULL;
+    for (int i = 0; i < info->fields->count; i++) {
+        if (strcmp(info->fields->items[i].name, field_name) == 0)
+            return &info->fields->items[i];
+    }
+    return NULL;
+}
+
+/* Find an enum variant by name across all enums. Returns the variant
+ * NshParam (name=variant, type_name=payload type or NULL) and sets
+ * *out_enum_name if non-NULL. Returns NULL if not found. */
+static const NshParam *find_enum_variant(SemaCtx *ctx, const char *variant_name,
+                                          const char **out_enum_name) {
+    for (int i = 0; i < ctx->enum_count; i++) {
+        NshParamList *variants = ctx->enums[i].variants;
+        for (int v = 0; v < variants->count; v++) {
+            if (strcmp(variants->items[v].name, variant_name) == 0) {
+                if (out_enum_name) *out_enum_name = ctx->enums[i].name;
+                return &variants->items[v];
+            }
+        }
+    }
+    return NULL;
+}
+
+/* Check if a method exists for a given type across all impl blocks.
+ * Returns the method NODE_FUNC_DECL node, or NULL. */
+static const NshNode *find_impl_method(SemaCtx *ctx, const char *type_name,
+                                        const char *method_name) {
+    for (int i = 0; i < ctx->impl_count; i++) {
+        if (strcmp(ctx->impls[i].type_name, type_name) != 0) continue;
+        NshNodeList *methods = ctx->impls[i].methods;
+        for (int m = 0; m < methods->count; m++) {
+            NshNode *method = methods->items[m];
+            if (method->type == NODE_FUNC_DECL &&
+                strcmp(method->as.func_decl.name, method_name) == 0) {
+                return method;
+            }
+        }
+    }
+    return NULL;
+}
+
+/* Check if a type kind is numeric (integer or floating point). */
+static int is_numeric_type(NshTypeKind kind) {
+    return kind == NSH_TYPE_INT32 || kind == NSH_TYPE_INT64 ||
+           kind == NSH_TYPE_FLOAT || kind == NSH_TYPE_DOUBLE;
+}
+
+/* Check if two types are compatible for assignment (allows numeric widening). */
+static int types_assignable(const NshType *target, const NshType *value) {
+    if (!target || !value) return 1;
+    if (target->kind == NSH_TYPE_UNKNOWN || value->kind == NSH_TYPE_UNKNOWN)
+        return 1;
+    if (nsh_type_equal(target, value)) return 1;
+    /* Allow numeric mixing (int -> float, etc.) */
+    if (is_numeric_type(target->kind) && is_numeric_type(value->kind))
+        return 1;
+    return 0;
 }
 
 /* ── Type Resolution ─────────────────────────────────────────── */
@@ -414,6 +520,15 @@ static void pass1_register_decls(SemaCtx *ctx, NshNode *program) {
                 nsh_type_free(sym->type_info);
                 free(sym);
             }
+
+            /* Register struct in field-resolution registry */
+            if (ctx->struct_count < SEMA_MAX_STRUCTS) {
+                ctx->structs[ctx->struct_count].name =
+                    decl->as.struct_decl.name;
+                ctx->structs[ctx->struct_count].fields =
+                    &decl->as.struct_decl.fields;
+                ctx->struct_count++;
+            }
             break;
         }
         case NODE_ENUM_DECL: {
@@ -432,6 +547,15 @@ static void pass1_register_decls(SemaCtx *ctx, NshNode *program) {
                 free(sym->name);
                 nsh_type_free(sym->type_info);
                 free(sym);
+            }
+
+            /* Register enum in variant-resolution registry */
+            if (ctx->enum_count < SEMA_MAX_ENUMS) {
+                ctx->enums[ctx->enum_count].name =
+                    decl->as.enum_decl.name;
+                ctx->enums[ctx->enum_count].variants =
+                    &decl->as.enum_decl.variants;
+                ctx->enum_count++;
             }
 
             /* Register enum variants as globals */
@@ -484,6 +608,15 @@ static void pass1_register_decls(SemaCtx *ctx, NshNode *program) {
             break;
         }
         case NODE_IMPL_BLOCK: {
+            /* Register impl block in method-resolution registry */
+            if (ctx->impl_count < SEMA_MAX_IMPLS) {
+                ctx->impls[ctx->impl_count].type_name =
+                    decl->as.impl_block.type_name;
+                ctx->impls[ctx->impl_count].methods =
+                    &decl->as.impl_block.methods;
+                ctx->impl_count++;
+            }
+
             /* Register methods as global functions with mangled names
              * (TypeName_method). This matches codegen behavior. */
             NshNodeList *methods = &decl->as.impl_block.methods;
@@ -597,18 +730,36 @@ static NshType *check_expr(SemaCtx *ctx, NshNode *node) {
         /* Type compatibility check for arithmetic ops (soft — warn only) */
         if (op >= BIN_ADD && op <= BIN_MOD) {
             if (left->kind != NSH_TYPE_UNKNOWN &&
-                right->kind != NSH_TYPE_UNKNOWN &&
-                !nsh_type_equal(left, right)) {
-                /* Allow int/float mixing — common pattern */
-                int is_numeric_left = (left->kind == NSH_TYPE_INT32 ||
-                                       left->kind == NSH_TYPE_INT64 ||
-                                       left->kind == NSH_TYPE_FLOAT ||
-                                       left->kind == NSH_TYPE_DOUBLE);
-                int is_numeric_right = (right->kind == NSH_TYPE_INT32 ||
-                                        right->kind == NSH_TYPE_INT64 ||
-                                        right->kind == NSH_TYPE_FLOAT ||
-                                        right->kind == NSH_TYPE_DOUBLE);
-                if (!is_numeric_left || !is_numeric_right) {
+                right->kind != NSH_TYPE_UNKNOWN) {
+
+                int left_numeric = is_numeric_type(left->kind);
+                int right_numeric = is_numeric_type(right->kind);
+
+                /* String + string is fine (concat), but string + int is not */
+                if (left->kind == NSH_TYPE_STRING &&
+                    right->kind == NSH_TYPE_STRING && op == BIN_ADD) {
+                    /* string concat — OK */
+                } else if (left->kind == NSH_TYPE_STRING ||
+                           right->kind == NSH_TYPE_STRING) {
+                    /* string mixed with non-string */
+                    char msg[256];
+                    snprintf(msg, sizeof(msg),
+                             "type mismatch in binary operation: "
+                             "%s vs %s — هاي مش عملية رياضيات",
+                             nsh_type_name(left), nsh_type_name(right));
+                    sema_warn(ctx, node->span, msg);
+                } else if (left->kind == NSH_TYPE_BOOL ||
+                           right->kind == NSH_TYPE_BOOL) {
+                    /* bool in arithmetic — suspicious */
+                    char msg[256];
+                    snprintf(msg, sizeof(msg),
+                             "boolean used in arithmetic operation: "
+                             "%s vs %s",
+                             nsh_type_name(left), nsh_type_name(right));
+                    sema_warn(ctx, node->span, msg);
+                } else if (!nsh_type_equal(left, right) &&
+                           (!left_numeric || !right_numeric)) {
+                    /* Non-numeric type mismatch */
                     char msg[256];
                     snprintf(msg, sizeof(msg),
                              "type mismatch in binary operation: "
@@ -661,7 +812,55 @@ static NshType *check_expr(SemaCtx *ctx, NshNode *node) {
 
             /* Enum variant used as constructor — return enum type */
             if (func_sym->kind == SYM_ENUM_VARIANT) {
-                for (int i = 0; i < node->as.call.args.count; i++) {
+                const char *variant_name = callee->as.ident.name;
+                const char *enum_name_out = NULL;
+                const NshParam *variant_info =
+                    find_enum_variant(ctx, variant_name, &enum_name_out);
+
+                int actual_args = node->as.call.args.count;
+
+                if (variant_info) {
+                    int expects_payload = (variant_info->type_name != NULL);
+                    if (expects_payload && actual_args == 0) {
+                        char msg[256];
+                        snprintf(msg, sizeof(msg),
+                                 "enum variant '%s' expects a payload "
+                                 "of type '%s'",
+                                 variant_name, variant_info->type_name);
+                        sema_warn(ctx, node->span, msg);
+                    } else if (!expects_payload && actual_args > 0) {
+                        char msg[256];
+                        snprintf(msg, sizeof(msg),
+                                 "enum variant '%s' takes no payload, "
+                                 "but got %d argument(s)",
+                                 variant_name, actual_args);
+                        sema_warn(ctx, node->span, msg);
+                    } else if (expects_payload && actual_args == 1) {
+                        /* Check payload type matches */
+                        NshType *arg_type = check_expr(ctx,
+                            node->as.call.args.items[0]);
+                        NshType *expected = resolve_type_name(ctx,
+                            variant_info->type_name);
+
+                        if (!types_assignable(expected, arg_type)) {
+                            char msg[256];
+                            snprintf(msg, sizeof(msg),
+                                     "enum variant '%s' expects '%s', "
+                                     "got '%s'",
+                                     variant_name,
+                                     variant_info->type_name,
+                                     nsh_type_name(arg_type));
+                            sema_warn(ctx, node->span, msg);
+                        }
+
+                        nsh_type_free(expected);
+                        nsh_type_free(arg_type);
+                        return nsh_type_clone(func_sym->type_info);
+                    }
+                }
+
+                /* Check remaining args (multi-arg or fallthrough) */
+                for (int i = 0; i < actual_args; i++) {
                     NshType *arg_type = check_expr(ctx,
                         node->as.call.args.items[i]);
                     nsh_type_free(arg_type);
@@ -673,6 +872,52 @@ static NshType *check_expr(SemaCtx *ctx, NshNode *node) {
         } else if (callee->type == NODE_MEMBER) {
             /* method call — obj.method(args) */
             NshType *obj_type = check_expr(ctx, callee->as.member.object);
+            const char *method_name = callee->as.member.field;
+
+            /* Validate method exists for the type */
+            if (obj_type->kind == NSH_TYPE_STRUCT &&
+                obj_type->as.struct_type.name) {
+                const char *type_name = obj_type->as.struct_type.name;
+                const NshNode *method = find_impl_method(ctx, type_name,
+                                                          method_name);
+                if (!method) {
+                    /* Also check if it's a field (not a method) */
+                    const SemaStructInfo *sinfo =
+                        find_struct_info(ctx, type_name);
+                    const NshParam *field = sinfo
+                        ? find_struct_field(sinfo, method_name) : NULL;
+
+                    if (field) {
+                        char msg[256];
+                        snprintf(msg, sizeof(msg),
+                                 "'%s' is a field of '%s', not a method "
+                                 "— بدك نقطة مش أقواس",
+                                 method_name, type_name);
+                        sema_warn(ctx, callee->span, msg);
+                    } else {
+                        char msg[256];
+                        snprintf(msg, sizeof(msg),
+                                 "type '%s' has no method '%s' "
+                                 "— مفيش دالة بهالاسم",
+                                 type_name, method_name);
+                        sema_warn(ctx, callee->span, msg);
+                    }
+                } else {
+                    /* Method found — return its return type */
+                    NshType *ret = resolve_type_name(ctx,
+                        method->as.func_decl.return_type);
+
+                    /* Check arguments */
+                    for (int i = 0; i < node->as.call.args.count; i++) {
+                        NshType *arg_type = check_expr(ctx,
+                            node->as.call.args.items[i]);
+                        nsh_type_free(arg_type);
+                    }
+                    nsh_type_free(obj_type);
+                    return ret;
+                }
+            }
+
             nsh_type_free(obj_type);
 
             /* Check arguments */
@@ -731,7 +976,31 @@ static NshType *check_expr(SemaCtx *ctx, NshNode *node) {
 
     case NODE_MEMBER: {
         NshType *obj_type = check_expr(ctx, node->as.member.object);
-        /* We don't fully resolve field types yet — return unknown */
+        const char *field_name = node->as.member.field;
+
+        /* Struct field resolution — verify field exists */
+        if (obj_type->kind == NSH_TYPE_STRUCT && obj_type->as.struct_type.name) {
+            const SemaStructInfo *sinfo =
+                find_struct_info(ctx, obj_type->as.struct_type.name);
+            if (sinfo) {
+                const NshParam *field = find_struct_field(sinfo, field_name);
+                if (!field) {
+                    char msg[256];
+                    snprintf(msg, sizeof(msg),
+                             "struct '%s' has no field '%s' "
+                             "— مفيش حقل بهالاسم",
+                             obj_type->as.struct_type.name, field_name);
+                    sema_warn(ctx, node->span, msg);
+                } else if (field->type_name) {
+                    /* Resolve and return the field's declared type */
+                    NshType *field_type = resolve_type_name(ctx,
+                        field->type_name);
+                    nsh_type_free(obj_type);
+                    return field_type;
+                }
+            }
+        }
+
         nsh_type_free(obj_type);
         return nsh_type_new(NSH_TYPE_UNKNOWN);
     }
@@ -760,6 +1029,22 @@ static NshType *check_expr(SemaCtx *ctx, NshNode *node) {
                              "cannot assign to constant '%s' (thabet)",
                              target->as.ident.name);
                     sema_error(ctx, node->span, msg);
+                }
+
+                /* Type check the assignment */
+                if (sym->type_info &&
+                    sym->type_info->kind != NSH_TYPE_UNKNOWN &&
+                    val_type->kind != NSH_TYPE_UNKNOWN &&
+                    !types_assignable(sym->type_info, val_type)) {
+                    char msg[256];
+                    snprintf(msg, sizeof(msg),
+                             "type mismatch in assignment to '%s': "
+                             "expected '%s', got '%s' "
+                             "— نوع غلط يا معلم",
+                             target->as.ident.name,
+                             nsh_type_name(sym->type_info),
+                             nsh_type_name(val_type));
+                    sema_warn(ctx, node->span, msg);
                 }
             }
         } else {
@@ -793,11 +1078,45 @@ static NshType *check_expr(SemaCtx *ctx, NshNode *node) {
             sym->is_used = 1;
         }
 
-        /* Check field value expressions */
+        /* Look up struct definition for field validation */
+        const SemaStructInfo *sinfo =
+            find_struct_info(ctx, node->as.struct_lit.name);
+
+        /* Check field value expressions and validate field names */
         for (int i = 0; i < node->as.struct_lit.field_count; i++) {
-            NshType *field_type = check_expr(ctx,
+            NshType *field_val_type = check_expr(ctx,
                 node->as.struct_lit.field_values[i]);
-            nsh_type_free(field_type);
+
+            if (sinfo && node->as.struct_lit.field_names[i]) {
+                const char *fname = node->as.struct_lit.field_names[i];
+                const NshParam *field = find_struct_field(sinfo, fname);
+
+                if (!field) {
+                    char msg[256];
+                    snprintf(msg, sizeof(msg),
+                             "struct '%s' has no field '%s' "
+                             "— مفيش حقل بهالاسم",
+                             node->as.struct_lit.name, fname);
+                    sema_warn(ctx, node->span, msg);
+                } else if (field->type_name) {
+                    /* Check field value type matches declared type */
+                    NshType *expected = resolve_type_name(ctx,
+                        field->type_name);
+                    if (!types_assignable(expected, field_val_type)) {
+                        char msg[256];
+                        snprintf(msg, sizeof(msg),
+                                 "field '%s' of struct '%s' expects "
+                                 "'%s', got '%s'",
+                                 fname, node->as.struct_lit.name,
+                                 nsh_type_name(expected),
+                                 nsh_type_name(field_val_type));
+                        sema_warn(ctx, node->span, msg);
+                    }
+                    nsh_type_free(expected);
+                }
+            }
+
+            nsh_type_free(field_val_type);
         }
 
         NshType *stype = nsh_type_new(NSH_TYPE_STRUCT);
@@ -884,6 +1203,15 @@ static NshType *check_expr(SemaCtx *ctx, NshNode *node) {
         return nsh_type_new(NSH_TYPE_UNKNOWN);
     }
 
+    case NODE_ARRAY_LIT: {
+        for (int i = 0; i < node->as.array_lit.elements.count; i++) {
+            NshType *elem_type = check_expr(ctx,
+                node->as.array_lit.elements.items[i]);
+            nsh_type_free(elem_type);
+        }
+        return nsh_type_new(NSH_TYPE_UNKNOWN);
+    }
+
     default:
         return nsh_type_new(NSH_TYPE_UNKNOWN);
     }
@@ -938,6 +1266,22 @@ static void check_stmt(SemaCtx *ctx, NshNode *node) {
             declared_type = resolve_type_name(ctx, node->as.var_decl.type_ann);
         }
 
+        /* Check declared type against init expression type */
+        if (declared_type && init_type &&
+            declared_type->kind != NSH_TYPE_UNKNOWN &&
+            init_type->kind != NSH_TYPE_UNKNOWN &&
+            !types_assignable(declared_type, init_type)) {
+            char msg[256];
+            snprintf(msg, sizeof(msg),
+                     "type mismatch in declaration of '%s': "
+                     "declared as '%s', initialized with '%s' "
+                     "— نوع غلط يا معلم",
+                     node->as.var_decl.name,
+                     nsh_type_name(declared_type),
+                     nsh_type_name(init_type));
+            sema_warn(ctx, node->span, msg);
+        }
+
         /* Use declared type if available, otherwise inferred */
         NshType *final_type = declared_type ? declared_type
                             : init_type ? nsh_type_clone(init_type)
@@ -967,7 +1311,67 @@ static void check_stmt(SemaCtx *ctx, NshNode *node) {
     case NODE_RETURN: {
         if (node->as.ret.value) {
             NshType *ret_type = check_expr(ctx, node->as.ret.value);
+
+            /* Check return expression against declared return type */
+            if (ctx->current_return_type &&
+                ctx->current_return_type->kind != NSH_TYPE_UNKNOWN &&
+                ctx->current_return_type->kind != NSH_TYPE_VOID &&
+                ret_type->kind != NSH_TYPE_UNKNOWN) {
+
+                /* Allow result-wrapped values to match natije<T> */
+                int is_compatible = types_assignable(
+                    ctx->current_return_type, ret_type);
+
+                /* natije<T> return: tamam/ghalat wraps are OK */
+                if (!is_compatible &&
+                    ctx->current_return_type->kind == NSH_TYPE_RESULT &&
+                    ret_type->kind == NSH_TYPE_RESULT) {
+                    is_compatible = 1;
+                }
+
+                /* yimkin<T> return: fi()/mafi are OK */
+                if (!is_compatible &&
+                    ctx->current_return_type->kind == NSH_TYPE_OPTIONAL) {
+                    is_compatible = 1;
+                }
+
+                if (!is_compatible) {
+                    char msg[256];
+                    snprintf(msg, sizeof(msg),
+                             "return type mismatch: expected '%s', "
+                             "got '%s' — ارجع شيء ثاني",
+                             nsh_type_name(ctx->current_return_type),
+                             nsh_type_name(ret_type));
+                    sema_warn(ctx, node->span, msg);
+                }
+            }
+
+            /* Warn if returning a value from a void function */
+            if (ctx->current_return_type &&
+                ctx->current_return_type->kind == NSH_TYPE_VOID &&
+                ret_type->kind != NSH_TYPE_UNKNOWN &&
+                ret_type->kind != NSH_TYPE_VOID) {
+                char msg[256];
+                snprintf(msg, sizeof(msg),
+                         "returning a value from void function "
+                         "(got '%s') — بدك ترجع شي من فاضي؟",
+                         nsh_type_name(ret_type));
+                sema_warn(ctx, node->span, msg);
+            }
+
             nsh_type_free(ret_type);
+        } else {
+            /* Bare rajje3 — warn if function expects a return value */
+            if (ctx->current_return_type &&
+                ctx->current_return_type->kind != NSH_TYPE_UNKNOWN &&
+                ctx->current_return_type->kind != NSH_TYPE_VOID) {
+                char msg[256];
+                snprintf(msg, sizeof(msg),
+                         "missing return value: expected '%s' "
+                         "— وين الناتج؟",
+                         nsh_type_name(ctx->current_return_type));
+                sema_warn(ctx, node->span, msg);
+            }
         }
         break;
     }
