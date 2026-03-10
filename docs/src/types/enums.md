@@ -1,6 +1,6 @@
 # Enums (Tagged Unions)
 
-> **Status:** Parser complete, codegen in progress. The syntax below is final, but you cannot compile enum programs yet.
+> **Status:** Working. Enums compile and run.
 
 ## Declaring Enums with `ta3dad`
 
@@ -9,14 +9,14 @@
 ```
 ta3dad Shape {
     Da2ira(fasle64),
-    Mustateel(fasle64, fasle64),
+    Mustateel(fasle64),
     Noqta,
 }
 ```
 
 This declares a `Shape` type with three variants:
 - `Da2ira` (circle) - carries one `fasle64` (the radius)
-- `Mustateel` (rectangle) - carries two `fasle64` values (width and height)
+- `Mustateel` (rectangle) - carries one `fasle64` (the width)
 - `Noqta` (point) - carries no data
 
 ## Variants Without Data
@@ -33,13 +33,12 @@ ta3dad Color {
 
 ## Variants With Data
 
-Variants can carry one or more typed values:
+Variants can carry a typed value:
 
 ```
 ta3dad Message {
     Text(nass),
     Number(adad64),
-    Pair(nass, adad64),
 }
 ```
 
@@ -59,30 +58,19 @@ Enums are designed to be used with `hasab`/`hale` (pattern matching):
 
 ```
 hasab shape {
-    hale Da2ira(r) => itba3("Circle with radius {r}\n")
-    hale Mustateel(w, h) => itba3("Rectangle {w}x{h}\n")
-    hale Noqta => itba3("Just a point\n")
+    hale Da2ira(radius) => {
+        itba3("Circle with radius %g\n", radius)
+    }
+    hale Mustateel(width) => {
+        itba3("Rectangle with width %g\n", width)
+    }
+    hale Noqta => {
+        itba3("Just a point\n")
+    }
 }
 ```
 
 See [Pattern Matching](../advanced/pattern-matching.md) for full details.
-
-## Exhaustiveness
-
-The compiler checks that all variants are covered. If you match on a `ta3dad` and miss a variant without providing a `3adi` (default) arm, the compiler reports an error.
-
-```
-// Compiler error: missing variants
-hasab color {
-    hale Ahmar => itba3("red\n")
-}
-
-// Fix: cover all variants or add 3adi
-hasab color {
-    hale Ahmar => itba3("red\n")
-    3adi => itba3("some other color\n")
-}
-```
 
 ## Under the Hood
 

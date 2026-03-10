@@ -353,7 +353,7 @@ NashmiC is in active development. The compiler handles:
 - ✅ Easter egg runtime functions
 - 🔨 Error handling (`natije<T>` + `wala?`): parser done, codegen in progress
 - 🔨 Optional types (`yimkin<T>`): parser done, codegen in progress
-- 🔨 Enums + pattern matching: parser done, codegen in progress
+- ✅ Enums (tagged unions) + pattern matching (`hasab`/`hale`)
 - 🔨 Impl blocks (methods): parser done, codegen in progress
 - 📋 Defer codegen
 - 📋 Multiple return values

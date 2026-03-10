@@ -14,6 +14,17 @@
 #include <string.h>
 #include <stdlib.h>
 
+/* ── Variant Registry (enum variant → enum info) ────────────── */
+
+#define MAX_VARIANTS 256
+
+typedef struct {
+    char *variant_name;
+    char *enum_name;
+    char *payload_type;  /* NULL if no payload */
+    int tag_index;
+} VariantInfo;
+
 /* ── Code Emitter State ──────────────────────────────────────── */
 
 #define MAX_DEFERS 64
@@ -25,6 +36,9 @@ typedef struct {
     int defer_count;
     char *defer_labels[MAX_DEFERS];
     int in_function; /* track if we're inside a function for defer */
+    /* variant registry — populated from enum declarations */
+    VariantInfo variants[MAX_VARIANTS];
+    int variant_count;
 } Emitter;
 
 static void emit(Emitter *e, const char *fmt, ...) {
@@ -84,6 +98,26 @@ static const char *map_type(const char *nsh_type) {
     return nsh_type;
 }
 
+/* ── Variant Registry Helpers ────────────────────────────────── */
+
+static void register_variant(Emitter *e, const char *variant, const char *enum_name,
+                             const char *payload_type, int tag) {
+    if (e->variant_count >= MAX_VARIANTS) return;
+    VariantInfo *v = &e->variants[e->variant_count++];
+    v->variant_name = strdup(variant);
+    v->enum_name = strdup(enum_name);
+    v->payload_type = payload_type ? strdup(payload_type) : NULL;
+    v->tag_index = tag;
+}
+
+static VariantInfo *find_variant(Emitter *e, const char *name) {
+    for (int i = 0; i < e->variant_count; i++) {
+        if (strcmp(e->variants[i].variant_name, name) == 0)
+            return &e->variants[i];
+    }
+    return NULL;
+}
+
 /* ── Expression Codegen ──────────────────────────────────────── */
 
 static void emit_expr(Emitter *e, NshNode *node);
@@ -132,34 +166,32 @@ static void emit_expr(Emitter *e, NshNode *node) {
         emit(e, "NULL");
         break;
 
-    case NODE_IDENT:
+    case NODE_IDENT: {
+        const char *id = node->as.ident.name;
         /* Map built-in function names */
-        if (strcmp(node->as.ident.name, "itba3") == 0) {
-            emit(e, "nsh_itba3");
-        } else if (strcmp(node->as.ident.name, "i2ra") == 0) {
-            emit(e, "nsh_i2ra");
-        } else if (strcmp(node->as.ident.name, "itla3") == 0) {
-            emit(e, "nsh_itla3");
-        } else if (strcmp(node->as.ident.name, "drobi") == 0) {
-            emit(e, "nsh_drobi");
-        } else if (strcmp(node->as.ident.name, "mansaf") == 0) {
-            emit(e, "nsh_mansaf");
-        } else if (strcmp(node->as.ident.name, "sahteen") == 0) {
-            emit(e, "nsh_sahteen");
-        } else if (strcmp(node->as.ident.name, "nashmi") == 0) {
-            emit(e, "nsh_nashmi");
-        } else if (strcmp(node->as.ident.name, "tamam") == 0) {
-            emit(e, "nsh_tamam");
-        } else if (strcmp(node->as.ident.name, "ghalat") == 0) {
-            emit(e, "nsh_ghalat");
-        } else if (strcmp(node->as.ident.name, "fi") == 0) {
-            emit(e, "nsh_fi");
-        } else if (strcmp(node->as.ident.name, "mafi") == 0) {
-            emit(e, "nsh_mafi");
-        } else {
-            emit(e, "%s", node->as.ident.name);
+        if (strcmp(id, "itba3") == 0) { emit(e, "nsh_itba3"); }
+        else if (strcmp(id, "i2ra") == 0) { emit(e, "nsh_i2ra"); }
+        else if (strcmp(id, "itla3") == 0) { emit(e, "nsh_itla3"); }
+        else if (strcmp(id, "drobi") == 0) { emit(e, "nsh_drobi"); }
+        else if (strcmp(id, "mansaf") == 0) { emit(e, "nsh_mansaf"); }
+        else if (strcmp(id, "sahteen") == 0) { emit(e, "nsh_sahteen"); }
+        else if (strcmp(id, "nashmi") == 0) { emit(e, "nsh_nashmi"); }
+        else if (strcmp(id, "tamam") == 0) { emit(e, "nsh_tamam"); }
+        else if (strcmp(id, "ghalat") == 0) { emit(e, "nsh_ghalat"); }
+        else if (strcmp(id, "fi") == 0) { emit(e, "nsh_fi"); }
+        else if (strcmp(id, "mafi") == 0) { emit(e, "nsh_mafi"); }
+        else {
+            /* Check if this is a bare enum variant (no payload) */
+            VariantInfo *vi = find_variant(e, id);
+            if (vi && !vi->payload_type) {
+                emit(e, "(struct %s){._tag = %s_%s}",
+                     vi->enum_name, vi->enum_name, vi->variant_name);
+            } else {
+                emit(e, "%s", id);
+            }
         }
         break;
+    }
 
     case NODE_BINARY:
         emit(e, "(");
@@ -176,15 +208,29 @@ static void emit_expr(Emitter *e, NshNode *node) {
         emit(e, ")");
         break;
 
-    case NODE_CALL:
+    case NODE_CALL: {
         /* Special case: itba3("...{expr}...") — flatten interpolation into print */
         if (node->as.call.callee->type == NODE_IDENT &&
             (strcmp(node->as.call.callee->as.ident.name, "itba3") == 0) &&
             node->as.call.args.count == 1 &&
             node->as.call.args.items[0]->type == NODE_INTERP_STRING) {
-            /* Emit the interp string directly as a print call */
             emit_expr(e, node->as.call.args.items[0]);
             break;
+        }
+        /* Check if this is an enum variant constructor: Da2ira(5.0) */
+        if (node->as.call.callee->type == NODE_IDENT) {
+            VariantInfo *vi = find_variant(e, node->as.call.callee->as.ident.name);
+            if (vi && vi->payload_type) {
+                emit(e, "(struct %s){._tag = %s_%s, ._v.%s._0 = ",
+                     vi->enum_name, vi->enum_name, vi->variant_name,
+                     vi->variant_name);
+                if (node->as.call.args.count > 0)
+                    emit_expr(e, node->as.call.args.items[0]);
+                else
+                    emit(e, "0");
+                emit(e, "}");
+                break;
+            }
         }
         emit_expr(e, node->as.call.callee);
         emit(e, "(");
@@ -194,6 +240,7 @@ static void emit_expr(Emitter *e, NshNode *node) {
         }
         emit(e, ")");
         break;
+    }
 
     case NODE_INDEX:
         emit_expr(e, node->as.index_expr.object);
@@ -459,16 +506,102 @@ static void emit_stmt(Emitter *e, NshNode *node) {
         break;
     }
 
-    case NODE_MATCH:
-        /* hasab expr { hale pattern => body, ... } */
+    case NODE_MATCH: {
+        /* hasab expr { hale Pattern(x) => body, ... }
+         * → { struct Enum _m = expr; switch (_m._tag) { case Enum_Pat: { ... } } } */
+
+        /* Find enum name from the first non-default arm's pattern */
+        const char *enum_name = NULL;
+        for (int i = 0; i < node->as.match.arms.count; i++) {
+            NshNode *arm = node->as.match.arms.items[i];
+            if (strcmp(arm->as.match_arm.pattern_name, "_") != 0) {
+                VariantInfo *vi = find_variant(e, arm->as.match_arm.pattern_name);
+                if (vi) { enum_name = vi->enum_name; break; }
+            }
+        }
+
         emit_indent(e);
-        emit(e, "switch (");
-        emit_expr(e, node->as.match.subject);
-        emit(e, ") {\n");
-        /* TODO: full pattern matching codegen */
-        emit_indent(e);
-        emit(e, "}\n");
+        if (enum_name) {
+            /* Enum match — use tagged union switch */
+            emit(e, "{\n");
+            e->indent++;
+            emit_indent(e);
+            emit(e, "struct %s _nsh_match = ", enum_name);
+            emit_expr(e, node->as.match.subject);
+            emit(e, ";\n");
+            emit_indent(e);
+            emit(e, "switch (_nsh_match._tag) {\n");
+            for (int i = 0; i < node->as.match.arms.count; i++) {
+                NshNode *arm = node->as.match.arms.items[i];
+                const char *pat = arm->as.match_arm.pattern_name;
+                if (strcmp(pat, "_") == 0) {
+                    emit_indent(e);
+                    emit(e, "default: {\n");
+                } else {
+                    emit_indent(e);
+                    emit(e, "case %s_%s: {\n", enum_name, pat);
+                }
+                e->indent++;
+                /* Extract bindings from payload */
+                VariantInfo *vi = (strcmp(pat, "_") != 0) ? find_variant(e, pat) : NULL;
+                if (vi && vi->payload_type && arm->as.match_arm.bindings.count > 0) {
+                    emit_indent(e);
+                    emit(e, "%s %s = _nsh_match._v.%s._0;\n",
+                         map_type(vi->payload_type),
+                         arm->as.match_arm.bindings.items[0]->as.ident.name,
+                         vi->variant_name);
+                }
+                /* Emit body */
+                if (arm->as.match_arm.body->type == NODE_BLOCK) {
+                    for (int j = 0; j < arm->as.match_arm.body->as.block.stmts.count; j++)
+                        emit_stmt(e, arm->as.match_arm.body->as.block.stmts.items[j]);
+                } else {
+                    emit_stmt(e, arm->as.match_arm.body);
+                }
+                emit_indent(e);
+                emit(e, "break;\n");
+                e->indent--;
+                emit_indent(e);
+                emit(e, "}\n");
+            }
+            emit_indent(e);
+            emit(e, "}\n");
+            e->indent--;
+            emit_indent(e);
+            emit(e, "}\n");
+        } else {
+            /* Non-enum match — plain switch on integer value */
+            emit(e, "switch (");
+            emit_expr(e, node->as.match.subject);
+            emit(e, ") {\n");
+            for (int i = 0; i < node->as.match.arms.count; i++) {
+                NshNode *arm = node->as.match.arms.items[i];
+                const char *pat = arm->as.match_arm.pattern_name;
+                if (strcmp(pat, "_") == 0) {
+                    emit_indent(e);
+                    emit(e, "default: {\n");
+                } else {
+                    emit_indent(e);
+                    emit(e, "case %s: {\n", pat);
+                }
+                e->indent++;
+                if (arm->as.match_arm.body->type == NODE_BLOCK) {
+                    for (int j = 0; j < arm->as.match_arm.body->as.block.stmts.count; j++)
+                        emit_stmt(e, arm->as.match_arm.body->as.block.stmts.items[j]);
+                } else {
+                    emit_stmt(e, arm->as.match_arm.body);
+                }
+                emit_indent(e);
+                emit(e, "break;\n");
+                e->indent--;
+                emit_indent(e);
+                emit(e, "}\n");
+            }
+            emit_indent(e);
+            emit(e, "}\n");
+        }
         break;
+    }
 
     default:
         emit_line(e, "/* unhandled statement */");
@@ -497,6 +630,12 @@ static void emit_enum_decl(Emitter *e, NshNode *node) {
      *   enum Name_Tag { Name_Variant1 = 0, ... };
      */
     char *name = node->as.enum_decl.name;
+
+    /* Register all variants in the variant registry */
+    for (int i = 0; i < node->as.enum_decl.variants.count; i++) {
+        NshParam *v = &node->as.enum_decl.variants.items[i];
+        register_variant(e, v->name, name, v->type_name, i);
+    }
 
     /* Tag enum */
     emit(e, "enum %s_Tag {\n", name);
@@ -613,7 +752,8 @@ int codegen_c_emit(NshNode *program, FILE *out) {
         return -1;
     }
 
-    Emitter e = {.out = out, .indent = 0, .defer_count = 0, .in_function = 0};
+    Emitter e = {.out = out, .indent = 0, .defer_count = 0, .in_function = 0,
+                  .variant_count = 0};
 
     /* C preamble */
     emit(&e, "/* Generated by mansaf — NashmiC Compiler */\n");

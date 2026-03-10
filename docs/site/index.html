@@ -579,27 +579,34 @@ make</code></pre></div>
 <div class="section" id="sec-enums">
 <div class="content">
 <h1>Enums (Tagged Unions)</h1>
-<span class="status-badge wip">Parser complete, codegen in progress</span>
+<span class="status-badge ok">Working</span>
 
 <h2>Declaring with <code class="inline-code">ta3dad</code></h2>
 <p><code class="inline-code">ta3dad</code> means "enumeration." Each variant can optionally carry data.</p>
 <div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">ta3dad</span> <span class="c-type">Shape</span> {
     Da2ira(<span class="c-type">fasle64</span>),
-    Mustateel(<span class="c-type">fasle64</span>, <span class="c-type">fasle64</span>),
+    Mustateel(<span class="c-type">fasle64</span>),
     Noqta,
 }</code></pre></div>
 
 <h2>Creating Values</h2>
-<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">khalli</span> shape: <span class="c-type">Shape</span> = Da2ira(<span class="c-num">5.0</span>)
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">khalli</span> circle: <span class="c-type">Shape</span> = Da2ira(<span class="c-num">5.0</span>)
+<span class="c-kw">khalli</span> point: <span class="c-type">Shape</span> = Noqta
 <span class="c-kw">khalli</span> color: <span class="c-type">Color</span> = Ahmar</code></pre></div>
 
 <h2>With Pattern Matching</h2>
-<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">hasab</span> shape {
-    <span class="c-kw">hale</span> Da2ira(r) => <span class="c-fn">itba3</span>(<span class="c-str">"Circle: radius {r}\n"</span>)
-    <span class="c-kw">hale</span> Mustateel(w, h) => <span class="c-fn">itba3</span>(<span class="c-str">"Rect: {w}x{h}\n"</span>)
-    <span class="c-kw">hale</span> Noqta => <span class="c-fn">itba3</span>(<span class="c-str">"Point\n"</span>)
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">hasab</span> s {
+    <span class="c-kw">hale</span> Da2ira(radius) => {
+        <span class="c-fn">itba3</span>(<span class="c-str">"Circle: radius %g\n"</span>, radius)
+    }
+    <span class="c-kw">hale</span> Mustateel(width) => {
+        <span class="c-fn">itba3</span>(<span class="c-str">"Rect: width %g\n"</span>, width)
+    }
+    <span class="c-kw">hale</span> Noqta => {
+        <span class="c-fn">itba3</span>(<span class="c-str">"Point\n"</span>)
+    }
 }</code></pre></div>
-<p>The compiler checks that all variants are covered. Missing one without a <code class="inline-code">3adi</code> default is an error.</p>
+<p>Each <code class="inline-code">hale</code> arm destructures the variant payload into local variables. Use <code class="inline-code">3adi</code> as a catch-all default.</p>
 
 <div class="footer">
 <span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
@@ -698,21 +705,27 @@ make</code></pre></div>
 <div class="section" id="sec-pattern-matching">
 <div class="content">
 <h1>Pattern Matching</h1>
-<span class="status-badge wip">Parser complete, codegen in progress</span>
+<span class="status-badge ok">Working</span>
 <p class="section-desc"><code class="inline-code">hasab</code> means "depending on." <code class="inline-code">hale</code> means "case."</p>
 
 <h2>Matching on Enums</h2>
 <div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">ta3dad</span> <span class="c-type">Shape</span> {
     Da2ira(<span class="c-type">fasle64</span>),
-    Mustateel(<span class="c-type">fasle64</span>, <span class="c-type">fasle64</span>),
+    Mustateel(<span class="c-type">fasle64</span>),
     Noqta,
 }
 
-<span class="c-kw">dalle</span> <span class="c-fn">area</span>(shape: <span class="c-type">Shape</span>) -> <span class="c-type">fasle64</span> {
-    <span class="c-kw">hasab</span> shape {
-        <span class="c-kw">hale</span> Da2ira(r) => <span class="c-kw">rajje3</span> <span class="c-num">3.14159</span> * r * r
-        <span class="c-kw">hale</span> Mustateel(w, h) => <span class="c-kw">rajje3</span> w * h
-        <span class="c-kw">hale</span> Noqta => <span class="c-kw">rajje3</span> <span class="c-num">0.0</span>
+<span class="c-kw">dalle</span> <span class="c-fn">describe_shape</span>(s: <span class="c-type">Shape</span>) {
+    <span class="c-kw">hasab</span> s {
+        <span class="c-kw">hale</span> Da2ira(radius) => {
+            <span class="c-fn">itba3</span>(<span class="c-str">"Circle: radius %g\n"</span>, radius)
+        }
+        <span class="c-kw">hale</span> Mustateel(width) => {
+            <span class="c-fn">itba3</span>(<span class="c-str">"Rect: width %g\n"</span>, width)
+        }
+        <span class="c-kw">hale</span> Noqta => {
+            <span class="c-fn">itba3</span>(<span class="c-str">"Point\n"</span>)
+        }
     }
 }</code></pre></div>
 

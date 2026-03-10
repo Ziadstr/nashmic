@@ -1,6 +1,6 @@
 # Pattern Matching
 
-> **Status:** Parser complete, codegen in progress. The syntax below is final, but you cannot compile pattern matching programs yet.
+> **Status:** Working. Pattern matching on enums compiles and runs.
 
 ## `hasab` / `hale`
 
@@ -21,15 +21,21 @@ The primary use of `hasab` is matching on `ta3dad` (enum) values with destructur
 ```
 ta3dad Animal {
     Cat(nass),
-    Dog(nass, adad64),
+    Dog(nass),
     Fish,
 }
 
 dalle describe(animal: Animal) {
     hasab animal {
-        hale Cat(name) => itba3("{name} is a cat\n")
-        hale Dog(name, age) => itba3("{name} is a {age}-year-old dog\n")
-        hale Fish => itba3("just a fish\n")
+        hale Cat(name) => {
+            itba3("{name} is a cat\n")
+        }
+        hale Dog(name) => {
+            itba3("{name} is a dog\n")
+        }
+        hale Fish => {
+            itba3("just a fish\n")
+        }
     }
 }
 ```
@@ -45,32 +51,6 @@ hasab value {
     hale 1 => itba3("one\n")
     hale 2 => itba3("two\n")
     3adi => itba3("something else\n")
-}
-```
-
-## Exhaustiveness Checking
-
-The compiler checks that all variants are covered. Missing a variant without a `3adi` default is a compiler error.
-
-```
-ta3dad Direction {
-    North,
-    South,
-    East,
-    West,
-}
-
-// Compiler error: missing variants East, West
-hasab dir {
-    hale North => itba3("up\n")
-    hale South => itba3("down\n")
-}
-
-// Fix: cover all variants or add 3adi
-hasab dir {
-    hale North => itba3("up\n")
-    hale South => itba3("down\n")
-    3adi => itba3("sideways\n")
 }
 ```
 
@@ -101,22 +81,28 @@ hasab find_user(42) {
 ```
 ta3dad Shape {
     Da2ira(fasle64),
-    Mustateel(fasle64, fasle64),
+    Mustateel(fasle64),
     Noqta,
 }
 
-dalle area(shape: Shape) -> fasle64 {
-    hasab shape {
-        hale Da2ira(r) => rajje3 3.14159 * r * r
-        hale Mustateel(w, h) => rajje3 w * h
-        hale Noqta => rajje3 0.0
+dalle describe_shape(s: Shape) {
+    hasab s {
+        hale Da2ira(radius) => {
+            itba3("Da2ira (circle) with radius %g\n", radius)
+        }
+        hale Mustateel(width) => {
+            itba3("Mustateel (rectangle) with width %g\n", width)
+        }
+        hale Noqta => {
+            itba3("Noqta (just a point)\n")
+        }
     }
 }
 
 yalla() {
     khalli circle: Shape = Da2ira(5.0)
-    khalli rect: Shape = Mustateel(3.0, 4.0)
-    itba3("circle area: {area(circle)}\n")
-    itba3("rect area: {area(rect)}\n")
+    khalli rect: Shape = Mustateel(3.0)
+    describe_shape(circle)
+    describe_shape(rect)
 }
 ```

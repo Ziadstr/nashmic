@@ -20,7 +20,7 @@ COMPILER_SRC = \
 BUILD_DIR = build
 MANSAF = $(BUILD_DIR)/mansaf
 
-.PHONY: all clean test run-hello run-fib run-all
+.PHONY: all clean test run-hello run-fib run-enums run-all
 
 all: $(MANSAF)
 
@@ -56,6 +56,9 @@ run-structs: $(MANSAF)
 run-easter: $(MANSAF)
 	NASHMIC_ROOT=. $(MANSAF) run examples/easter_eggs.nsh
 
+run-enums: $(MANSAF)
+	NASHMIC_ROOT=. $(MANSAF) run examples/enums.nsh
+
 # Run all examples
 run-all: $(MANSAF)
 	@echo "=== marhaba ==="
@@ -70,6 +73,8 @@ run-all: $(MANSAF)
 	@NASHMIC_ROOT=. $(MANSAF) run examples/structs.nsh
 	@echo "\n=== easter eggs ==="
 	@NASHMIC_ROOT=. $(MANSAF) run examples/easter_eggs.nsh
+	@echo "\n=== enums ==="
+	@NASHMIC_ROOT=. $(MANSAF) run examples/enums.nsh
 
 install: $(MANSAF)
 	cp $(MANSAF) /usr/local/bin/mansaf
