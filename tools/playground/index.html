@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NashmiC Playground</title>
+<meta name="description" content="Try NashmiC in your browser. A compiled programming language with Franco-Arab keywords that transpiles to C.">
+<link rel="icon" type="image/x-icon" href="../../assets/favicon.ico">
+<link rel="icon" type="image/png" sizes="64x64" href="../../assets/logo-64.png">
+<meta property="og:title" content="NashmiC Playground">
+<meta property="og:description" content="Easy like Python. Powerful like Go. Jordanian to the bone. Try it in your browser.">
+<meta property="og:image" content="https://raw.githubusercontent.com/Ziadstr/nashmic/main/assets/social-preview.png">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ---- HEADER ---- -->
+<header class="header">
+  <div class="header-inner">
+    <a href="../../docs/site/index.html" class="logo-area">
+      <img src="../../assets/logo-128.png" alt="NashmiC" width="36" height="36">
+      <span class="logo-text">NashmiC</span>
+      <span class="logo-badge">playground</span>
+    </a>
+    <nav class="header-links">
+      <a href="../../docs/site/index.html">
+        <span class="link-text">Docs</span>
+      </a>
+      <a href="https://marketplace.visualstudio.com/items?itemName=nashmic.nashmic-vscode" target="_blank" rel="noopener">
+        <span class="link-text">VS Code</span>
+      </a>
+      <a href="https://github.com/Ziadstr/nashmic" target="_blank" rel="noopener">
+        <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        <span class="link-text">GitHub</span>
+      </a>
+    </nav>
+  </div>
+</header>
+
+<!-- ---- HERO ---- -->
+<section class="hero">
+  <p class="tagline">
+    Easy like <em>Python</em>. Powerful like <em>Go</em>. <strong>Jordanian to the bone.</strong>
+  </p>
+  <p class="hero-subtitle">
+    Select an example, hit Run, and see NashmiC in action. Full in-browser compilation coming soon.
+  </p>
+</section>
+
+<!-- ---- TOOLBAR ---- -->
+<div class="toolbar">
+  <div class="toolbar-left">
+    <select id="example-select" class="example-select" aria-label="Select example">
+      <!-- Populated by app.js -->
+    </select>
+  </div>
+  <div class="toolbar-right">
+    <button id="run-btn" class="btn btn-run" title="Run (Ctrl+Enter)">
+      <span class="btn-icon">&#9654;</span>
+      &#1588;&#1594;&#1617;&#1604; &mdash; Run
+    </button>
+  </div>
+</div>
+
+<!-- ---- PLAYGROUND ---- -->
+<div class="playground">
+  <!-- Left: Editor -->
+  <div class="pane pane-left">
+    <div class="pane-header">
+      <span>Editor</span>
+      <span class="file-name" id="file-name">marhaba.nsh</span>
+    </div>
+    <div class="code-editor">
+      <textarea
+        id="code-editor"
+        spellcheck="false"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        placeholder="// Write NashmiC code here...&#10;yalla() {&#10;    itba3(&quot;marhaba ya 3alam!\n&quot;)&#10;}"
+      ></textarea>
+    </div>
+  </div>
+
+  <!-- Resize handle -->
+  <div class="resize-handle" id="resize-handle"></div>
+
+  <!-- Right: Output -->
+  <div class="pane pane-right">
+    <div class="pane-header">
+      <div class="output-tabs">
+        <button id="tab-output" class="output-tab active">Output</button>
+        <button id="tab-genc" class="output-tab">Generated C</button>
+      </div>
+    </div>
+    <div class="output-content">
+      <div id="output-text" class="output-text placeholder">
+        <span>Press <strong>&#1588;&#1594;&#1617;&#1604; &mdash; Run</strong> to see the output</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ---- GET STARTED ---- -->
+<section class="get-started">
+  <div class="get-started-inner">
+    <h2>Get <span>Started</span></h2>
+    <div class="cards">
+      <a href="https://github.com/Ziadstr/nashmic#quick-start" class="card" target="_blank" rel="noopener">
+        <div class="card-icon">&#9889;</div>
+        <h3>Install NashmiC</h3>
+        <p>
+          Clone the repo and run <code>make install</code>. Start writing <code>.nsh</code> files in seconds.
+        </p>
+      </a>
+      <a href="../../docs/site/index.html" class="card">
+        <div class="card-icon">&#128214;</div>
+        <h3>Read the Docs</h3>
+        <p>
+          Full language reference &mdash; keywords, types, pattern matching, error handling, and more.
+        </p>
+      </a>
+      <a href="https://marketplace.visualstudio.com/items?itemName=nashmic.nashmic-vscode" class="card" target="_blank" rel="noopener">
+        <div class="card-icon">&#128640;</div>
+        <h3>VS Code Extension</h3>
+        <p>
+          Syntax highlighting, snippets, and file icons for <code>.nsh</code> files in VS Code.
+        </p>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ---- FOOTER ---- -->
+<footer class="footer">
+  <div class="footer-links">
+    <a href="https://github.com/Ziadstr/nashmic">GitHub</a>
+    <a href="../../docs/site/index.html">Documentation</a>
+    <a href="https://marketplace.visualstudio.com/items?itemName=nashmic.nashmic-vscode">VS Code Extension</a>
+  </div>
+  <p>NashmiC &mdash; A programming language from Jordan</p>
+</footer>
+
+<script src="examples.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
