@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
 #include <locale.h>
 #include <time.h>
 
@@ -44,6 +45,55 @@ char *nsh_i2ra(void) {
 void nsh_itla3(int code) {
     nsh_runtime_shutdown();
     exit(code);
+}
+
+/* ── Array Helpers ───────────────────────────────────────────── */
+
+void nsh_array_push(void **data, int64_t *len, int64_t *cap,
+                    const void *elem, int64_t elem_size) {
+    if (*len >= *cap) {
+        int64_t new_cap = (*cap == 0) ? 8 : (*cap) * 2;
+        void *new_data = realloc(*data, new_cap * elem_size);
+        if (!new_data) {
+            fprintf(stderr, "nsh_array_push: out of memory\n");
+            exit(1);
+        }
+        *data = new_data;
+        *cap = new_cap;
+    }
+    memcpy((char *)(*data) + (*len) * elem_size, elem, elem_size);
+    (*len)++;
+}
+
+int64_t nsh_array_len(int64_t len) {
+    return len;
+}
+
+void nsh_array_free(void *data) {
+    free(data);
+}
+
+/* ── String Helpers ──────────────────────────────────────────── */
+
+char *nsh_str_concat(const char *a, const char *b) {
+    if (!a) a = "";
+    if (!b) b = "";
+    size_t la = strlen(a);
+    size_t lb = strlen(b);
+    char *result = malloc(la + lb + 1);
+    if (!result) {
+        fprintf(stderr, "nsh_str_concat: out of memory\n");
+        exit(1);
+    }
+    memcpy(result, a, la);
+    memcpy(result + la, b, lb);
+    result[la + lb] = '\0';
+    return result;
+}
+
+int64_t nsh_str_len(const char *s) {
+    if (!s) return 0;
+    return (int64_t)strlen(s);
 }
 
 /* ── Easter Eggs ─────────────────────────────────────────────── */

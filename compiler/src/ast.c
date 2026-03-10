@@ -230,6 +230,11 @@ void node_free(NshNode *node) {
         nodelist_free(&node->as.tuple_lit.elements);
         break;
 
+    case NODE_ARRAY_LIT:
+        nodelist_free(&node->as.array_lit.elements);
+        free(node->as.array_lit.elem_type);
+        break;
+
     case NODE_INT_LIT:
     case NODE_FLOAT_LIT:
     case NODE_BOOL_LIT:

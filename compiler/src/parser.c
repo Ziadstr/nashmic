@@ -387,10 +387,30 @@ static NshNode *parse_primary(NshParser *p) {
 
     /* itba3, i2ra, itla3, etc — built-in functions parsed as identifiers */
     if (check(p, TOK_ITBA3) || check(p, TOK_I2RA) || check(p, TOK_ITLA3) ||
-        check(p, TOK_AKKED) || check(p, TOK_FAZ3A) || check(p, TOK_HAD)) {
+        check(p, TOK_AKKED) || check(p, TOK_FAZ3A) || check(p, TOK_HAD) ||
+        check(p, TOK_ZEED) || check(p, TOK_HAJM)) {
         NshNode *n = node_ident(p->current.start, p->current.length, sp);
         advance(p);
         return n;
+    }
+
+    /* Array literal: [expr, expr, ...] */
+    if (check(p, TOK_LBRACKET)) {
+        advance(p); /* consume [ */
+        NshNode *arr = node_new(NODE_ARRAY_LIT, sp);
+        nodelist_init(&arr->as.array_lit.elements);
+        arr->as.array_lit.elem_type = NULL;
+
+        if (!check(p, TOK_RBRACKET)) {
+            do {
+                if (check(p, TOK_RBRACKET)) break; /* trailing comma */
+                NshNode *elem = parse_expression(p);
+                nodelist_push(&arr->as.array_lit.elements, elem);
+            } while (match(p, TOK_COMMA));
+        }
+
+        expect(p, TOK_RBRACKET, "expected ']' after array literal");
+        return arr;
     }
 
     /* Parenthesized expression or tuple */
@@ -444,7 +464,8 @@ static NshNode *parse_postfix(NshParser *p) {
             expr = call_node;
         } else if (check(p, TOK_DOT)) {
             advance(p); /* . */
-            if (check(p, TOK_IDENT) || check(p, TOK_HAD)) {
+            if (check(p, TOK_IDENT) || check(p, TOK_HAD) ||
+                check(p, TOK_ZEED) || check(p, TOK_HAJM)) {
                 NshNode *mem = node_new(NODE_MEMBER, expr->span);
                 mem->as.member.object = expr;
                 mem->as.member.field = token_to_string(&p->current);
@@ -661,7 +682,8 @@ static char *parse_type_annotation(NshParser *p) {
     if (check(p, TOK_IDENT) || check(p, TOK_ADAD) || check(p, TOK_ADAD64) ||
         check(p, TOK_FASLE) || check(p, TOK_FASLE64) || check(p, TOK_MANTE2) ||
         check(p, TOK_HARF) || check(p, TOK_BAIT) || check(p, TOK_NASS) ||
-        check(p, TOK_FADI) || check(p, TOK_NATIJE) || check(p, TOK_YIMKIN)) {
+        check(p, TOK_FADI) || check(p, TOK_NATIJE) || check(p, TOK_YIMKIN) ||
+        check(p, TOK_SAFF)) {
         char *type = token_to_string(&p->current);
         advance(p);
 

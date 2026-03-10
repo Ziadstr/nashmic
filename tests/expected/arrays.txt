@@ -1,0 +1,14 @@
+=== saff (Arrays) ===
+toul: 5
+a3dad[0] = 10
+a3dad[2] = 30
+kol al-a3dad: [ 10 20 30 40 50 ]
+ba3d al-ziyade: [ 10 20 30 40 50 60 70 ]
+toul jadeed: 7
+
+drajat: [ 95.5 87.3 92.1 ]
+
+marhaba ya NashmiC!
+toul 'NashmiC' = 7
+
+farigh ba3d al-ziyade: [ 1 2 3 ]

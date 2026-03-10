@@ -67,6 +67,7 @@ typedef enum {
     NODE_RESULT_WRAP,    /* tamam(expr) / ghalat(expr) */
     NODE_OPTIONAL_BIND,  /* iza fi x = expr { ... } wala { ... } */
     NODE_TUPLE_LIT,      /* (a, b, c) */
+    NODE_ARRAY_LIT,      /* [expr, expr, ...] */
 } NshNodeType;
 
 /* ── Binary Operators ────────────────────────────────────────── */
@@ -328,6 +329,12 @@ struct NshNode {
         struct {
             NshNodeList elements;
         } tuple_lit;
+
+        /* NODE_ARRAY_LIT — [expr, expr, ...] */
+        struct {
+            NshNodeList elements;
+            char *elem_type;    /* inferred or annotated element type, e.g. "adad64" */
+        } array_lit;
     } as;
 };
 

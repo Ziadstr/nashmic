@@ -21,7 +21,7 @@ COMPILER_SRC = \
 BUILD_DIR = build
 MANSAF = $(BUILD_DIR)/mansaf
 
-.PHONY: all clean test run-hello run-fib run-enums run-natije run-yimkin run-all test
+.PHONY: all clean test run-hello run-fib run-enums run-natije run-yimkin run-arrays run-all test
 
 all: $(MANSAF)
 
@@ -76,6 +76,9 @@ run-methods: $(MANSAF)
 run-defer: $(MANSAF)
 	NASHMIC_ROOT=. $(MANSAF) run examples/defer.nsh
 
+run-arrays: $(MANSAF)
+	NASHMIC_ROOT=. $(MANSAF) run examples/arrays.nsh
+
 # Run all examples
 run-all: $(MANSAF)
 	@echo "=== marhaba ==="
@@ -100,6 +103,8 @@ run-all: $(MANSAF)
 	@NASHMIC_ROOT=. $(MANSAF) run examples/methods.nsh
 	@echo "\n=== defer ==="
 	@NASHMIC_ROOT=. $(MANSAF) run examples/defer.nsh
+	@echo "\n=== arrays ==="
+	@NASHMIC_ROOT=. $(MANSAF) run examples/arrays.nsh
 
 install: $(MANSAF)
 	mkdir -p /usr/local/share/nashmic/runtime

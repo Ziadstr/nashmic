@@ -61,6 +61,9 @@ typedef struct {
     /* collected yimkin<T> types for struct generation */
     char *option_types[64];
     int option_type_count;
+    /* collected saff<T> array types for struct generation */
+    char *array_types[64];
+    int array_type_count;
 } Emitter;
 
 static void emit(Emitter *e, const char *fmt, ...) {
@@ -90,6 +93,8 @@ static const char *extract_natije_inner(const char *type);
 static const char *result_struct_name(const char *inner_nsh);
 static const char *extract_yimkin_inner(const char *type_str);
 static const char *option_struct_name(const char *inner_nsh);
+static const char *extract_saff_inner(const char *type_str);
+static const char *array_struct_name(const char *inner_nsh);
 
 /* ── Type Mapping (Franco-only) ──────────────────────────────── */
 
@@ -120,6 +125,18 @@ static const char *map_type(const char *nsh_type) {
             char *buf = map_type_bufs[map_type_idx];
             map_type_idx = (map_type_idx + 1) % MAP_TYPE_BUFS;
             snprintf(buf, MAP_TYPE_BUF_SIZE, "struct %s", result_struct_name(inner));
+            return buf;
+        }
+    }
+
+    /* saff<T> → struct nsh_array_T */
+    if (strncmp(nsh_type, "saff<", 5) == 0) {
+        const char *inner = extract_saff_inner(nsh_type);
+        if (inner) {
+            const char *sname = array_struct_name(inner);
+            char *buf = map_type_bufs[map_type_idx];
+            map_type_idx = (map_type_idx + 1) % MAP_TYPE_BUFS;
+            snprintf(buf, MAP_TYPE_BUF_SIZE, "struct %s", sname);
             return buf;
         }
     }
@@ -296,6 +313,74 @@ static void emit_option_struct(Emitter *e, const char *inner_nsh) {
     emit(e, "};\n\n");
 }
 
+/* ── saff<T> Array Type Helpers ───────────────────────────────── */
+
+/* Extract inner type from "saff<T>" → "T" */
+static const char *extract_saff_inner(const char *type_str) {
+    if (!type_str || strncmp(type_str, "saff<", 5) != 0) return NULL;
+    const char *start = type_str + 5;
+    const char *end = strchr(start, '>');
+    if (!end) return NULL;
+    static char inner_buf[128];
+    int len = (int)(end - start);
+    if (len >= 128) len = 127;
+    memcpy(inner_buf, start, len);
+    inner_buf[len] = '\0';
+    return inner_buf;
+}
+
+/* Get C struct name for an array type: "adad64" → "nsh_array_int64_t" */
+static const char *array_struct_name(const char *inner_nsh) {
+    static char buf[256];
+    const char *c_type = map_type(inner_nsh);
+    char sanitized[128];
+    int j = 0;
+    for (int i = 0; c_type[i] && j < 126; i++) {
+        if (c_type[i] == ' ') sanitized[j++] = '_';
+        else if (c_type[i] == '*') sanitized[j++] = 'p';
+        else sanitized[j++] = c_type[i];
+    }
+    sanitized[j] = '\0';
+    snprintf(buf, sizeof(buf), "nsh_array_%s", sanitized);
+    return buf;
+}
+
+/* Register a saff<T> type if not already registered */
+static void register_array_type(Emitter *e, const char *inner_nsh) {
+    for (int i = 0; i < e->array_type_count; i++) {
+        if (strcmp(e->array_types[i], inner_nsh) == 0) return;
+    }
+    if (e->array_type_count < 64) {
+        e->array_types[e->array_type_count++] = strdup(inner_nsh);
+    }
+}
+
+/* Emit an array struct definition */
+static void emit_array_struct(Emitter *e, const char *inner_nsh) {
+    const char *c_type = map_type(inner_nsh);
+    const char *sname = array_struct_name(inner_nsh);
+    emit(e, "struct %s {\n", sname);
+    emit(e, "    %s *data;\n", c_type);
+    emit(e, "    int64_t len;\n");
+    emit(e, "    int64_t cap;\n");
+    emit(e, "};\n\n");
+}
+
+/* Infer the NashmiC element type from an array literal's first element */
+static const char *infer_array_elem_type(NshNode *node) {
+    if (!node || node->type != NODE_ARRAY_LIT) return "adad64";
+    if (node->as.array_lit.elem_type) return node->as.array_lit.elem_type;
+    if (node->as.array_lit.elements.count == 0) return "adad64";
+    NshNode *first = node->as.array_lit.elements.items[0];
+    switch (first->type) {
+    case NODE_INT_LIT: return "adad64";
+    case NODE_FLOAT_LIT: return "fasle64";
+    case NODE_STRING_LIT: return "nass";
+    case NODE_BOOL_LIT: return "mante2";
+    default: return "adad64";
+    }
+}
+
 /* ── Expression Codegen ──────────────────────────────────────── */
 
 static void emit_expr(Emitter *e, NshNode *node);
@@ -381,6 +466,9 @@ static void emit_expr(Emitter *e, NshNode *node) {
         else if (strcmp(id, "ghalat") == 0) { emit(e, "nsh_ghalat"); }
         else if (strcmp(id, "fi") == 0) { emit(e, "nsh_fi"); }
         else if (strcmp(id, "mafi") == 0) { emit(e, "nsh_mafi"); }
+        else if (strcmp(id, "toul") == 0) { emit(e, "nsh_str_len"); }
+        else if (strcmp(id, "zeed") == 0) { emit(e, "nsh_array_push"); }
+        else if (strcmp(id, "hajm") == 0) { emit(e, "sizeof"); }
         else {
             /* Check if this is a bare enum variant (no payload) */
             VariantInfo *vi = find_variant(e, id);
@@ -395,6 +483,19 @@ static void emit_expr(Emitter *e, NshNode *node) {
     }
 
     case NODE_BINARY:
+        /* String concatenation: "a" + "b" → nsh_str_concat(a, b) */
+        if (node->as.binary.op == BIN_ADD &&
+            (node->as.binary.left->type == NODE_STRING_LIT ||
+             node->as.binary.left->type == NODE_INTERP_STRING ||
+             node->as.binary.right->type == NODE_STRING_LIT ||
+             node->as.binary.right->type == NODE_INTERP_STRING)) {
+            emit(e, "nsh_str_concat(");
+            emit_expr(e, node->as.binary.left);
+            emit(e, ", ");
+            emit_expr(e, node->as.binary.right);
+            emit(e, ")");
+            break;
+        }
         emit(e, "(");
         emit_expr(e, node->as.binary.left);
         emit_binop(e, node->as.binary.op);
@@ -417,6 +518,51 @@ static void emit_expr(Emitter *e, NshNode *node) {
             node->as.call.args.items[0]->type == NODE_INTERP_STRING) {
             emit_expr(e, node->as.call.args.items[0]);
             break;
+        }
+        /* Built-in free-function calls: toul(x), zeed(arr, val) */
+        if (node->as.call.callee->type == NODE_IDENT) {
+            const char *fname = node->as.call.callee->as.ident.name;
+            /* toul(x) — length of array or string */
+            if (strcmp(fname, "toul") == 0 && node->as.call.args.count == 1) {
+                emit(e, "nsh_str_len(");
+                emit_expr(e, node->as.call.args.items[0]);
+                emit(e, ")");
+                break;
+            }
+            /* abs, sqrt, pow — pass through to C math */
+            if (strcmp(fname, "abs") == 0 && node->as.call.args.count == 1) {
+                emit(e, "llabs(");
+                emit_expr(e, node->as.call.args.items[0]);
+                emit(e, ")");
+                break;
+            }
+        }
+        /* Method-style calls: obj.method(args) */
+        if (node->as.call.callee->type == NODE_MEMBER) {
+            NshNode *obj = node->as.call.callee->as.member.object;
+            const char *method_name = node->as.call.callee->as.member.field;
+            /* Array methods: arr.zeed(val), arr.toul(), arr.hajm() */
+            if (strcmp(method_name, "zeed") == 0 && node->as.call.args.count == 1) {
+                /* Use typeof(*arr.data) to get the correct element type */
+                emit(e, "({ typeof(*");
+                emit_expr(e, obj);
+                emit(e, ".data) _nsh_push_val = ");
+                emit_expr(e, node->as.call.args.items[0]);
+                emit(e, "; nsh_array_push((void**)&(");
+                emit_expr(e, obj);
+                emit(e, ").data, &(");
+                emit_expr(e, obj);
+                emit(e, ").len, &(");
+                emit_expr(e, obj);
+                emit(e, ").cap, &_nsh_push_val, sizeof(_nsh_push_val)); })");
+                break;
+            }
+            if ((strcmp(method_name, "toul") == 0 || strcmp(method_name, "hajm") == 0)
+                && node->as.call.args.count == 0) {
+                emit_expr(e, obj);
+                emit(e, ".len");
+                break;
+            }
         }
         /* Check if this is an enum variant constructor: Da2ira(5.0) */
         if (node->as.call.callee->type == NODE_IDENT) {
@@ -460,8 +606,9 @@ static void emit_expr(Emitter *e, NshNode *node) {
     }
 
     case NODE_INDEX:
+        /* For arrays (saff<T>), access via .data[i] */
         emit_expr(e, node->as.index_expr.object);
-        emit(e, "[");
+        emit(e, ".data[");
         emit_expr(e, node->as.index_expr.index);
         emit(e, "]");
         break;
@@ -579,9 +726,32 @@ static void emit_expr(Emitter *e, NshNode *node) {
     }
 
     case NODE_TUPLE_LIT:
-        fprintf(stderr, "⚠️  tuples are not yet supported — coming soon inshallah\n");
+        fprintf(stderr, "tuples are not yet supported — coming soon inshallah\n");
         emit(e, "0 /* tuple not supported */");
         break;
+
+    case NODE_ARRAY_LIT: {
+        /* Emit array literal as compound literal:
+         * (struct nsh_array_T){ .data = (T[]){e1, e2, ...}, .len = N, .cap = N }
+         * But we need a heap copy for mutability — use a statement expression. */
+        const char *elem_nsh = infer_array_elem_type(node);
+        const char *c_elem = map_type(elem_nsh);
+        const char *sname = array_struct_name(elem_nsh);
+        int count = node->as.array_lit.elements.count;
+        emit(e, "({ %s _nsh_init[] = {", c_elem);
+        for (int i = 0; i < count; i++) {
+            if (i > 0) emit(e, ", ");
+            emit_expr(e, node->as.array_lit.elements.items[i]);
+        }
+        emit(e, "}; ");
+        emit(e, "%s *_nsh_arr_data = malloc(sizeof(%s) * %d); ", c_elem, c_elem, count < 8 ? 8 : count);
+        if (count > 0) {
+            emit(e, "memcpy(_nsh_arr_data, _nsh_init, sizeof(_nsh_init)); ");
+        }
+        emit(e, "(struct %s){.data = _nsh_arr_data, .len = %d, .cap = %d}; })",
+             sname, count, count < 8 ? 8 : count);
+        break;
+    }
 
     default:
         emit(e, "/* unknown expr */0");
@@ -639,6 +809,18 @@ static void emit_stmt(Emitter *e, NshNode *node) {
             else if (init->type == NODE_STRING_LIT) c_type = "const char*";
             else if (init->type == NODE_BOOL_LIT) c_type = "int";
             else if (init->type == NODE_INTERP_STRING) c_type = "void";
+            else if (init->type == NODE_ARRAY_LIT) {
+                const char *elem_nsh = infer_array_elem_type(init);
+                c_type = map_type_bufs[map_type_idx];
+                map_type_idx = (map_type_idx + 1) % MAP_TYPE_BUFS;
+                snprintf((char*)c_type, MAP_TYPE_BUF_SIZE, "struct %s",
+                         array_struct_name(elem_nsh));
+            }
+            else if (init->type == NODE_BINARY && init->as.binary.op == BIN_ADD &&
+                     (init->as.binary.left->type == NODE_STRING_LIT ||
+                      init->as.binary.right->type == NODE_STRING_LIT)) {
+                c_type = "char*";
+            }
         }
 
         /* Interpolated strings as statements (they call nsh_itba3 directly) */
@@ -767,11 +949,38 @@ static void emit_stmt(Emitter *e, NshNode *node) {
             emit_expr(e, iter->as.range.end);
             emit(e, "; %s++) ", node->as.for_each.var_name);
         } else {
-            /* Fallback: iterate assuming array-like */
-            emit(e, "for (int64_t %s = 0; %s < 10; %s++) ",
-                 node->as.for_each.var_name,
-                 node->as.for_each.var_name,
+            /* Array iteration: lakol x fi arr →
+             * { typeof(arr) _nsh_iter = arr;
+             *   for (int64_t _nsh_i = 0; _nsh_i < _nsh_iter.len; _nsh_i++) {
+             *     typeof(*_nsh_iter.data) x = _nsh_iter.data[_nsh_i]; body; } } */
+            emit(e, "{ typeof(");
+            emit_expr(e, iter);
+            emit(e, ") _nsh_iter = ");
+            emit_expr(e, iter);
+            emit(e, ";\n");
+            e->indent++;
+            emit_indent(e);
+            emit(e, "for (int64_t _nsh_i = 0; _nsh_i < _nsh_iter.len; _nsh_i++) {\n");
+            e->indent++;
+            emit_indent(e);
+            emit(e, "typeof(*_nsh_iter.data) %s = _nsh_iter.data[_nsh_i];\n",
                  node->as.for_each.var_name);
+            /* Emit body statements inline */
+            if (node->as.for_each.body->type == NODE_BLOCK) {
+                for (int i = 0; i < node->as.for_each.body->as.block.stmts.count; i++) {
+                    emit_stmt(e, node->as.for_each.body->as.block.stmts.items[i]);
+                }
+            } else {
+                emit_stmt(e, node->as.for_each.body);
+            }
+            e->indent--;
+            emit_indent(e);
+            emit(e, "}\n");
+            e->indent--;
+            emit_indent(e);
+            emit(e, "}\n");
+            /* Skip the normal emit_block since we already emitted the body */
+            break;
         }
         emit_block(e, node->as.for_each.body);
         break;
@@ -1233,7 +1442,8 @@ int codegen_c_emit(NshNode *program, FILE *out) {
     Emitter e = {.out = out, .indent = 0, .defer_count = 0, .in_function = 0,
                   .variant_count = 0, .method_count = 0, .in_impl_method = 0,
                   .current_result_type = NULL, .result_type_count = 0,
-                  .current_option_type = NULL, .option_type_count = 0};
+                  .current_option_type = NULL, .option_type_count = 0,
+                  .array_type_count = 0};
 
     /* C preamble */
     emit(&e, "/* Generated by mansaf — NashmiC Compiler */\n");
@@ -1241,6 +1451,7 @@ int codegen_c_emit(NshNode *program, FILE *out) {
     emit(&e, "#include <stdint.h>\n");
     emit(&e, "#include <stddef.h>\n");
     emit(&e, "#include <string.h>\n");
+    emit(&e, "#include <stdlib.h>\n");
     emit(&e, "#include <math.h>\n");
     emit(&e, "#include \"nsh_runtime.h\"\n");
     emit(&e, "\n");
@@ -1251,14 +1462,43 @@ int codegen_c_emit(NshNode *program, FILE *out) {
     emit(&e, "static inline void _nsh_print_str(const char *v) { printf(\"%%s\", v); }\n");
     emit(&e, "\n");
 
-    /* Pre-scan: collect all natije<T> and yimkin<T> types used in function signatures */
+    /* Pre-scan: collect all natije<T>, yimkin<T>, saff<T> types used in function signatures and params */
     for (int i = 0; i < program->as.program.decls.count; i++) {
         NshNode *decl = program->as.program.decls.items[i];
-        if (decl->type == NODE_FUNC_DECL && decl->as.func_decl.return_type) {
-            const char *inner = extract_natije_inner(decl->as.func_decl.return_type);
-            if (inner) register_result_type(&e, inner);
-            const char *opt_inner = extract_yimkin_inner(decl->as.func_decl.return_type);
-            if (opt_inner) register_option_type(&e, opt_inner);
+        if (decl->type == NODE_FUNC_DECL) {
+            if (decl->as.func_decl.return_type) {
+                const char *inner = extract_natije_inner(decl->as.func_decl.return_type);
+                if (inner) register_result_type(&e, inner);
+                const char *opt_inner = extract_yimkin_inner(decl->as.func_decl.return_type);
+                if (opt_inner) register_option_type(&e, opt_inner);
+                const char *arr_inner = extract_saff_inner(decl->as.func_decl.return_type);
+                if (arr_inner) register_array_type(&e, arr_inner);
+            }
+            /* Scan parameter types for saff<T> */
+            for (int j = 0; j < decl->as.func_decl.params.count; j++) {
+                const char *ptype = decl->as.func_decl.params.items[j].type_name;
+                if (ptype) {
+                    const char *arr_inner = extract_saff_inner(ptype);
+                    if (arr_inner) register_array_type(&e, arr_inner);
+                }
+            }
+            /* Scan body for var declarations with saff<T> type annotations */
+            if (decl->as.func_decl.body && decl->as.func_decl.body->type == NODE_BLOCK) {
+                for (int j = 0; j < decl->as.func_decl.body->as.block.stmts.count; j++) {
+                    NshNode *stmt = decl->as.func_decl.body->as.block.stmts.items[j];
+                    if ((stmt->type == NODE_VAR_DECL || stmt->type == NODE_CONST_DECL) &&
+                        stmt->as.var_decl.type_ann) {
+                        const char *arr_inner = extract_saff_inner(stmt->as.var_decl.type_ann);
+                        if (arr_inner) register_array_type(&e, arr_inner);
+                    }
+                    /* Also detect array literals and register their inferred type */
+                    if ((stmt->type == NODE_VAR_DECL || stmt->type == NODE_CONST_DECL) &&
+                        stmt->as.var_decl.init && stmt->as.var_decl.init->type == NODE_ARRAY_LIT) {
+                        const char *elem_type = infer_array_elem_type(stmt->as.var_decl.init);
+                        register_array_type(&e, elem_type);
+                    }
+                }
+            }
         }
     }
 
@@ -1270,6 +1510,11 @@ int codegen_c_emit(NshNode *program, FILE *out) {
     /* Emit option struct definitions */
     for (int i = 0; i < e.option_type_count; i++) {
         emit_option_struct(&e, e.option_types[i]);
+    }
+
+    /* Emit array struct definitions */
+    for (int i = 0; i < e.array_type_count; i++) {
+        emit_array_struct(&e, e.array_types[i]);
     }
 
     /* Emit struct declarations first (before functions that use them) */
