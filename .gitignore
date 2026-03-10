@@ -1,0 +1,25 @@
+# Build artifacts
+build/
+*.o
+*.a
+
+# Generated C from compiler
+/tmp/nsh_*
+
+# Compiled example binaries
+examples/marhaba
+examples/fibonacci
+examples/marhaba_arabic
+marhaba
+fibonacci
+marhaba_arabic
+
+# Editor
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
