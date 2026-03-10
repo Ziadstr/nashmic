@@ -1,6 +1,6 @@
 # Defer (`ba3dain`)
 
-> **Status:** Parser complete, codegen partially implemented. This feature is coming soon.
+> **Status:** Working. See `examples/defer.nsh`.
 
 ## What is Defer?
 

@@ -1,0 +1,11 @@
+=== ba3dain — Defer ===
+
+--- void function ---
+start
+middle
+cleanup 2
+cleanup 1
+
+--- function with return value ---
+  compute done
+  result = 42

@@ -598,10 +598,12 @@ static void emit_block(Emitter *e, NshNode *node) {
 }
 
 /* Emit all deferred statements (LIFO order) into the function epilogue.
- * Called when the function body is done to emit the cleanup chain. */
-static void emit_defer_cleanup(Emitter *e);
-static void emit_defer_cleanup(Emitter *e) {
+ * Called when the function body is done to emit the cleanup chain.
+ * ret_type: C return type of the function, or NULL/"void" for void functions. */
+static void emit_defer_cleanup(Emitter *e, const char *ret_type);
+static void emit_defer_cleanup(Emitter *e, const char *ret_type) {
     if (e->defer_count == 0) return;
+    int has_retval = ret_type && strcmp(ret_type, "void") != 0;
     emit_line(e, "goto _nsh_skip_cleanup;");
     emit_line(e, "_nsh_cleanup:");
     /* Defers execute in LIFO order */
@@ -609,7 +611,11 @@ static void emit_defer_cleanup(Emitter *e) {
         emit_line(e, "/* ba3dain %d */", i);
         emit(e, "%s", e->defer_labels[i]);
     }
-    emit_line(e, "return;");
+    if (has_retval) {
+        emit_line(e, "return _nsh_retval;");
+    } else {
+        emit_line(e, "return;");
+    }
     emit_line(e, "_nsh_skip_cleanup: ;");
 }
 
@@ -1139,14 +1145,29 @@ static void emit_func_decl(Emitter *e, NshNode *node) {
     const char *opt_inner = extract_yimkin_inner(node->as.func_decl.return_type);
     e->current_option_type = opt_inner ? strdup(opt_inner) : NULL;
 
+    /* Check if body has any defer statements */
+    int has_defers = 0;
+    if (node->as.func_decl.body->type == NODE_BLOCK) {
+        for (int i = 0; i < node->as.func_decl.body->as.block.stmts.count; i++) {
+            if (node->as.func_decl.body->as.block.stmts.items[i]->type == NODE_DEFER) {
+                has_defers = 1; break;
+            }
+        }
+    }
+    int is_non_void = strcmp(ret, "void") != 0;
+
     if (node->as.func_decl.is_yalla) {
         /* yalla() becomes main() */
         emit(e, "int main(void) {\n");
         e->indent++;
+        if (has_defers) {
+            emit_indent(e);
+            emit(e, "int _nsh_retval = 0;\n");
+        }
         for (int i = 0; i < node->as.func_decl.body->as.block.stmts.count; i++) {
             emit_stmt(e, node->as.func_decl.body->as.block.stmts.items[i]);
         }
-        emit_defer_cleanup(e);
+        emit_defer_cleanup(e, "int");
         e->indent--;
         emit_indent(e);
         emit(e, "}\n\n");
@@ -1160,9 +1181,26 @@ static void emit_func_decl(Emitter *e, NshNode *node) {
         if (node->as.func_decl.params.count == 0) {
             emit(e, "void");
         }
-        emit(e, ") ");
-        emit_block(e, node->as.func_decl.body);
-        emit(e, "\n");
+        if (has_defers) {
+            /* Emit body manually so we can add retval decl and cleanup */
+            emit(e, ") {\n");
+            e->indent++;
+            if (is_non_void) {
+                emit_indent(e);
+                emit(e, "%s _nsh_retval;\n", ret);
+            }
+            for (int i = 0; i < node->as.func_decl.body->as.block.stmts.count; i++) {
+                emit_stmt(e, node->as.func_decl.body->as.block.stmts.items[i]);
+            }
+            emit_defer_cleanup(e, is_non_void ? ret : NULL);
+            e->indent--;
+            emit_indent(e);
+            emit(e, "}\n\n");
+        } else {
+            emit(e, ") ");
+            emit_block(e, node->as.func_decl.body);
+            emit(e, "\n");
+        }
     }
 
     /* Free any defer buffers */

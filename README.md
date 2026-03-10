@@ -355,7 +355,7 @@ NashmiC is in active development. The compiler handles:
 - ✅ Optional types (`yimkin<T>` + `iza fi`)
 - ✅ Enums (tagged unions) + pattern matching (`hasab`/`hale`)
 - ✅ Impl blocks (methods with `tabbe2`)
-- 📋 Defer codegen
+- ✅ Defer (`ba3dain`)
 - 📋 Multiple return values
 - 📋 Semicolon-free syntax
 

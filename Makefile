@@ -72,6 +72,9 @@ run-yimkin: $(MANSAF)
 run-methods: $(MANSAF)
 	NASHMIC_ROOT=. $(MANSAF) run examples/methods.nsh
 
+run-defer: $(MANSAF)
+	NASHMIC_ROOT=. $(MANSAF) run examples/defer.nsh
+
 # Run all examples
 run-all: $(MANSAF)
 	@echo "=== marhaba ==="
@@ -94,6 +97,8 @@ run-all: $(MANSAF)
 	@NASHMIC_ROOT=. $(MANSAF) run examples/yimkin.nsh
 	@echo "\n=== methods ==="
 	@NASHMIC_ROOT=. $(MANSAF) run examples/methods.nsh
+	@echo "\n=== defer ==="
+	@NASHMIC_ROOT=. $(MANSAF) run examples/defer.nsh
 
 install: $(MANSAF)
 	mkdir -p /usr/local/share/nashmic/runtime
