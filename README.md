@@ -5,7 +5,7 @@
 <h1 align="center">NashmiC 🇯🇴</h1>
 
 <p align="center">
-  <strong>The First Franco-Arab Programming Language</strong><br>
+  <strong>A Franco-Arab Programming Language</strong><br>
   Easy like Python. Powerful like Go. Jordanian to the bone.
 </p>
 
@@ -20,7 +20,7 @@
 
 NashmiC speaks **Franco-Arab** (Arabizi) — the way 400M+ Arabs actually text. No Arabic script, no RTL headaches. Every keyword is a word you'd say in Amman. Not textbook Arabic, real Jordanian dialect.
 
-> **No programming language has ever used Franco-Arab before.** Every Arabic-script language (Qalb, Alif, ABJAD) died from RTL/tooling issues. NashmiC sidesteps all of that.
+> Every Arabic-script programming language (Qalb, Alif, ABJAD) died from RTL/tooling issues. NashmiC sidesteps all of that by using the script Arabs actually type in.
 
 ```
 yalla() {
