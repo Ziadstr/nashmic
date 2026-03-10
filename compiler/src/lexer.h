@@ -112,16 +112,28 @@ typedef enum {
     TOK_FAHAS,         /* فحص / fahas        — test */
 
     /* ── Extra Jordanian ───────── */
-    TOK_YALLA,         /* يلا / yalla        — main() */
-    TOK_HAD,           /* هاد / had          — this/self */
-    TOK_TABE2,         /* طابق / tabe2       — match */
-    TOK_SAMMI,         /* سمي / sammi        — type alias */
-    TOK_TABBE2,        /* طبق / tabbe2       — impl */
-    TOK_SIFE,          /* صفة / sife         — trait */
-    TOK_7UTT,          /* حط / 7utt         — set/assign */
-    TOK_SHEEL,         /* شيل / sheel        — remove */
-    TOK_ZEED,          /* زيد / zeed         — add/push */
-    TOK_ZANAKH,        /* زنخ / zanakh       — deprecated */
+    TOK_YALLA,         /* yalla              — main() */
+    TOK_HAD,           /* had                — this/self */
+    TOK_TABE2,         /* tabe2              — match */
+    TOK_SAMMI,         /* sammi              — type alias */
+    TOK_TABBE2,        /* tabbe2             — impl */
+    TOK_SIFE,          /* sife               — trait */
+    TOK_7UTT,          /* 7utt               — set/assign */
+    TOK_SHEEL,         /* sheel              — remove */
+    TOK_ZEED,          /* zeed               — add/push */
+    TOK_ZANAKH,        /* zanakh             — deprecated */
+
+    /* ── Optional Type ─────────── */
+    TOK_YIMKIN,        /* yimkin              — Optional<T> (maybe) */
+    TOK_FI,            /* fi                  — Some / "there is" */
+    TOK_MAFI,          /* mafi                — None / "there isn't" */
+
+    /* ── Error Propagation ─────── */
+    TOK_WALA_QUESTION, /* wala?               — unwrap-or-propagate */
+
+    /* ── String Interpolation ──── */
+    TOK_INTERP_START,  /* { inside string     — start interpolation */
+    TOK_INTERP_END,    /* } inside string     — end interpolation */
 
     /* ── Punctuation & Operators ── */
     TOK_LPAREN,        /* ( */

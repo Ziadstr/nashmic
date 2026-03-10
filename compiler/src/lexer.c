@@ -174,6 +174,14 @@ static NshToken lex_identifier(NshLexer *lex) {
     int length = (int)(lex->pos - start_pos);
     NshTokenType type = keywords_lookup(start, length);
 
+    /* Check for wala? compound token */
+    if (type == TOK_WALA && peek_byte(lex) == '?') {
+        advance_byte(lex);
+        length = (int)(lex->pos - start_pos);
+        return make_token(lex, TOK_WALA_QUESTION, start, length,
+                          start_line, start_col);
+    }
+
     return make_token(lex, type, start, length, start_line, start_col);
 }
 
@@ -493,6 +501,12 @@ const char *token_type_name(NshTokenType type) {
     case TOK_SHEEL: return "sheel (remove)";
     case TOK_ZEED: return "zeed (add)";
     case TOK_ZANAKH: return "zanakh (deprecated)";
+    case TOK_YIMKIN: return "yimkin (Optional)";
+    case TOK_FI: return "fi (Some)";
+    case TOK_MAFI: return "mafi (None)";
+    case TOK_WALA_QUESTION: return "wala? (propagate)";
+    case TOK_INTERP_START: return "{interp";
+    case TOK_INTERP_END: return "interp}";
     case TOK_LPAREN: return "(";
     case TOK_RPAREN: return ")";
     case TOK_LBRACE: return "{";

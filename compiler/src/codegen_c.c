@@ -1,11 +1,12 @@
 /*
  * NashmiC — codegen_c.c
- * C transpiler backend (Phase 1)
+ * C transpiler backend
  *
  * Translates NashmiC AST into C source code, then the host C compiler
  * (gcc/cc) compiles it into a native binary.
  */
 
+#define _GNU_SOURCE
 #include "codegen_c.h"
 #include "diagnostics.h"
 #include <stdio.h>
@@ -15,9 +16,15 @@
 
 /* ── Code Emitter State ──────────────────────────────────────── */
 
+#define MAX_DEFERS 64
+
 typedef struct {
     FILE *out;
     int indent;
+    /* defer stack per function */
+    int defer_count;
+    char *defer_labels[MAX_DEFERS];
+    int in_function; /* track if we're inside a function for defer */
 } Emitter;
 
 static void emit(Emitter *e, const char *fmt, ...) {
@@ -42,12 +49,18 @@ static void emit_line(Emitter *e, const char *fmt, ...) {
     fprintf(e->out, "\n");
 }
 
-/* ── Type Mapping ────────────────────────────────────────────── */
+/* ── Type Mapping (Franco-only) ──────────────────────────────── */
+
+/* map_type buffer for generating "struct Foo" strings.
+ * We use a rotating set of static buffers to avoid overwrites. */
+#define MAP_TYPE_BUFS 8
+#define MAP_TYPE_BUF_SIZE 256
+static char map_type_bufs[MAP_TYPE_BUFS][MAP_TYPE_BUF_SIZE];
+static int map_type_idx = 0;
 
 static const char *map_type(const char *nsh_type) {
     if (!nsh_type) return "void";
 
-    /* Franco types */
     if (strcmp(nsh_type, "adad") == 0) return "int32_t";
     if (strcmp(nsh_type, "adad64") == 0) return "int64_t";
     if (strcmp(nsh_type, "fasle") == 0) return "float";
@@ -58,16 +71,14 @@ static const char *map_type(const char *nsh_type) {
     if (strcmp(nsh_type, "nass") == 0) return "const char*";
     if (strcmp(nsh_type, "fadi") == 0) return "void";
 
-    /* Arabic types */
-    if (strcmp(nsh_type, "عدد") == 0) return "int32_t";
-    if (strcmp(nsh_type, "عدد٦٤") == 0) return "int64_t";
-    if (strcmp(nsh_type, "فاصلة") == 0) return "float";
-    if (strcmp(nsh_type, "فاصلة٦٤") == 0) return "double";
-    if (strcmp(nsh_type, "منطق") == 0) return "int";
-    if (strcmp(nsh_type, "حرف") == 0) return "char";
-    if (strcmp(nsh_type, "بايت") == 0) return "uint8_t";
-    if (strcmp(nsh_type, "نص") == 0) return "const char*";
-    if (strcmp(nsh_type, "فاضي") == 0) return "void";
+    /* User-defined types: prepend "struct " */
+    /* Check if it starts with an uppercase letter (convention for types) */
+    if (nsh_type[0] >= 'A' && nsh_type[0] <= 'Z') {
+        char *buf = map_type_bufs[map_type_idx];
+        map_type_idx = (map_type_idx + 1) % MAP_TYPE_BUFS;
+        snprintf(buf, MAP_TYPE_BUF_SIZE, "struct %s", nsh_type);
+        return buf;
+    }
 
     /* fallback: pass through */
     return nsh_type;
@@ -76,6 +87,8 @@ static const char *map_type(const char *nsh_type) {
 /* ── Expression Codegen ──────────────────────────────────────── */
 
 static void emit_expr(Emitter *e, NshNode *node);
+static void emit_stmt(Emitter *e, NshNode *node);
+static void emit_block(Emitter *e, NshNode *node);
 
 static void emit_binop(Emitter *e, NshBinOp op) {
     switch (op) {
@@ -92,6 +105,7 @@ static void emit_binop(Emitter *e, NshBinOp op) {
     case BIN_GTE: emit(e, " >= "); break;
     case BIN_AND: emit(e, " && "); break;
     case BIN_OR:  emit(e, " || "); break;
+    case BIN_RANGE: break; /* handled specially */
     }
 }
 
@@ -120,9 +134,28 @@ static void emit_expr(Emitter *e, NshNode *node) {
 
     case NODE_IDENT:
         /* Map built-in function names */
-        if (strcmp(node->as.ident.name, "itba3") == 0 ||
-            strcmp(node->as.ident.name, "اطبع") == 0) {
+        if (strcmp(node->as.ident.name, "itba3") == 0) {
             emit(e, "nsh_itba3");
+        } else if (strcmp(node->as.ident.name, "i2ra") == 0) {
+            emit(e, "nsh_i2ra");
+        } else if (strcmp(node->as.ident.name, "itla3") == 0) {
+            emit(e, "nsh_itla3");
+        } else if (strcmp(node->as.ident.name, "drobi") == 0) {
+            emit(e, "nsh_drobi");
+        } else if (strcmp(node->as.ident.name, "mansaf") == 0) {
+            emit(e, "nsh_mansaf");
+        } else if (strcmp(node->as.ident.name, "sahteen") == 0) {
+            emit(e, "nsh_sahteen");
+        } else if (strcmp(node->as.ident.name, "nashmi") == 0) {
+            emit(e, "nsh_nashmi");
+        } else if (strcmp(node->as.ident.name, "tamam") == 0) {
+            emit(e, "nsh_tamam");
+        } else if (strcmp(node->as.ident.name, "ghalat") == 0) {
+            emit(e, "nsh_ghalat");
+        } else if (strcmp(node->as.ident.name, "fi") == 0) {
+            emit(e, "nsh_fi");
+        } else if (strcmp(node->as.ident.name, "mafi") == 0) {
+            emit(e, "nsh_mafi");
         } else {
             emit(e, "%s", node->as.ident.name);
         }
@@ -144,6 +177,15 @@ static void emit_expr(Emitter *e, NshNode *node) {
         break;
 
     case NODE_CALL:
+        /* Special case: itba3("...{expr}...") — flatten interpolation into print */
+        if (node->as.call.callee->type == NODE_IDENT &&
+            (strcmp(node->as.call.callee->as.ident.name, "itba3") == 0) &&
+            node->as.call.args.count == 1 &&
+            node->as.call.args.items[0]->type == NODE_INTERP_STRING) {
+            /* Emit the interp string directly as a print call */
+            emit_expr(e, node->as.call.args.items[0]);
+            break;
+        }
         emit_expr(e, node->as.call.callee);
         emit(e, "(");
         for (int i = 0; i < node->as.call.args.count; i++) {
@@ -171,6 +213,57 @@ static void emit_expr(Emitter *e, NshNode *node) {
         emit_expr(e, node->as.assign.value);
         break;
 
+    case NODE_INTERP_STRING:
+        /* Emit as a statement expression: ({ frag; expr; frag; ... })
+         * Each fragment is a printf, each expression uses a typed print helper. */
+        emit(e, "({ ");
+        for (int i = 0; i < node->as.interp_string.parts.count; i++) {
+            NshNode *part = node->as.interp_string.parts.items[i];
+            if (part->type == NODE_STRING_LIT) {
+                emit(e, "printf(\"");
+                fwrite(part->as.string_lit.value, 1,
+                       part->as.string_lit.length, e->out);
+                emit(e, "\"); ");
+            } else if (part->type == NODE_INT_LIT) {
+                emit(e, "_nsh_print_i64(");
+                emit_expr(e, part);
+                emit(e, "); ");
+            } else if (part->type == NODE_FLOAT_LIT) {
+                emit(e, "_nsh_print_f64(");
+                emit_expr(e, part);
+                emit(e, "); ");
+            } else {
+                /* For identifiers and expressions, emit a
+                 * _Generic dispatch as a compound expression */
+                emit(e, "_Generic((");
+                emit_expr(e, part);
+                emit(e, "), ");
+                emit(e, "int: _nsh_print_i32, ");
+                emit(e, "long: _nsh_print_i64, ");
+                emit(e, "long long: _nsh_print_i64, ");
+                emit(e, "float: _nsh_print_f64, ");
+                emit(e, "double: _nsh_print_f64, ");
+                emit(e, "char*: _nsh_print_str, ");
+                emit(e, "const char*: _nsh_print_str, ");
+                emit(e, "default: _nsh_print_i64");
+                emit(e, ")(");
+                emit_expr(e, part);
+                emit(e, "); ");
+            }
+        }
+        emit(e, "})");
+        break;
+
+    case NODE_STRUCT_LIT:
+        emit(e, "(struct %s){", node->as.struct_lit.name);
+        for (int i = 0; i < node->as.struct_lit.field_count; i++) {
+            if (i > 0) emit(e, ", ");
+            emit(e, ".%s = ", node->as.struct_lit.field_names[i]);
+            emit_expr(e, node->as.struct_lit.field_values[i]);
+        }
+        emit(e, "}");
+        break;
+
     default:
         emit(e, "/* unknown expr */0");
         break;
@@ -178,8 +271,6 @@ static void emit_expr(Emitter *e, NshNode *node) {
 }
 
 /* ── Statement Codegen ───────────────────────────────────────── */
-
-static void emit_stmt(Emitter *e, NshNode *node);
 
 static void emit_block(Emitter *e, NshNode *node) {
     emit(e, "{\n");
@@ -190,6 +281,22 @@ static void emit_block(Emitter *e, NshNode *node) {
     e->indent--;
     emit_indent(e);
     emit(e, "}\n");
+}
+
+/* Emit all deferred statements (LIFO order) into the function epilogue.
+ * Called when the function body is done to emit the cleanup chain. */
+static void emit_defer_cleanup(Emitter *e);
+static void emit_defer_cleanup(Emitter *e) {
+    if (e->defer_count == 0) return;
+    emit_line(e, "goto _nsh_skip_cleanup;");
+    emit_line(e, "_nsh_cleanup:");
+    /* Defers execute in LIFO order */
+    for (int i = e->defer_count - 1; i >= 0; i--) {
+        emit_line(e, "/* ba3dain %d */", i);
+        emit(e, "%s", e->defer_labels[i]);
+    }
+    emit_line(e, "return;");
+    emit_line(e, "_nsh_skip_cleanup: ;");
 }
 
 static void emit_stmt(Emitter *e, NshNode *node) {
@@ -206,6 +313,16 @@ static void emit_stmt(Emitter *e, NshNode *node) {
             else if (init->type == NODE_FLOAT_LIT) c_type = "double";
             else if (init->type == NODE_STRING_LIT) c_type = "const char*";
             else if (init->type == NODE_BOOL_LIT) c_type = "int";
+            else if (init->type == NODE_INTERP_STRING) c_type = "void";
+        }
+
+        /* Interpolated strings as statements (they call nsh_itba3 directly) */
+        if (node->as.var_decl.init &&
+            node->as.var_decl.init->type == NODE_INTERP_STRING) {
+            emit_indent(e);
+            emit_expr(e, node->as.var_decl.init);
+            emit(e, ";\n");
+            break;
         }
 
         emit_indent(e);
@@ -221,12 +338,23 @@ static void emit_stmt(Emitter *e, NshNode *node) {
 
     case NODE_RETURN:
         emit_indent(e);
-        if (node->as.ret.value) {
-            emit(e, "return ");
-            emit_expr(e, node->as.ret.value);
-            emit(e, ";\n");
+        if (e->defer_count > 0) {
+            /* With defers, we jump to cleanup chain */
+            if (node->as.ret.value) {
+                emit(e, "{ _nsh_retval = ");
+                emit_expr(e, node->as.ret.value);
+                emit(e, "; goto _nsh_cleanup; }\n");
+            } else {
+                emit(e, "goto _nsh_cleanup;\n");
+            }
         } else {
-            emit(e, "return;\n");
+            if (node->as.ret.value) {
+                emit(e, "return ");
+                emit_expr(e, node->as.ret.value);
+                emit(e, ";\n");
+            } else {
+                emit(e, "return;\n");
+            }
         }
         break;
 
@@ -240,7 +368,6 @@ static void emit_stmt(Emitter *e, NshNode *node) {
             emit_indent(e);
             if (node->as.if_stmt.else_block->type == NODE_IF) {
                 emit(e, "else ");
-                /* inline the if — don't add extra indent */
                 emit(e, "if (");
                 emit_expr(e, node->as.if_stmt.else_block->as.if_stmt.condition);
                 emit(e, ") ");
@@ -265,26 +392,32 @@ static void emit_stmt(Emitter *e, NshNode *node) {
         emit_block(e, node->as.while_stmt.body);
         break;
 
-    case NODE_FOR_EACH:
-        /* Phase 0: for-each over range only (0..N) */
-        /* For now, emit a simple for loop — we'll handle iterators later */
+    case NODE_FOR_EACH: {
         emit_indent(e);
-        emit(e, "/* lakol %s fi ... */\n", node->as.for_each.var_name);
-        emit_indent(e);
-        /* If iterable is a range (binary ..), emit proper for loop */
-        if (node->as.for_each.iterable->type == NODE_BINARY) {
-            /* TODO: handle range expressions properly in Phase 1 */
-            emit(e, "for (int64_t %s = 0; %s < 10; %s++) ",
-                 node->as.for_each.var_name,
-                 node->as.for_each.var_name,
-                 node->as.for_each.var_name);
+        NshNode *iter = node->as.for_each.iterable;
+
+        if (iter->type == NODE_RANGE) {
+            /* lakol i fi start..end — emit proper C for loop */
+            emit(e, "for (int64_t %s = ", node->as.for_each.var_name);
+            emit_expr(e, iter->as.range.start);
+            emit(e, "; %s < ", node->as.for_each.var_name);
+            emit_expr(e, iter->as.range.end);
+            emit(e, "; %s++) ", node->as.for_each.var_name);
         } else {
+            /* Fallback: iterate assuming array-like */
             emit(e, "for (int64_t %s = 0; %s < 10; %s++) ",
                  node->as.for_each.var_name,
                  node->as.for_each.var_name,
                  node->as.for_each.var_name);
         }
         emit_block(e, node->as.for_each.body);
+        break;
+    }
+
+    case NODE_LOOP:
+        emit_indent(e);
+        emit(e, "for (;;) ");
+        emit_block(e, node->as.loop.body);
         break;
 
     case NODE_BLOCK:
@@ -306,6 +439,37 @@ static void emit_stmt(Emitter *e, NshNode *node) {
         emit_line(e, "continue;");
         break;
 
+    case NODE_DEFER: {
+        /* Capture the deferred code as a string to replay at cleanup */
+        /* For now: just emit a comment — defers are collected and emitted at func end */
+        if (e->defer_count < MAX_DEFERS) {
+            /* Write the deferred statement to a temp buffer */
+            char *buf = NULL;
+            size_t buf_len = 0;
+            FILE *tmp = open_memstream(&buf, &buf_len);
+            if (tmp) {
+                Emitter tmp_e = {.out = tmp, .indent = e->indent, .defer_count = 0};
+                emit_stmt(&tmp_e, node->as.defer.body);
+                fclose(tmp);
+                e->defer_labels[e->defer_count++] = buf;
+            }
+        }
+        emit_indent(e);
+        emit(e, "/* ba3dain (deferred) */\n");
+        break;
+    }
+
+    case NODE_MATCH:
+        /* hasab expr { hale pattern => body, ... } */
+        emit_indent(e);
+        emit(e, "switch (");
+        emit_expr(e, node->as.match.subject);
+        emit(e, ") {\n");
+        /* TODO: full pattern matching codegen */
+        emit_indent(e);
+        emit(e, "}\n");
+        break;
+
     default:
         emit_line(e, "/* unhandled statement */");
         break;
@@ -314,16 +478,110 @@ static void emit_stmt(Emitter *e, NshNode *node) {
 
 /* ── Top-Level Codegen ───────────────────────────────────────── */
 
+static void emit_struct_decl(Emitter *e, NshNode *node) {
+    emit(e, "struct %s {\n", node->as.struct_decl.name);
+    e->indent++;
+    for (int i = 0; i < node->as.struct_decl.fields.count; i++) {
+        NshParam *f = &node->as.struct_decl.fields.items[i];
+        emit_indent(e);
+        emit(e, "%s %s;\n", map_type(f->type_name), f->name);
+    }
+    e->indent--;
+    emit(e, "};\n\n");
+}
+
+static void emit_enum_decl(Emitter *e, NshNode *node) {
+    /* ta3dad Name { Variant1, Variant2(type), ... }
+     * → tagged union:
+     *   struct Name { int _tag; union { ... } _v; };
+     *   enum Name_Tag { Name_Variant1 = 0, ... };
+     */
+    char *name = node->as.enum_decl.name;
+
+    /* Tag enum */
+    emit(e, "enum %s_Tag {\n", name);
+    e->indent++;
+    for (int i = 0; i < node->as.enum_decl.variants.count; i++) {
+        NshParam *v = &node->as.enum_decl.variants.items[i];
+        emit_indent(e);
+        emit(e, "%s_%s = %d", name, v->name, i);
+        if (i < node->as.enum_decl.variants.count - 1) emit(e, ",");
+        emit(e, "\n");
+    }
+    e->indent--;
+    emit(e, "};\n\n");
+
+    /* Tagged union struct */
+    emit(e, "struct %s {\n", name);
+    e->indent++;
+    emit_indent(e);
+    emit(e, "int _tag;\n");
+    emit_indent(e);
+    emit(e, "union {\n");
+    e->indent++;
+    for (int i = 0; i < node->as.enum_decl.variants.count; i++) {
+        NshParam *v = &node->as.enum_decl.variants.items[i];
+        if (v->type_name) {
+            emit_indent(e);
+            emit(e, "struct { %s _0; } %s;\n", map_type(v->type_name), v->name);
+        }
+    }
+    e->indent--;
+    emit_indent(e);
+    emit(e, "} _v;\n");
+    e->indent--;
+    emit(e, "};\n\n");
+}
+
+static void emit_impl_block(Emitter *e, NshNode *node) {
+    /* tabbe2 TypeName { dalle method(had, ...) -> T { ... } }
+     * → TypeName_method(TypeName *had, ...) { ... }
+     */
+    char *type_name = node->as.impl_block.type_name;
+
+    for (int i = 0; i < node->as.impl_block.methods.count; i++) {
+        NshNode *method = node->as.impl_block.methods.items[i];
+        if (method->type != NODE_FUNC_DECL) continue;
+
+        const char *ret = map_type(method->as.func_decl.return_type);
+        emit(e, "%s %s_%s(struct %s *had",
+             ret, type_name, method->as.func_decl.name, type_name);
+
+        /* Skip 'had' parameter if it's the first one */
+        int start = 0;
+        if (method->as.func_decl.params.count > 0 &&
+            strcmp(method->as.func_decl.params.items[0].name, "had") == 0) {
+            start = 1;
+        }
+
+        for (int j = start; j < method->as.func_decl.params.count; j++) {
+            NshParam *p = &method->as.func_decl.params.items[j];
+            emit(e, ", %s %s", map_type(p->type_name), p->name);
+        }
+        emit(e, ") ");
+        emit_block(e, method->as.func_decl.body);
+        emit(e, "\n");
+    }
+}
+
 static void emit_func_decl(Emitter *e, NshNode *node) {
     const char *ret = map_type(node->as.func_decl.return_type);
 
+    /* Reset defer stack for each function */
+    int saved_defer_count = e->defer_count;
+    e->defer_count = 0;
+
     if (node->as.func_decl.is_yalla) {
         /* yalla() becomes main() */
-        emit(e, "int main(void) ");
-        emit_block(e, node->as.func_decl.body);
-        /* ensure main returns 0 */
-        /* (codegen adds it to the block) */
-        emit(e, "\n");
+        emit(e, "int main(void) {\n");
+        e->indent++;
+        for (int i = 0; i < node->as.func_decl.body->as.block.stmts.count; i++) {
+            emit_stmt(e, node->as.func_decl.body->as.block.stmts.items[i]);
+        }
+        emit_defer_cleanup(e);
+        e->indent--;
+        emit_indent(e);
+        emit(e, "}\n\n");
     } else {
         emit(e, "%s %s(", ret, node->as.func_decl.name);
         for (int i = 0; i < node->as.func_decl.params.count; i++) {
@@ -338,6 +596,13 @@ static void emit_func_decl(Emitter *e, NshNode *node) {
         emit_block(e, node->as.func_decl.body);
         emit(e, "\n");
     }
+
+    /* Free any defer buffers */
+    for (int i = 0; i < e->defer_count; i++) {
+        free(e->defer_labels[i]);
+        e->defer_labels[i] = NULL;
+    }
+    e->defer_count = saved_defer_count;
 }
 
 /* ── Public API ──────────────────────────────────────────────── */
@@ -348,15 +613,33 @@ int codegen_c_emit(NshNode *program, FILE *out) {
         return -1;
     }
 
-    Emitter e = {.out = out, .indent = 0};
+    Emitter e = {.out = out, .indent = 0, .defer_count = 0, .in_function = 0};
 
     /* C preamble */
-    emit(&e, "/* Generated by mansaf — NashmiC Compiler 🇯🇴 */\n");
+    emit(&e, "/* Generated by mansaf — NashmiC Compiler */\n");
     emit(&e, "#include <stdio.h>\n");
     emit(&e, "#include <stdint.h>\n");
     emit(&e, "#include <stddef.h>\n");
+    emit(&e, "#include <string.h>\n");
     emit(&e, "#include \"nsh_runtime.h\"\n");
     emit(&e, "\n");
+    /* Helper macros for string interpolation type dispatch */
+    emit(&e, "static inline void _nsh_print_i64(int64_t v) { printf(\"%%lld\", (long long)v); }\n");
+    emit(&e, "static inline void _nsh_print_i32(int32_t v) { printf(\"%%d\", v); }\n");
+    emit(&e, "static inline void _nsh_print_f64(double v) { printf(\"%%g\", v); }\n");
+    emit(&e, "static inline void _nsh_print_str(const char *v) { printf(\"%%s\", v); }\n");
+    emit(&e, "\n");
+
+    /* Emit struct declarations first (before functions that use them) */
+    for (int i = 0; i < program->as.program.decls.count; i++) {
+        NshNode *decl = program->as.program.decls.items[i];
+        if (decl->type == NODE_STRUCT_DECL) {
+            emit_struct_decl(&e, decl);
+        }
+        if (decl->type == NODE_ENUM_DECL) {
+            emit_enum_decl(&e, decl);
+        }
+    }
 
     /* Forward declarations for all functions */
     for (int i = 0; i < program->as.program.decls.count; i++) {
@@ -375,13 +658,40 @@ int codegen_c_emit(NshNode *program, FILE *out) {
             emit(&e, ");\n");
         }
     }
+
+    /* Forward declarations for impl block methods */
+    for (int i = 0; i < program->as.program.decls.count; i++) {
+        NshNode *decl = program->as.program.decls.items[i];
+        if (decl->type == NODE_IMPL_BLOCK) {
+            char *type_name = decl->as.impl_block.type_name;
+            for (int j = 0; j < decl->as.impl_block.methods.count; j++) {
+                NshNode *method = decl->as.impl_block.methods.items[j];
+                if (method->type != NODE_FUNC_DECL) continue;
+                const char *ret = map_type(method->as.func_decl.return_type);
+                emit(&e, "%s %s_%s(struct %s *had",
+                     ret, type_name, method->as.func_decl.name, type_name);
+                int start = 0;
+                if (method->as.func_decl.params.count > 0 &&
+                    strcmp(method->as.func_decl.params.items[0].name, "had") == 0) {
+                    start = 1;
+                }
+                for (int k = start; k < method->as.func_decl.params.count; k++) {
+                    NshParam *p = &method->as.func_decl.params.items[k];
+                    emit(&e, ", %s %s", map_type(p->type_name), p->name);
+                }
+                emit(&e, ");\n");
+            }
+        }
+    }
     emit(&e, "\n");
 
-    /* Emit all functions */
+    /* Emit all functions and impl blocks */
     for (int i = 0; i < program->as.program.decls.count; i++) {
         NshNode *decl = program->as.program.decls.items[i];
         if (decl->type == NODE_FUNC_DECL) {
             emit_func_decl(&e, decl);
+        } else if (decl->type == NODE_IMPL_BLOCK) {
+            emit_impl_block(&e, decl);
         }
     }
 

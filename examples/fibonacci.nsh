@@ -1,4 +1,5 @@
 // fibonacci.nsh — Fibonacci sequence in NashmiC
+// Uses ranges and string interpolation
 
 dalle fibonacci(n: adad64) -> adad64 {
     iza n <= 1 {
@@ -8,9 +9,7 @@ dalle fibonacci(n: adad64) -> adad64 {
 }
 
 yalla() {
-    khalli i: adad64 = 0
-    tool_ma i < 15 {
-        itba3("fib(%lld) = %lld\n", i, fibonacci(i))
-        i = i + 1
+    lakol i fi 0..15 {
+        itba3("fib({i}) = {fibonacci(i)}\n")
     }
 }

@@ -1,15 +1,18 @@
 /*
  * NashmiC — ast.h
- * Abstract Syntax Tree node types for Phase 0
+ * Abstract Syntax Tree node types
  *
- * Phase 0 supports:
- * - yalla() { ... } entry point
- * - dalle name(params) -> type { ... } functions
- * - khalli name = expr / khalli name: type = expr
- * - itba3("...") print calls
- * - if/else, while, for-each, return
- * - binary/unary expressions, function calls
- * - integer/float/string literals, bool/null
+ * Supports:
+ * - yalla() entry point, dalle functions
+ * - khalli/thabet variable declarations
+ * - Control flow: iza/wala, tool_ma, lakol..fi, liff
+ * - Range expressions (0..20), string interpolation
+ * - ba3dain (defer), haikal (struct), ta3dad (enum)
+ * - natije/tamam/ghalat Result type, wala? propagation
+ * - yimkin<T> optional type, fi/mafi
+ * - tabbe2 impl blocks (methods on structs)
+ * - hasab/hale pattern matching
+ * - Expressions, calls, member access, indexing
  */
 
 #ifndef NSH_AST_H
@@ -24,6 +27,9 @@ typedef enum {
     /* Top level */
     NODE_PROGRAM,
     NODE_FUNC_DECL,
+    NODE_STRUCT_DECL,    /* haikal Name { field: type, ... } */
+    NODE_ENUM_DECL,      /* ta3dad Name { Variant1, Variant2(type), ... } */
+    NODE_IMPL_BLOCK,     /* tabbe2 TypeName { dalle ... } */
 
     /* Statements */
     NODE_VAR_DECL,       /* khalli x = ... */
@@ -32,15 +38,20 @@ typedef enum {
     NODE_IF,             /* iza ... wala ... */
     NODE_WHILE,          /* tool_ma ... */
     NODE_FOR_EACH,       /* lakol x fi ... */
+    NODE_LOOP,           /* liff { ... } — infinite loop */
     NODE_BLOCK,          /* { ... } */
     NODE_EXPR_STMT,      /* expression as statement */
     NODE_BREAK,          /* khalas */
     NODE_CONTINUE,       /* kammel */
+    NODE_DEFER,          /* ba3dain expr — runs on scope exit */
+    NODE_MATCH,          /* hasab expr { hale pattern => ... } */
+    NODE_MATCH_ARM,      /* hale pattern => body */
 
     /* Expressions */
     NODE_INT_LIT,
     NODE_FLOAT_LIT,
     NODE_STRING_LIT,
+    NODE_INTERP_STRING,  /* "marhaba ya {name}" — string interpolation */
     NODE_BOOL_LIT,
     NODE_NULL_LIT,
     NODE_IDENT,
@@ -50,6 +61,12 @@ typedef enum {
     NODE_INDEX,          /* arr[i] */
     NODE_MEMBER,         /* obj.field */
     NODE_ASSIGN,         /* x = expr */
+    NODE_RANGE,          /* 0..20 — range expression */
+    NODE_STRUCT_LIT,     /* Name{ field: value, ... } */
+    NODE_WALA_QUESTION,  /* expr wala? "msg" — unwrap-or-propagate */
+    NODE_RESULT_WRAP,    /* tamam(expr) / ghalat(expr) */
+    NODE_OPTIONAL_BIND,  /* iza fi x = expr { ... } wala { ... } */
+    NODE_TUPLE_LIT,      /* (a, b, c) */
 } NshNodeType;
 
 /* ── Binary Operators ────────────────────────────────────────── */
@@ -58,6 +75,7 @@ typedef enum {
     BIN_ADD, BIN_SUB, BIN_MUL, BIN_DIV, BIN_MOD,
     BIN_EQ, BIN_NEQ, BIN_LT, BIN_GT, BIN_LTE, BIN_GTE,
     BIN_AND, BIN_OR,
+    BIN_RANGE,  /* .. — range operator */
 } NshBinOp;
 
 /* ── Unary Operators ─────────────────────────────────────────── */
@@ -87,7 +105,7 @@ void nodelist_free(NshNodeList *list);
 
 typedef struct {
     char *name;
-    char *type_name;    /* type annotation as string for Phase 0 */
+    char *type_name;    /* type annotation as string */
 } NshParam;
 
 typedef struct {
@@ -175,7 +193,7 @@ struct NshNode {
 
         /* NODE_STRING_LIT */
         struct {
-            char *value;         /* includes quotes */
+            char *value;         /* raw string content (no quotes for fragments) */
             int length;
         } string_lit;
 
@@ -225,6 +243,91 @@ struct NshNode {
             NshNode *target;
             NshNode *value;
         } assign;
+
+        /* NODE_RANGE — 0..20 */
+        struct {
+            NshNode *start;
+            NshNode *end;
+        } range;
+
+        /* NODE_DEFER — ba3dain { ... } or ba3dain expr */
+        struct {
+            NshNode *body;
+        } defer;
+
+        /* NODE_LOOP — liff { ... } */
+        struct {
+            NshNode *body;
+        } loop;
+
+        /* NODE_MATCH — hasab expr { hale ... => ..., ... } */
+        struct {
+            NshNode *subject;
+            NshNodeList arms;    /* list of NODE_MATCH_ARM */
+        } match;
+
+        /* NODE_MATCH_ARM — hale pattern => body */
+        struct {
+            char *pattern_name;      /* variant name or "_" for default */
+            NshNodeList bindings;    /* extracted variable names (as NODE_IDENT) */
+            NshNode *body;           /* block or expression */
+        } match_arm;
+
+        /* NODE_STRUCT_DECL — haikal Name { fields } */
+        struct {
+            char *name;
+            NshParamList fields; /* reuse ParamList: name + type_name */
+        } struct_decl;
+
+        /* NODE_ENUM_DECL — ta3dad Name { variants } */
+        struct {
+            char *name;
+            NshParamList variants; /* name = variant, type_name = payload type or NULL */
+        } enum_decl;
+
+        /* NODE_IMPL_BLOCK — tabbe2 TypeName { dalle ... } */
+        struct {
+            char *type_name;
+            NshNodeList methods; /* list of NODE_FUNC_DECL */
+        } impl_block;
+
+        /* NODE_STRUCT_LIT — Name{ field: value, ... } */
+        struct {
+            char *name;
+            char **field_names;
+            NshNode **field_values;
+            int field_count;
+        } struct_lit;
+
+        /* NODE_INTERP_STRING — "text {expr} more text" */
+        struct {
+            NshNodeList parts;  /* alternating string fragments and expressions */
+        } interp_string;
+
+        /* NODE_WALA_QUESTION — expr wala? "optional msg" */
+        struct {
+            NshNode *expr;
+            NshNode *error_msg;  /* optional: string literal for error wrapping */
+        } wala_question;
+
+        /* NODE_RESULT_WRAP — tamam(expr) or ghalat(expr) */
+        struct {
+            int is_ok;          /* 1 = tamam, 0 = ghalat */
+            NshNode *value;
+        } result_wrap;
+
+        /* NODE_OPTIONAL_BIND — iza fi x = expr { ... } wala { ... } */
+        struct {
+            char *var_name;
+            NshNode *expr;
+            NshNode *then_block;
+            NshNode *else_block;
+        } optional_bind;
+
+        /* NODE_TUPLE_LIT — (a, b, c) */
+        struct {
+            NshNodeList elements;
+        } tuple_lit;
     } as;
 };
 

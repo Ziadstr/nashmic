@@ -157,6 +157,79 @@ void node_free(NshNode *node) {
         node_free(node->as.assign.value);
         break;
 
+    case NODE_RANGE:
+        node_free(node->as.range.start);
+        node_free(node->as.range.end);
+        break;
+
+    case NODE_DEFER:
+        node_free(node->as.defer.body);
+        break;
+
+    case NODE_LOOP:
+        node_free(node->as.loop.body);
+        break;
+
+    case NODE_MATCH:
+        node_free(node->as.match.subject);
+        nodelist_free(&node->as.match.arms);
+        break;
+
+    case NODE_MATCH_ARM:
+        free(node->as.match_arm.pattern_name);
+        nodelist_free(&node->as.match_arm.bindings);
+        node_free(node->as.match_arm.body);
+        break;
+
+    case NODE_STRUCT_DECL:
+        free(node->as.struct_decl.name);
+        paramlist_free(&node->as.struct_decl.fields);
+        break;
+
+    case NODE_ENUM_DECL:
+        free(node->as.enum_decl.name);
+        paramlist_free(&node->as.enum_decl.variants);
+        break;
+
+    case NODE_IMPL_BLOCK:
+        free(node->as.impl_block.type_name);
+        nodelist_free(&node->as.impl_block.methods);
+        break;
+
+    case NODE_STRUCT_LIT:
+        free(node->as.struct_lit.name);
+        for (int i = 0; i < node->as.struct_lit.field_count; i++) {
+            free(node->as.struct_lit.field_names[i]);
+            node_free(node->as.struct_lit.field_values[i]);
+        }
+        free(node->as.struct_lit.field_names);
+        free(node->as.struct_lit.field_values);
+        break;
+
+    case NODE_INTERP_STRING:
+        nodelist_free(&node->as.interp_string.parts);
+        break;
+
+    case NODE_WALA_QUESTION:
+        node_free(node->as.wala_question.expr);
+        node_free(node->as.wala_question.error_msg);
+        break;
+
+    case NODE_RESULT_WRAP:
+        node_free(node->as.result_wrap.value);
+        break;
+
+    case NODE_OPTIONAL_BIND:
+        free(node->as.optional_bind.var_name);
+        node_free(node->as.optional_bind.expr);
+        node_free(node->as.optional_bind.then_block);
+        node_free(node->as.optional_bind.else_block);
+        break;
+
+    case NODE_TUPLE_LIT:
+        nodelist_free(&node->as.tuple_lit.elements);
+        break;
+
     case NODE_INT_LIT:
     case NODE_FLOAT_LIT:
     case NODE_BOOL_LIT:

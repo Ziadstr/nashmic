@@ -20,7 +20,7 @@ COMPILER_SRC = \
 BUILD_DIR = build
 MANSAF = $(BUILD_DIR)/mansaf
 
-.PHONY: all clean test run-hello
+.PHONY: all clean test run-hello run-fib run-all
 
 all: $(MANSAF)
 
@@ -35,19 +35,41 @@ clean:
 
 # Quick test: lex the hello world example
 test-lex: $(MANSAF)
-	$(MANSAF) lex examples/marhaba.nsh
+	NASHMIC_ROOT=. $(MANSAF) lex examples/marhaba.nsh
 
-# Quick test: build and run hello world
+# Run examples
 run-hello: $(MANSAF)
 	NASHMIC_ROOT=. $(MANSAF) run examples/marhaba.nsh
 
-# Build hello world
-build-hello: $(MANSAF)
-	NASHMIC_ROOT=. $(MANSAF) build examples/marhaba.nsh
-
-# Run fibonacci
 run-fib: $(MANSAF)
 	NASHMIC_ROOT=. $(MANSAF) run examples/fibonacci.nsh
+
+run-ranges: $(MANSAF)
+	NASHMIC_ROOT=. $(MANSAF) run examples/ranges.nsh
+
+run-interp: $(MANSAF)
+	NASHMIC_ROOT=. $(MANSAF) run examples/interpolation.nsh
+
+run-structs: $(MANSAF)
+	NASHMIC_ROOT=. $(MANSAF) run examples/structs.nsh
+
+run-easter: $(MANSAF)
+	NASHMIC_ROOT=. $(MANSAF) run examples/easter_eggs.nsh
+
+# Run all examples
+run-all: $(MANSAF)
+	@echo "=== marhaba ==="
+	@NASHMIC_ROOT=. $(MANSAF) run examples/marhaba.nsh
+	@echo "\n=== fibonacci ==="
+	@NASHMIC_ROOT=. $(MANSAF) run examples/fibonacci.nsh
+	@echo "\n=== ranges ==="
+	@NASHMIC_ROOT=. $(MANSAF) run examples/ranges.nsh
+	@echo "\n=== interpolation ==="
+	@NASHMIC_ROOT=. $(MANSAF) run examples/interpolation.nsh
+	@echo "\n=== structs ==="
+	@NASHMIC_ROOT=. $(MANSAF) run examples/structs.nsh
+	@echo "\n=== easter eggs ==="
+	@NASHMIC_ROOT=. $(MANSAF) run examples/easter_eggs.nsh
 
 install: $(MANSAF)
 	cp $(MANSAF) /usr/local/bin/mansaf

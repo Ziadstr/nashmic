@@ -20,6 +20,9 @@ marhaba_arabic
 *.swo
 *~
 
+# Docs build output
+docs/book/
+
 # OS
 .DS_Store
 Thumbs.db

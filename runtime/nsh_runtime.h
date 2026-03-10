@@ -1,6 +1,6 @@
 /*
  * NashmiC Runtime — nsh_runtime.h
- * Core runtime: init, shutdown, itba3 (print)
+ * Core runtime + cultural easter eggs
  */
 
 #ifndef NSH_RUNTIME_H
@@ -23,5 +23,19 @@ char *nsh_i2ra(void);
 
 /* itla3 — exit the program (اطلع) */
 void nsh_itla3(int code);
+
+/* ── Easter Egg Functions ────────────────────────────────────── */
+
+/* drobi — random Jordanian proverb/joke */
+void nsh_drobi(void);
+
+/* mansaf — mansaf recipe in ASCII art */
+void nsh_mansaf(void);
+
+/* sahteen — "bon appetit" (used after test runs pass) */
+void nsh_sahteen(void);
+
+/* nashmi — NashmiC manifesto/about */
+void nsh_nashmi(void);
 
 #endif /* NSH_RUNTIME_H */
