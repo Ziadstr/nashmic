@@ -1,17 +1,19 @@
 {
   "name": "nashmic",
   "displayName": "NashmiC — Franco-Arab Programming Language",
-  "description": "Syntax highlighting, snippets, and language support for NashmiC — the first Franco-Arab programming language. Easy like Python, powerful like Go, Jordanian to the bone.",
-  "version": "0.1.0",
+  "description": "Syntax highlighting, snippets, formatter, and language support for NashmiC — the first Franco-Arab programming language. Easy like Python, powerful like Go, Jordanian to the bone.",
+  "version": "0.2.0",
   "publisher": "ziadstr",
   "license": "MIT",
   "icon": "icon.png",
+  "main": "./extension.js",
   "engines": {
     "vscode": "^1.75.0"
   },
   "categories": [
     "Programming Languages",
-    "Snippets"
+    "Snippets",
+    "Formatters"
   ],
   "keywords": [
     "nashmic",
@@ -35,6 +37,9 @@
     "url": "https://github.com/Ziadstr/nashmic/issues"
   },
   "homepage": "https://ziadstr.github.io/nashmic/",
+  "activationEvents": [
+    "onLanguage:nashmic"
+  ],
   "contributes": {
     "languages": [
       {
@@ -66,6 +71,37 @@
         "language": "nashmic",
         "path": "./snippets/nashmic.json"
       }
-    ]
+    ],
+    "commands": [
+      {
+        "command": "nashmic.runFile",
+        "title": "NashmiC: Run Current File",
+        "icon": "$(play)"
+      },
+      {
+        "command": "nashmic.buildFile",
+        "title": "NashmiC: Build Current File",
+        "icon": "$(gear)"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "nashmic.runFile",
+        "key": "ctrl+shift+r",
+        "mac": "cmd+shift+r",
+        "when": "editorLangId == nashmic"
+      },
+      {
+        "command": "nashmic.buildFile",
+        "key": "ctrl+shift+b",
+        "mac": "cmd+shift+b",
+        "when": "editorLangId == nashmic"
+      }
+    ],
+    "configurationDefaults": {
+      "[nashmic]": {
+        "editor.formatOnSave": true
+      }
+    }
   }
 }

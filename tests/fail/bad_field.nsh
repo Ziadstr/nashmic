@@ -1,5 +1,6 @@
 // bad_field.nsh — should trigger sema warnings for invalid struct fields
 // Expected: warning for accessing non-existent field 'z' on Point
+// ERROR: has no field 'z'
 
 haikal Point {
     x: fasle64,

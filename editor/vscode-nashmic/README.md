@@ -27,6 +27,25 @@ Full TextMate grammar with 80+ keywords across all NashmiC constructs:
 
 Plus string interpolation (`"marhaba ya {name}!"`), comments, numbers, and operators.
 
+### Formatter
+
+Integrated formatting via `mansaf fmt`. Requires the NashmiC compiler (`mansaf`) to be installed.
+
+- **Format on save** enabled by default for `.nsh` files
+- Use `Shift+Alt+F` (or `Shift+Option+F` on macOS) to format manually
+- If `mansaf` is not installed, a helpful message with install instructions is shown
+
+### Run & Build Commands
+
+Run and build NashmiC files directly from VS Code:
+
+| Command | Keybinding | Description |
+|---------|------------|-------------|
+| **NashmiC: Run Current File** | `Ctrl+Shift+R` (`Cmd+Shift+R` on macOS) | Runs `mansaf run` on the active file |
+| **NashmiC: Build Current File** | `Ctrl+Shift+B` (`Cmd+Shift+B` on macOS) | Runs `mansaf build` on the active file |
+
+Output appears in the integrated terminal. The file is auto-saved before running.
+
 ### Snippets
 
 Type a prefix and hit Tab to expand:
@@ -37,6 +56,8 @@ Type a prefix and hit Tab to expand:
 | `dalle` | Function declaration |
 | `iza` | If/else block |
 | `lakol` | For-each loop with range |
+| `lakol-arr` | Array iteration |
+| `lakol-range` | Range iteration with explicit bounds |
 | `tool_ma` | While loop |
 | `hasab` | Pattern match block |
 | `natije` | Result-returning function with `tamam`/`ghalat` |
@@ -47,6 +68,12 @@ Type a prefix and hit Tab to expand:
 | `thabet` | Constant declaration |
 | `jarreb` | Try/catch block |
 | `itba3` | Print statement |
+| `saff` | Array declaration |
+| `wala?` | Error propagation |
+| `iza-fi` | Optional binding with `iza fi` |
+| `ba3dain` | Defer block |
+| `marhaba` | Full hello world program |
+| `sife` | Trait definition |
 
 ### Other Features
 
@@ -71,7 +98,7 @@ code --install-extension ziadstr.nashmic
 cd editor/vscode-nashmic
 pnpm install -g @vscode/vsce
 vsce package
-code --install-extension nashmic-0.1.0.vsix
+code --install-extension nashmic-0.2.0.vsix
 ```
 
 ### Debug / Test
@@ -79,6 +106,13 @@ code --install-extension nashmic-0.1.0.vsix
 1. Open `editor/vscode-nashmic/` in VS Code
 2. Press `F5` to launch an Extension Development Host
 3. Open any `.nsh` file to see highlighting in action
+
+## Requirements
+
+- **VS Code** 1.75.0 or later
+- **mansaf** (NashmiC compiler) — optional, needed for formatting and run/build commands. Install from [github.com/Ziadstr/nashmic](https://github.com/Ziadstr/nashmic)
+
+The extension works without `mansaf` installed — syntax highlighting, snippets, and bracket support work standalone.
 
 ## Example
 

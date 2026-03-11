@@ -4,6 +4,7 @@
  * Usage:
  *   mansaf build <file.nsh>     Compile to binary
  *   mansaf run <file.nsh>       Compile and run
+ *   mansaf fmt <file.nsh>       Auto-format source
  *   mansaf lex <file.nsh>       Debug: dump tokens
  *
  * NashmiC: its own language — easy like Python, powerful like Go,
@@ -18,6 +19,8 @@
 #include "codegen_c.h"
 #include "sema.h"
 #include "diagnostics.h"
+#include "repl.h"
+#include "formatter.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -336,6 +339,124 @@ static int cmd_build(const char *filename, int run_after, int tarab) {
     return 0;
 }
 
+/* ── Format Command ──────────────────────────────────────────── */
+
+static int cmd_fmt(const char *filename, int write_back) {
+    size_t len;
+    char *source = read_file(filename, &len);
+    if (!source) return 1;
+
+    keywords_init();
+    diag_reset();
+
+    /* Parse */
+    NshNode *ast = parser_parse(source, len, filename);
+    if (!ast) {
+        fprintf(stderr, RED "\nفشل التنسيق" RESET " — %d errors\n",
+                diag_error_count());
+        fprintf(stderr, "Fix your code first ya zalameh\n");
+        free(source);
+        keywords_free();
+        return 1;
+    }
+
+    if (write_back) {
+        /* Write formatted output back to the original file */
+        FILE *out = fopen(filename, "w");
+        if (!out) {
+            fprintf(stderr, RED "خطأ" RESET ": ما قدرت اكتب على الملف '%s'\n",
+                    filename);
+            node_free(ast);
+            free(source);
+            keywords_free();
+            return 1;
+        }
+        int result = formatter_format(ast, out);
+        fclose(out);
+        if (result == 0) {
+            printf(GREEN "✓" RESET " formatted %s\n", filename);
+        }
+        node_free(ast);
+        free(source);
+        keywords_free();
+        return result;
+    }
+
+    /* Print to stdout */
+    int result = formatter_format(ast, stdout);
+    node_free(ast);
+    free(source);
+    keywords_free();
+    return result;
+}
+
+/* ── Test Command ────────────────────────────────────────────── */
+
+static int cmd_test(int argc, char **argv) {
+    /* Find the test script relative to the binary */
+    char exe_path[PATH_MAX];
+    char *root_detected = NULL;
+
+#ifdef __linux__
+    ssize_t elen = readlink("/proc/self/exe", exe_path, sizeof(exe_path) - 1);
+    if (elen > 0) {
+        exe_path[elen] = '\0';
+        char *d = dirname(exe_path);
+        root_detected = dirname(d);
+    }
+#elif defined(__APPLE__)
+    uint32_t esize = sizeof(exe_path);
+    if (_NSGetExecutablePath(exe_path, &esize) == 0) {
+        char resolved[PATH_MAX];
+        if (realpath(exe_path, resolved)) {
+            strncpy(exe_path, resolved, PATH_MAX - 1);
+            exe_path[PATH_MAX - 1] = '\0';
+            char *d = dirname(exe_path);
+            root_detected = dirname(d);
+        }
+    }
+#endif
+
+    /* Fallback: try NASHMIC_ROOT or current directory */
+    const char *nashmic_root = getenv("NASHMIC_ROOT");
+    char root_buf[PATH_MAX];
+    if (root_detected) {
+        strncpy(root_buf, root_detected, PATH_MAX - 1);
+        root_buf[PATH_MAX - 1] = '\0';
+    } else if (nashmic_root) {
+        strncpy(root_buf, nashmic_root, PATH_MAX - 1);
+        root_buf[PATH_MAX - 1] = '\0';
+    } else {
+        strncpy(root_buf, ".", PATH_MAX - 1);
+        root_buf[PATH_MAX - 1] = '\0';
+    }
+
+    char test_script[PATH_MAX + 32];
+    snprintf(test_script, sizeof(test_script), "%s/tests/run_tests.sh", root_buf);
+
+    if (access(test_script, F_OK) != 0) {
+        fprintf(stderr, RED "خطأ" RESET ": test script not found at %s\n",
+                test_script);
+        return 1;
+    }
+
+    /* Build the command — pass through any extra args (filter, -v) */
+    char cmd[PATH_MAX + 1024];
+    if (argc > 2) {
+        char args[512] = "";
+        for (int i = 2; i < argc; i++) {
+            strncat(args, " ", sizeof(args) - strlen(args) - 1);
+            strncat(args, argv[i], sizeof(args) - strlen(args) - 1);
+        }
+        snprintf(cmd, sizeof(cmd), "bash %s%s", test_script, args);
+    } else {
+        snprintf(cmd, sizeof(cmd), "bash %s", test_script);
+    }
+
+    int result = system(cmd);
+    return WEXITSTATUS(result);
+}
+
 /* ── Usage ───────────────────────────────────────────────────── */
 
 static void print_usage(void) {
@@ -344,11 +465,17 @@ static void print_usage(void) {
     printf("  mansaf build <file.nsh>           Compile to binary\n");
     printf("  mansaf build --tarab <file.nsh>   Compile with celebration\n");
     printf("  mansaf run <file.nsh>             Compile and run\n");
+    printf("  mansaf test [filter]              Run the test suite\n");
+    printf("  mansaf test -v [filter]           Run tests (verbose)\n");
+    printf("  mansaf fmt <file.nsh>             Format source (print to stdout)\n");
+    printf("  mansaf fmt -w <file.nsh>          Format source (write in place)\n");
     printf("  mansaf lex <file.nsh>             Dump tokens (debug)\n");
+    printf("  mansaf repl                       Interactive REPL\n");
     printf("\n");
     printf("Examples:\n");
     printf("  mansaf run examples/marhaba.nsh\n");
     printf("  mansaf build src/main.nsh\n");
+    printf("  mansaf test arrays\n");
     printf("\n");
     printf("NashmiC: easy like Python, powerful like Go, Jordanian to the bone.\n");
     printf("يلا نبلش!\n");
@@ -389,6 +516,33 @@ int main(int argc, char **argv) {
             return 1;
         }
         return cmd_build(argv[2], 1, 0);
+    }
+
+    if (strcmp(command, "fmt") == 0) {
+        int write_back = 0;
+        const char *filename = NULL;
+
+        for (int i = 2; i < argc; i++) {
+            if (strcmp(argv[i], "--write") == 0 || strcmp(argv[i], "-w") == 0) {
+                write_back = 1;
+            } else {
+                filename = argv[i];
+            }
+        }
+
+        if (!filename) {
+            fprintf(stderr, "Usage: mansaf fmt [-w|--write] <file.nsh>\n");
+            return 1;
+        }
+        return cmd_fmt(filename, write_back);
+    }
+
+    if (strcmp(command, "test") == 0) {
+        return cmd_test(argc, argv);
+    }
+
+    if (strcmp(command, "repl") == 0) {
+        return cmd_repl();
     }
 
     if (strcmp(command, "lex") == 0) {

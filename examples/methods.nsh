@@ -1,5 +1,8 @@
 // tabbe2 — Impl blocks (methods on structs)
 // NashmiC's approach to object-oriented behavior
+// EXPECT: === tabbe2 — Methods ===
+// EXPECT: Distance from origin: 5
+// EXPECT: Counter is at 42
 
 haikal Point {
     x: fasle64,

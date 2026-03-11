@@ -1,5 +1,6 @@
 // bad_assign.nsh — should trigger sema warnings for assignment type mismatches
 // Expected: warning for assigning string to adad64 variable
+// ERROR: type mismatch in assignment
 
 yalla() {
     khalli x: adad64 = 42

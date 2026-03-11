@@ -1,5 +1,6 @@
 // bad_return.nsh — should trigger sema warnings for return type mismatches
 // Expected: warning for returning string from adad64 function
+// ERROR: return type mismatch
 
 dalle get_number() -> adad64 {
     rajje3 "not a number"

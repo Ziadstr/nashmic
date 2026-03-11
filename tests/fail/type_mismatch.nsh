@@ -1,5 +1,6 @@
 // type_mismatch.nsh — should trigger sema warnings for type mismatches
 // Expected: warnings for string + int, bool in arithmetic
+// ERROR: type mismatch in binary operation
 
 yalla() {
     // Binary op: string + int — should warn

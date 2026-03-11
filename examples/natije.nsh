@@ -1,5 +1,8 @@
 // natije<T> — Result type with tamam/ghalat + wala? propagation
 // NashmiC's signature error handling feature
+// EXPECT: === natije<T> — Result Type ===
+// EXPECT: 10 / 3 = 3.33333
+// EXPECT: division by zero!
 
 dalle divide(a: fasle64, b: fasle64) -> natije<fasle64> {
     iza b == 0.0 {

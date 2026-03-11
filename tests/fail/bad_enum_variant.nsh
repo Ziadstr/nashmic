@@ -1,5 +1,6 @@
 // bad_enum_variant.nsh — should trigger sema warnings for enum variant misuse
 // Expected: warning for wrong payload type on Da2ira
+// ERROR: takes no payload
 
 ta3dad Shape {
     Da2ira(fasle64),

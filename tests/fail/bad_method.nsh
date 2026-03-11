@@ -1,5 +1,6 @@
 // bad_method.nsh — should trigger sema warnings for invalid method calls
 // Expected: warning for calling non-existent method 'fly' on Point
+// ERROR: has no method 'fly'
 
 haikal Point {
     x: fasle64,

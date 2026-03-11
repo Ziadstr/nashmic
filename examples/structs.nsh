@@ -1,4 +1,7 @@
 // structs.nsh — Struct declaration, literals, and member access
+// EXPECT: Point: (3, 4)
+// EXPECT: Other: (1, 2)
+// EXPECT: Sum: (0, 0)
 
 haikal Point {
     x: fasle64,

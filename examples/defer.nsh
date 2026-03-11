@@ -1,5 +1,8 @@
 // ba3dain — Defer (run code at end of scope)
 // Like Go's defer, but Jordanian
+// EXPECT: === ba3dain — Defer ===
+// EXPECT: cleanup 2
+// EXPECT: result = 42
 
 dalle greet() {
     itba3("start\n")

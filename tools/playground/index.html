@@ -48,7 +48,8 @@
     Easy like <em>Python</em>. Powerful like <em>Go</em>. <strong>Jordanian to the bone.</strong>
   </p>
   <p class="hero-subtitle">
-    Select an example, hit Run, and see NashmiC in action. Full in-browser compilation coming soon.
+    Write NashmiC code and compile it in your browser via WebAssembly.
+    Custom code shows the generated C. Pre-loaded examples also show cached program output.
   </p>
 </section>
 
@@ -60,6 +61,7 @@
     </select>
   </div>
   <div class="toolbar-right">
+    <span id="wasm-status" class="wasm-status loading">Loading compiler...</span>
     <button id="run-btn" class="btn btn-run" title="Run (Ctrl+Enter)">
       <span class="btn-icon">&#9654;</span>
       &#1588;&#1594;&#1617;&#1604; &mdash; Run
@@ -146,6 +148,7 @@
   <p>NashmiC &mdash; A programming language from Jordan</p>
 </footer>
 
+<script src="nashmic.js"></script>
 <script src="examples.js"></script>
 <script src="app.js"></script>
 </body>

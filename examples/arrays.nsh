@@ -1,5 +1,8 @@
 // arrays.nsh — saff<T> array type demo
 // Demonstrates: array literals, indexing, iteration, push, length, string concat
+// EXPECT: === saff (Arrays) ===
+// EXPECT: toul: 5
+// EXPECT: marhaba ya NashmiC!
 
 dalle print_array(nums: saff<adad64>) {
     itba3("[ ")

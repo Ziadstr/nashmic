@@ -145,5 +145,69 @@
       "}"
     ],
     "description": "Trait definition — sife"
+  },
+  "Array Declaration": {
+    "prefix": "saff",
+    "body": [
+      "khalli ${1:name}: saff<${2:adad64}> = [$0]"
+    ],
+    "description": "Array declaration — saff"
+  },
+  "Array Iteration": {
+    "prefix": "lakol-arr",
+    "body": [
+      "lakol ${1:item} fi ${2:arr} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Iterate over array — lakol fi"
+  },
+  "Range Iteration": {
+    "prefix": "lakol-range",
+    "body": [
+      "lakol ${1:i} fi ${2:0}..${3:10} {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Iterate over range — lakol fi start..end"
+  },
+  "Error Propagation": {
+    "prefix": "wala?",
+    "body": [
+      "khalli ${1:result} = ${2:expr} wala?"
+    ],
+    "description": "Error propagation — wala?"
+  },
+  "Optional Binding": {
+    "prefix": "iza-fi",
+    "body": [
+      "iza fi ${1:val} = ${2:expr} {",
+      "\t$3",
+      "} wala {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Optional binding — iza fi"
+  },
+  "Defer Block": {
+    "prefix": "ba3dain",
+    "body": [
+      "ba3dain {",
+      "\t$0",
+      "}"
+    ],
+    "description": "Defer block — ba3dain"
+  },
+  "Hello World": {
+    "prefix": "marhaba",
+    "body": [
+      "// ${1:My NashmiC Program}",
+      "",
+      "yalla() {",
+      "\titba3(\"marhaba ya dunya!\\n\")",
+      "\t$0",
+      "}"
+    ],
+    "description": "Full hello world program template"
   }
 }

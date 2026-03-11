@@ -116,6 +116,18 @@ mansaf build examples/marhaba.nsh
 # Build with celebration
 mansaf build --tarab examples/marhaba.nsh
 
+# Format a file (prints to stdout)
+mansaf fmt examples/fibonacci.nsh
+
+# Format in-place
+mansaf fmt --write examples/fibonacci.nsh
+
+# Start the interactive REPL
+mansaf repl
+
+# Run the test suite
+mansaf test
+
 # Dump tokens (debug)
 mansaf lex examples/marhaba.nsh
 
@@ -313,6 +325,9 @@ nashmic/
 │   ├── ast.c/h            # AST node types
 │   ├── codegen_c.c/h      # C transpiler backend
 │   ├── sema.c/h           # Semantic analysis + type checking
+│   ├── formatter.c/h      # Auto-formatter (mansaf fmt)
+│   ├── repl.c/h           # Interactive REPL (mansaf repl)
+│   ├── wasm_entry.c       # WASM entry point (playground)
 │   ├── diagnostics.c/h    # Errors with proverbs
 │   ├── utf8.c/h           # UTF-8 encoding/decoding
 │   └── span.h             # Source locations
@@ -359,11 +374,56 @@ NashmiC compiles through C:
 
 The semantic analysis pass catches type mismatches, undeclared variables, invalid field access, and more — with Jordanian proverb error messages. The generated C code links against `nsh_runtime.c` for print/read/exit and easter eggs.
 
+## Developer Tools
+
+### Formatter — `mansaf fmt`
+
+Auto-format NashmiC source with consistent 4-space indentation, brace placement, and spacing.
+
+```bash
+# Print formatted output to stdout
+mansaf fmt myfile.nsh
+
+# Format in-place (overwrite the file)
+mansaf fmt --write myfile.nsh
+```
+
+Works with any editor — set `mansaf fmt --write` as your external formatter.
+
+### Interactive REPL — `mansaf repl`
+
+Type NashmiC code and see results instantly. Multi-line input via brace tracking, accumulated declarations across evaluations.
+
+```bash
+mansaf repl
+```
+
+```
+nashmi> itba3("marhaba!\n")
+marhaba!
+nashmi> dalle square(n: adad64) -> adad64 { rajje3 n * n }
+✓ declaration saved
+nashmi> itba3("5^2 = {square(5)}\n")
+5^2 = 25
+```
+
+Commands: `:q` quit, `:clear` reset declarations, `:decls` show saved declarations, `:help`.
+
+### Test Suite — `mansaf test`
+
+Run the full test suite (pass tests + semantic error tests):
+
+```bash
+mansaf test          # Run all tests
+mansaf test -v       # Verbose mode (show diffs on failure)
+mansaf test arrays   # Run only tests matching "arrays"
+```
+
 ## Editor Support
 
-NashmiC has a VS Code extension with full syntax highlighting, snippets, and editor integration.
+### VS Code (recommended)
 
-### Install from VS Code Marketplace
+Install from the [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=ziadstr.nashmic):
 
 ```bash
 code --install-extension ziadstr.nashmic
@@ -373,9 +433,36 @@ Or search **"NashmiC"** in the Extensions panel (`Ctrl+Shift+X`).
 
 **Includes:**
 - Syntax highlighting for 80+ keywords
-- Snippets for `yalla`, `dalle`, `iza`, `hasab`, `natije`, `haikal`, `ta3dad`, `tabbe2`, and more
+- **Format on save** via `mansaf fmt` (enabled by default)
+- **Run file** (`Ctrl+Shift+R`) and **Build file** (`Ctrl+Shift+B`)
+- 22 snippets for `yalla`, `dalle`, `iza`, `hasab`, `natije`, `haikal`, `ta3dad`, `tabbe2`, and more
 - Bracket matching, auto-closing, code folding
 - Auto-indentation
+
+### Neovim
+
+Use `mansaf fmt` as an external formatter:
+
+```lua
+-- In your init.lua or ftplugin/nashmic.lua
+vim.bo.formatprg = "mansaf fmt"
+```
+
+Or with [conform.nvim](https://github.com/stevearc/conform.nvim):
+
+```lua
+require("conform").setup({
+  formatters_by_ft = {
+    nashmic = {
+      { command = "mansaf", args = { "fmt", "--write", "$FILENAME" } }
+    }
+  }
+})
+```
+
+### Any Editor
+
+`mansaf fmt` reads from a file and writes formatted output to stdout. Set it as your editor's external format command for `.nsh` files. Use `mansaf fmt --write <file>` for in-place formatting.
 
 ## Status
 
@@ -398,7 +485,10 @@ NashmiC is in active development. The compiler handles:
 - ✅ Defer (`ba3dain`)
 - ✅ Arrays (`saff<T>` with `.zeed()`, `.toul()`, iteration)
 - ✅ Semantic analysis (type checking, field/method validation)
-- ✅ VS Code extension (published on marketplace)
+- ✅ Auto-formatter (`mansaf fmt`)
+- ✅ Interactive REPL (`mansaf repl`)
+- ✅ Test harness (`mansaf test`)
+- ✅ VS Code extension with formatter, run/build, 22 snippets
 - ✅ Web playground (try it in the browser)
 - ✅ CI/CD (build + test + deploy on every push)
 - 📋 Multiple return values

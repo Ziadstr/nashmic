@@ -1,5 +1,8 @@
 // yimkin<T> — Optional type with fi/mafi + iza fi binding
 // NashmiC's null-safe value handling
+// EXPECT: === yimkin<T> — Optional Type ===
+// EXPECT: find_even(4) = 4
+// EXPECT: first_positive(-5, 3) = 3
 
 dalle find_even(n: adad64) -> yimkin<adad64> {
     iza n % 2 == 0 {

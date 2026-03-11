@@ -15,24 +15,66 @@ COMPILER_SRC = \
 	compiler/src/codegen_c.c \
 	compiler/src/sema.c \
 	compiler/src/diagnostics.c \
-	compiler/src/utf8.c
+	compiler/src/utf8.c \
+	compiler/src/repl.c \
+	compiler/src/formatter.c
 
 # Output
 BUILD_DIR = build
 MANSAF = $(BUILD_DIR)/mansaf
 
-.PHONY: all clean test run-hello run-fib run-enums run-natije run-yimkin run-arrays run-all test
+# WASM source files (all compiler sources except main.c, plus wasm_entry.c)
+WASM_SRC = \
+	compiler/src/wasm_entry.c \
+	compiler/src/lexer.c \
+	compiler/src/keywords.c \
+	compiler/src/parser.c \
+	compiler/src/ast.c \
+	compiler/src/codegen_c.c \
+	compiler/src/sema.c \
+	compiler/src/diagnostics.c \
+	compiler/src/utf8.c
+
+WASM_OUT_DIR = tools/playground
+WASM_JS = $(WASM_OUT_DIR)/nashmic.js
+WASM_FILE = $(WASM_OUT_DIR)/nashmic.wasm
+
+.PHONY: all clean test wasm run-hello run-fib run-enums run-natije run-yimkin run-arrays run-all test
 
 all: $(MANSAF)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
+# Detect readline availability
+HAVE_READLINE := $(shell echo 'int main(){return 0;}' | $(CC) -x c - -lreadline -o /dev/null 2>/dev/null && echo 1)
+ifeq ($(HAVE_READLINE),1)
+  LDFLAGS += -lreadline
+else
+  CFLAGS += -UHAVE_READLINE
+endif
+
 $(MANSAF): $(COMPILER_SRC) | $(BUILD_DIR)
-	$(CC) $(CFLAGS) -o $@ $(COMPILER_SRC) -lm
+	$(CC) $(CFLAGS) -o $@ $(COMPILER_SRC) -lm $(LDFLAGS)
+
+# WASM build — compile mansaf transpiler to WebAssembly for in-browser use
+wasm: $(WASM_SRC)
+	emcc -std=gnu11 -O2 \
+		-I compiler/src -I runtime \
+		-s WASM=1 \
+		-s MODULARIZE=1 \
+		-s EXPORT_NAME='NashmiCModule' \
+		-s EXPORTED_FUNCTIONS='["_nsh_compile","_nsh_get_errors","_malloc","_free"]' \
+		-s EXPORTED_RUNTIME_METHODS='["ccall","cwrap","UTF8ToString","stringToUTF8","lengthBytesUTF8"]' \
+		-s TOTAL_MEMORY=16MB \
+		-s ALLOW_MEMORY_GROWTH=0 \
+		-o $(WASM_JS) \
+		$(WASM_SRC)
+	@echo "✓ WASM build complete: $(WASM_JS) + $(WASM_FILE)"
 
 clean:
 	rm -rf $(BUILD_DIR)
+	rm -f $(WASM_JS) $(WASM_FILE)
 
 # Run test suite — compares example outputs against expected
 test: $(MANSAF)
@@ -78,6 +120,9 @@ run-defer: $(MANSAF)
 
 run-arrays: $(MANSAF)
 	NASHMIC_ROOT=. $(MANSAF) run examples/arrays.nsh
+
+run-repl: $(MANSAF)
+	NASHMIC_ROOT=. $(MANSAF) repl
 
 # Run all examples
 run-all: $(MANSAF)

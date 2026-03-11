@@ -1,5 +1,8 @@
 // fibonacci.nsh — Fibonacci sequence in NashmiC
 // Uses ranges and string interpolation
+// EXPECT: fib(0) = 0
+// EXPECT: fib(10) = 55
+// EXPECT: fib(14) = 377
 
 dalle fibonacci(n: adad64) -> adad64 {
     iza n <= 1 {

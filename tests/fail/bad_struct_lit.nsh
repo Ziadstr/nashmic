@@ -1,5 +1,6 @@
 // bad_struct_lit.nsh — should trigger sema warnings for bad struct literal fields
 // Expected: warning for non-existent field 'z' and wrong type for 'x'
+// ERROR: has no field 'z'
 
 haikal Point {
     x: fasle64,

@@ -1,4 +1,7 @@
 // interpolation.nsh — String interpolation demo
+// EXPECT: marhaba ya Ziad!
+// EXPECT: age: 23, next year: 24
+// EXPECT: literal {{brace}}
 
 yalla() {
     khalli name: nass = "Ziad"

@@ -1,4 +1,7 @@
 // ranges.nsh — Fixed range iteration with lakol..fi
+// EXPECT: Counting 0 to 9:
+// EXPECT: Fibonacci with ranges:
+// EXPECT: fib(14) = 377
 
 yalla() {
     itba3("Counting 0 to 9:\n")

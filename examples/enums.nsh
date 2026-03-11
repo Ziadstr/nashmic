@@ -1,5 +1,8 @@
 // Enums (ta3dad) + Pattern Matching (hasab/hale)
 // Tagged unions with destructuring — NashmiC style
+// EXPECT: === Enums (ta3dad) ===
+// EXPECT: Da2ira (circle) with radius 5
+// EXPECT: ahmar (red)
 
 ta3dad Shape {
     Da2ira(fasle64),
