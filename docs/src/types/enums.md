@@ -138,4 +138,32 @@ yalla() {
 
 ## Under the Hood
 
-In the generated C code, enums become tagged unions: a struct with an integer tag field and a union of payloads. This gives you the safety of sum types with the performance of C unions.
+In the generated C code, enums become tagged unions:
+
+```c
+// ta3dad Shape { Da2ira(fasle64), Mustateel(fasle64), Noqta }
+enum Shape_Tag { Shape_Da2ira = 0, Shape_Mustateel = 1, Shape_Noqta = 2 };
+
+struct Shape {
+    int _tag;
+    union {
+        struct { double _0; } Da2ira;
+        struct { double _0; } Mustateel;
+    } _v;
+};
+```
+
+Each variant gets a unique integer tag. Variants with payloads store their data in a union. `hasab`/`hale` compiles to a `switch` on `_tag` with payload extraction in each case.
+
+Constructing a variant:
+```c
+// NashmiC: Da2ira(5.0)
+// Generated C:
+(struct Shape){._tag = Shape_Da2ira, ._v.Da2ira._0 = 5.0}
+```
+
+This gives you algebraic data types with zero overhead — the same memory layout a C programmer would write by hand.
+
+## Design Rationale
+
+NashmiC enums are inspired by Rust's `enum` (sum types with data) rather than C's `enum` (just named integers). The Franco-Arab naming makes the concept accessible: `ta3dad` is the Arabic word for enumeration, and variant names use natural Arabic words (`Da2ira` = circle, `Noqta` = point). The semantic analysis pass verifies that variant constructors use correct types and that pattern matching covers all variants.

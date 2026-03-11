@@ -59,13 +59,20 @@ Everything listed below is fully implemented, compiles, and runs.
 
 ## How It Works
 
-NashmiC compiles through C:
+NashmiC compiles through C in six stages:
 
 ```
-.nsh source -> Lexer -> Parser -> AST -> C Codegen -> .c file -> cc -> native binary
+.nsh source -> Lexer -> Parser -> AST -> Sema -> C Codegen -> cc -> native binary
 ```
 
-Your `.nsh` source gets tokenized, parsed into an AST, transpiled to C11, then compiled to a native binary by your system's C compiler. The generated code links against `nsh_runtime.c` for built-in functions and easter eggs.
+1. **Lexer** — Tokenizes your `.nsh` source into tokens. Handles UTF-8, Franco-Arab keywords, string interpolation, and operators.
+2. **Parser** — Recursive descent + Pratt parser builds an Abstract Syntax Tree (AST). Handles operator precedence, generics (`natije<T>`, `saff<T>`), and block scoping.
+3. **Semantic Analysis (Sema)** — Three-pass analysis: declares symbols, resolves types, then type-checks. Catches undeclared variables, type mismatches, invalid field access, wrong argument counts, and unused variables — all with Jordanian proverb error messages.
+4. **C Code Generation** — Walks the AST and emits equivalent C11 code. Structs become C structs, enums become tagged unions, methods become mangled functions (`Point_distance`), and `natije<T>` becomes a result struct with `_is_ok` flag.
+5. **C Compilation** — Your system's C compiler (`gcc` or `clang`) compiles the generated C with `-std=gnu11 -O2` and links against `nsh_runtime.c`.
+6. **Binary** — You get a native binary. No VM, no interpreter, no garbage collector. Just machine code.
+
+The entire compiler is ~5,000 lines of C11. No dependencies beyond libc and libm.
 
 ## File Extension
 
@@ -81,4 +88,20 @@ code --install-extension ziadstr.nashmic
 
 Or search **"NashmiC"** in the VS Code Extensions panel (`Ctrl+Shift+X`).
 
-Ready to start? See [Getting Started](getting-started.md).
+## Why Franco-Arab?
+
+Every previous Arabic programming language (Qalb, Alif, ABJAD, Arablan) used Arabic script. They all faced the same problems:
+
+- **RTL/LTR mixing** — Arabic is right-to-left, but code structure (braces, operators, numbers) is left-to-right. Editors struggle with this.
+- **No standard keyboard** — Arabic keyboard layouts vary by country. Programming symbols like `{`, `[`, `=` require awkward key combos.
+- **Tooling gaps** — Syntax highlighters, formatters, linters, and debuggers don't handle Arabic script well.
+
+Franco-Arab (Arabizi) sidesteps all of these. It's the script 400M+ Arabs already use every day in texts, social media, and chat. It's left-to-right, uses the Latin alphabet, and works with every tool ever built for programming. Numbers replace Arabic letters that don't exist in Latin: `3` = ع (ain), `2` = ء (hamza), `7` = ح (ha), `5` = خ (kha).
+
+NashmiC keywords aren't transliterated Modern Standard Arabic — they're Jordanian dialect. The way a CS student in Amman would actually talk. `yalla` not `ibda2`, `khalas` not `iqaf`, `rajje3` not `irja3`. If a Jordanian wouldn't say it in conversation, it doesn't belong in NashmiC.
+
+## Try It
+
+- **[Web Playground](playground/)** — try NashmiC in your browser, no install needed
+- **[VS Code Extension](https://marketplace.visualstudio.com/items?itemName=ziadstr.nashmic)** — syntax highlighting, snippets, bracket matching
+- **[Getting Started](getting-started.md)** — install and write your first program

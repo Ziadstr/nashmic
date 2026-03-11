@@ -140,3 +140,28 @@ yalla() {
     describe_shape(point)
 }
 ```
+
+## Under the Hood
+
+Pattern matching compiles differently depending on what you're matching:
+
+**Enums:** `hasab` becomes a `switch` on the tag field, with each `hale` arm extracting the payload:
+```c
+switch (s._tag) {
+    case Shape_Da2ira: {
+        double radius = s._v.Da2ira._0;
+        // arm body
+        break;
+    }
+    case Shape_Noqta: {
+        // arm body (no payload)
+        break;
+    }
+}
+```
+
+**Results (`natije<T>`):** Matches on `_is_ok` — `hale tamam(val)` checks `_is_ok == 1` and extracts `_v._ok`, while `hale ghalat(msg)` checks `_is_ok == 0` and extracts `_v._err`.
+
+**Optionals (`yimkin<T>`):** Matches on `_has_value` — `hale fi(val)` checks `_has_value == 1` and extracts `_value`, while `hale mafi` checks `_has_value == 0`.
+
+All pattern variables (`radius`, `val`, `msg`) are scoped to their arm body — they don't leak into surrounding code.

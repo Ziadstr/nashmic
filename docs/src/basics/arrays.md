@@ -4,7 +4,7 @@
 
 ## `saff<T>` - The Array Type
 
-`saff` (صف) means "row" or "line" in Arabic. `saff<T>` is a dynamic array of elements of type `T`.
+`saff` (صف) means "row" or "line" in Arabic — like a row of students standing in line. `saff<T>` is a dynamic, heap-allocated array of elements of type `T`. It grows automatically when you push elements.
 
 ```
 khalli a3dad: saff<adad64> = [10, 20, 30, 40, 50]
@@ -95,6 +95,22 @@ yalla() {
     print_array(a3dad)
 }
 ```
+
+## Under the Hood
+
+In the generated C, `saff<adad64>` becomes a struct with a pointer, length, and capacity:
+
+```c
+struct nsh_array_int64_t {
+    int64_t *data;    // heap-allocated buffer
+    int64_t len;      // current element count
+    int64_t cap;      // allocated capacity
+};
+```
+
+Array literals allocate on the heap with `malloc`. `.zeed()` uses `nsh_array_push()` from the runtime, which doubles capacity when full (amortized O(1) push). Iteration uses a simple index loop over `.data[]`.
+
+Arrays are currently passed by value (the struct is copied, but the data pointer is shared). This means modifying an array inside a function affects the caller's array — similar to Go slices.
 
 ## Full Working Example
 
