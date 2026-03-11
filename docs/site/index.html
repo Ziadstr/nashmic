@@ -108,6 +108,8 @@ body{font-family:var(--font-display);background:var(--bg);color:var(--text);line
 .status-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:12px;font-size:12px;font-weight:500;margin-bottom:20px}
 .status-badge.wip{background:rgba(212,160,74,0.1);color:var(--gold);border:1px solid rgba(212,160,74,0.15)}
 .status-badge.done{background:rgba(143,191,122,0.1);color:var(--str);border:1px solid rgba(143,191,122,0.15)}
+.status-badge.ok{background:rgba(143,191,122,0.1);color:var(--str);border:1px solid rgba(143,191,122,0.15)}
+.status-badge.working{background:rgba(143,191,122,0.1);color:var(--str);border:1px solid rgba(143,191,122,0.15)}
 
 /* ═══ CODE BLOCKS ═══ */
 .code-block{background:var(--bg-code);border:1px solid var(--border);border-radius:8px;margin:16px 0 24px;overflow-x:auto;position:relative}
@@ -186,6 +188,7 @@ tbody tr:last-child td{border-bottom:none}
   <div class="header-links">
     <a href="#" onclick="showSection('getting-started');return false" class="hide-mobile">Get Started</a>
     <a href="#" onclick="showSection('reference');return false" class="hide-mobile">Reference</a>
+    <a href="playground/" class="hide-mobile">Playground</a>
     <a href="https://github.com/Ziadstr/nashmic" target="_blank" class="gh-link">
       <svg viewBox="0 0 16 16"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
       GitHub
@@ -209,6 +212,7 @@ tbody tr:last-child td{border-bottom:none}
     <a class="nav-item" href="#" data-section="functions" onclick="nav(this);return false">Functions</a>
     <a class="nav-item" href="#" data-section="control-flow" onclick="nav(this);return false">Control Flow</a>
     <a class="nav-item" href="#" data-section="strings" onclick="nav(this);return false">Strings & Interpolation</a>
+    <a class="nav-item" href="#" data-section="arrays" onclick="nav(this);return false">Arrays</a>
   </div>
   <div class="nav-group">
     <div class="nav-label">Types</div>
@@ -290,6 +294,11 @@ tbody tr:last-child td{border-bottom:none}
 <div class="code-block"><div class="code-block-header"><span class="code-block-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code>git clone https://github.com/Ziadstr/nashmic.git
 cd nashmic
 make</code></pre></div>
+
+<h2>Editor Support</h2>
+<p>Install the VS Code extension for syntax highlighting and snippets:</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code>code --install-extension ziadstr.nashmic</code></pre></div>
+<p>Or search <strong>"NashmiC"</strong> in the Extensions panel (<code class="inline-code">Ctrl+Shift+X</code>).</p>
 
 <h2>Your First Program</h2>
 <p>Create a file called <code class="inline-code">marhaba.nsh</code>:</p>
@@ -575,6 +584,49 @@ make</code></pre></div>
 </div>
 </div>
 
+<!-- ═══════════ ARRAYS ═══════════ -->
+<div class="section" id="sec-arrays">
+<div class="content">
+<h1>Arrays</h1>
+<span class="status-badge ok">Working</span>
+<p class="section-desc"><code class="inline-code">saff</code> means "row." Dynamic arrays with push, length, and iteration.</p>
+
+<h2>Array Literals</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">khalli</span> a3dad: <span class="c-type">saff</span>&lt;<span class="c-type">adad64</span>&gt; = [<span class="c-num">10</span>, <span class="c-num">20</span>, <span class="c-num">30</span>, <span class="c-num">40</span>, <span class="c-num">50</span>]
+<span class="c-kw">khalli</span> drajat: <span class="c-type">saff</span>&lt;<span class="c-type">fasle64</span>&gt; = [<span class="c-num">95.5</span>, <span class="c-num">87.3</span>, <span class="c-num">92.1</span>]
+<span class="c-kw">khalli</span> farigh: <span class="c-type">saff</span>&lt;<span class="c-type">adad64</span>&gt; = []</code></pre></div>
+
+<h2>Indexing & Length</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-fn">itba3</span>(<span class="c-str">"a3dad[0] = %lld\n"</span>, a3dad[<span class="c-num">0</span>])
+<span class="c-fn">itba3</span>(<span class="c-str">"toul: %lld\n"</span>, a3dad.<span class="c-fn">toul</span>())</code></pre></div>
+
+<h2>Push & Iteration</h2>
+<p><code class="inline-code">.zeed()</code> means "add more." <code class="inline-code">lakol x fi arr</code> iterates over elements.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">khalli</span> a3dad: <span class="c-type">saff</span>&lt;<span class="c-type">adad64</span>&gt; = [<span class="c-num">10</span>, <span class="c-num">20</span>, <span class="c-num">30</span>]
+a3dad.<span class="c-fn">zeed</span>(<span class="c-num">40</span>)
+a3dad.<span class="c-fn">zeed</span>(<span class="c-num">50</span>)
+
+<span class="c-kw">lakol</span> n <span class="c-kw">fi</span> a3dad {
+    <span class="c-fn">itba3</span>(<span class="c-str">"%lld "</span>, n)
+}
+<span class="c-fn">itba3</span>(<span class="c-str">"\n"</span>)</code></pre></div>
+
+<h2>As Function Parameters</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">dalle</span> <span class="c-fn">print_array</span>(nums: <span class="c-type">saff</span>&lt;<span class="c-type">adad64</span>&gt;) {
+    <span class="c-fn">itba3</span>(<span class="c-str">"[ "</span>)
+    <span class="c-kw">lakol</span> n <span class="c-kw">fi</span> nums {
+        <span class="c-fn">itba3</span>(<span class="c-str">"%lld "</span>, n)
+    }
+    <span class="c-fn">itba3</span>(<span class="c-str">"]\n"</span>)
+}</code></pre></div>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
 <!-- ═══════════ ENUMS ═══════════ -->
 <div class="section" id="sec-enums">
 <div class="content">
@@ -701,15 +753,31 @@ make</code></pre></div>
 <div class="section" id="sec-defer">
 <div class="content">
 <h1>Defer (<code class="inline-code">ba3dain</code>)</h1>
-<span class="status-badge wip">Parser complete, codegen partially implemented</span>
+<span class="status-badge ok">Working</span>
 <p class="section-desc"><code class="inline-code">ba3dain</code> means "later." Procrastination as a language feature.</p>
 
 <h2>How It Works</h2>
-<p>Schedule a statement to run when the scope exits. Multiple defers execute in LIFO order.</p>
-<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">khalli</span> f = <span class="c-fn">iftah</span>(<span class="c-str">"data.txt"</span>)
-<span class="c-kw">ba3dain</span> <span class="c-fn">sakker</span>(f)
-<span class="c-comment">// ... use f ...</span>
-<span class="c-comment">// sakker(f) runs automatically when scope exits</span></code></pre></div>
+<p>Schedule a block to run when the scope exits. Multiple defers execute in LIFO order.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">dalle</span> <span class="c-fn">greet</span>() {
+    <span class="c-fn">itba3</span>(<span class="c-str">"start\n"</span>)
+    <span class="c-kw">ba3dain</span> {
+        <span class="c-fn">itba3</span>(<span class="c-str">"cleanup 1\n"</span>)
+    }
+    <span class="c-kw">ba3dain</span> {
+        <span class="c-fn">itba3</span>(<span class="c-str">"cleanup 2\n"</span>)
+    }
+    <span class="c-fn">itba3</span>(<span class="c-str">"middle\n"</span>)
+    <span class="c-kw">rajje3</span>
+}
+<span class="c-comment">// Output: start, middle, cleanup 2, cleanup 1</span></code></pre></div>
+
+<h2>With Return Values</h2>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">dalle</span> <span class="c-fn">compute</span>(x: <span class="c-type">adad64</span>) -> <span class="c-type">adad64</span> {
+    <span class="c-kw">ba3dain</span> {
+        <span class="c-fn">itba3</span>(<span class="c-str">"  compute done\n"</span>)
+    }
+    <span class="c-kw">rajje3</span> x * <span class="c-num">2</span>
+}</code></pre></div>
 
 <div class="note"><strong>Cultural note:</strong> "ba3dain" is probably the most-used word in Jordan. "I'll do it ba3dain." Unlike real life, <code class="inline-code">ba3dain</code> in NashmiC actually keeps its promise.</div>
 
@@ -773,7 +841,7 @@ make</code></pre></div>
 <div class="section" id="sec-methods">
 <div class="content">
 <h1>Methods & Impl Blocks</h1>
-<span class="status-badge wip">Parser complete, codegen written but untested</span>
+<span class="status-badge ok">Working</span>
 <p class="section-desc"><code class="inline-code">tabbe2</code> means "apply" or "implement." <code class="inline-code">had</code> means "this thing."</p>
 
 <h2>Attaching Methods</h2>
@@ -857,6 +925,7 @@ make</code></pre></div>
 <tr><td><code>fadi</code></td><td>fa-di</td><td>"empty"</td><td>void</td></tr>
 <tr><td><code>natije</code></td><td>na-tee-je</td><td>"result"</td><td>Result&lt;T&gt;</td></tr>
 <tr><td><code>yimkin</code></td><td>yim-kin</td><td>"maybe"</td><td>Optional&lt;T&gt;</td></tr>
+<tr><td><code>saff</code></td><td>saff</td><td>"row"</td><td>Vec&lt;T&gt;</td></tr>
 </tbody></table></div>
 
 <h2>Values</h2>
@@ -915,6 +984,7 @@ make</code></pre></div>
 <tbody>
 <tr><td><code>natije&lt;T&gt;</code></td><td>Result&lt;T, String&gt;</td><td>tamam(T) or ghalat(nass)</td></tr>
 <tr><td><code>yimkin&lt;T&gt;</code></td><td>Option&lt;T&gt;</td><td>fi(T) or mafi</td></tr>
+<tr><td><code>saff&lt;T&gt;</code></td><td>Vec&lt;T&gt;</td><td>Dynamic array with .zeed() and .toul()</td></tr>
 </tbody></table></div>
 
 <h2>Naming Origins</h2>
@@ -929,6 +999,7 @@ make</code></pre></div>
 <tr><td><code>fadi</code></td><td>&#1601;&#1575;&#1590;&#1610;</td><td>empty</td></tr>
 <tr><td><code>natije</code></td><td>&#1606;&#1578;&#1610;&#1580;&#1577;</td><td>result</td></tr>
 <tr><td><code>yimkin</code></td><td>&#1610;&#1605;&#1603;&#1606;</td><td>maybe</td></tr>
+<tr><td><code>saff</code></td><td>&#1589;&#1601;</td><td>row / line</td></tr>
 </tbody></table></div>
 
 <div class="footer">
