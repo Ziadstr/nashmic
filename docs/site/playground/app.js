@@ -182,7 +182,7 @@ function executeOnWandbox(fullCCode) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       code: fullCCode,
-      compiler: "gcc-head",
+      compiler: "gcc-head-c",
       options: "-std=gnu11 -O2 -lm",
       "compiler-option-raw": "-w"
     })
