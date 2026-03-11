@@ -74,6 +74,8 @@ wasm: $(WASM_SRC)
 
 clean:
 	rm -rf $(BUILD_DIR)
+
+clean-wasm:
 	rm -f $(WASM_JS) $(WASM_FILE)
 
 # Run test suite — compares example outputs against expected

@@ -6,8 +6,9 @@
  *   nsh_compile(source)    -> generated C code string (caller must free)
  *   nsh_get_errors()       -> diagnostic output string (caller must free)
  *
- * No system(), no fopen() on real files, no exec*().
- * All I/O goes through in-memory buffers.
+ * Diagnostics (parser errors, sema warnings) go to stderr, which
+ * Emscripten routes to console.error in JS. We capture them on the
+ * JS side via Module.printErr override.
  */
 
 #define _GNU_SOURCE
@@ -28,51 +29,9 @@
 #define EMSCRIPTEN_KEEPALIVE
 #endif
 
-/* ── Error capture buffer ────────────────────────────────────── */
+/* ── Error buffer ────────────────────────────────────────────── */
 
 static char *error_buffer = NULL;
-static size_t error_buffer_size = 0;
-
-/* ── Stderr redirection helpers ──────────────────────────────── */
-
-/*
- * Redirect stderr to an in-memory buffer so diagnostics, parser
- * errors, and sema warnings are all captured as a string.
- *
- * Strategy: save the real stderr, replace it with an open_memstream
- * FILE*, run the compiler pipeline, then restore stderr and read
- * the captured output.
- */
-
-static FILE *real_stderr = NULL;
-static FILE *capture_stream = NULL;
-static char *capture_buf = NULL;
-static size_t capture_len = 0;
-
-static void begin_stderr_capture(void) {
-    capture_buf = NULL;
-    capture_len = 0;
-    capture_stream = open_memstream(&capture_buf, &capture_len);
-    if (capture_stream) {
-        real_stderr = stderr;
-        stderr = capture_stream;
-    }
-}
-
-static char *end_stderr_capture(void) {
-    if (capture_stream) {
-        fflush(capture_stream);
-        fclose(capture_stream);
-        capture_stream = NULL;
-        stderr = real_stderr;
-        real_stderr = NULL;
-    }
-    /* Return ownership of the buffer to the caller */
-    char *result = capture_buf;
-    capture_buf = NULL;
-    capture_len = 0;
-    return result;
-}
 
 /* ── Exported API ────────────────────────────────────────────── */
 
@@ -83,8 +42,8 @@ static char *end_stderr_capture(void) {
  * or an empty string on failure. The caller (JS via cwrap) must
  * call free() on the returned pointer.
  *
- * Errors and warnings are stored internally and retrieved via
- * nsh_get_errors().
+ * Diagnostics are built from diag_error_count() and sema results.
+ * Detailed stderr output is captured on the JS side via printErr.
  */
 EMSCRIPTEN_KEEPALIVE
 char *nsh_compile(const char *source) {
@@ -92,7 +51,6 @@ char *nsh_compile(const char *source) {
     if (error_buffer) {
         free(error_buffer);
         error_buffer = NULL;
-        error_buffer_size = 0;
     }
 
     if (!source || *source == '\0') {
@@ -106,28 +64,17 @@ char *nsh_compile(const char *source) {
     keywords_init();
     diag_reset();
 
-    /* Start capturing stderr */
-    begin_stderr_capture();
-
     /* ── Lex + Parse ──────────────────────────────────────────── */
     NshNode *ast = parser_parse(source, source_len, "playground.nsh");
     if (!ast) {
-        char *captured = end_stderr_capture();
-
-        /* Build error message */
         char *msg = NULL;
         size_t msg_len = 0;
         FILE *msg_stream = open_memstream(&msg, &msg_len);
         if (msg_stream) {
             fprintf(msg_stream, "Parse failed — %d error(s)\n", diag_error_count());
-            if (captured && *captured) {
-                fprintf(msg_stream, "%s", captured);
-            }
             fclose(msg_stream);
         }
-
         error_buffer = msg ? msg : strdup("Parse failed.\n");
-        free(captured);
         keywords_free();
         return strdup("");
     }
@@ -146,17 +93,11 @@ char *nsh_compile(const char *source) {
         fclose(codegen_stream);
     }
 
-    /* Stop capturing stderr */
-    char *captured = end_stderr_capture();
-
-    /* Build error/warning output */
+    /* Build summary message */
     char *diag_msg = NULL;
     size_t diag_len = 0;
     FILE *diag_stream = open_memstream(&diag_msg, &diag_len);
     if (diag_stream) {
-        if (captured && *captured) {
-            fprintf(diag_stream, "%s", captured);
-        }
         if (sema_errors > 0) {
             fprintf(diag_stream, "%d semantic issue(s) found (warnings only — codegen proceeded)\n", sema_errors);
         }
@@ -169,7 +110,6 @@ char *nsh_compile(const char *source) {
         fclose(diag_stream);
     }
     error_buffer = diag_msg ? diag_msg : strdup("");
-    free(captured);
 
     /* Cleanup AST and keywords */
     node_free(ast);
@@ -184,7 +124,7 @@ char *nsh_compile(const char *source) {
 }
 
 /*
- * Retrieve the error/warning output from the last nsh_compile() call.
+ * Retrieve the diagnostic output from the last nsh_compile() call.
  *
  * Returns a malloc'd string. The caller (JS via cwrap) must call
  * free() on the returned pointer.

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NashmiC Playground</title>
 <meta name="description" content="Try NashmiC in your browser. A compiled programming language with Franco-Arab keywords that transpiles to C.">
-<link rel="icon" type="image/x-icon" href="../../assets/logo-64.png">
+<link rel="icon" type="image/x-icon" href="../assets/favicon.ico">
 <link rel="icon" type="image/png" sizes="64x64" href="../assets/logo-64.png">
 <meta property="og:title" content="NashmiC Playground">
 <meta property="og:description" content="Easy like Python. Powerful like Go. Jordanian to the bone. Try it in your browser.">
@@ -31,7 +31,7 @@
       <a href="../index.html">
         <span class="link-text">Docs</span>
       </a>
-      <a href="https://marketplace.visualstudio.com/items?itemName=ziadstr.nashmic" target="_blank" rel="noopener">
+      <a href="https://marketplace.visualstudio.com/items?itemName=nashmic.nashmic-vscode" target="_blank" rel="noopener">
         <span class="link-text">VS Code</span>
       </a>
       <a href="https://github.com/Ziadstr/nashmic" target="_blank" rel="noopener">
@@ -48,7 +48,8 @@
     Easy like <em>Python</em>. Powerful like <em>Go</em>. <strong>Jordanian to the bone.</strong>
   </p>
   <p class="hero-subtitle">
-    Select an example, hit Run, and see NashmiC in action. Full in-browser compilation coming soon.
+    Write NashmiC code and compile it in your browser via WebAssembly.
+    Custom code shows the generated C. Pre-loaded examples also show cached program output.
   </p>
 </section>
 
@@ -60,6 +61,7 @@
     </select>
   </div>
   <div class="toolbar-right">
+    <span id="wasm-status" class="wasm-status loading">Loading compiler...</span>
     <button id="run-btn" class="btn btn-run" title="Run (Ctrl+Enter)">
       <span class="btn-icon">&#9654;</span>
       &#1588;&#1594;&#1617;&#1604; &mdash; Run
@@ -125,7 +127,7 @@
           Full language reference &mdash; keywords, types, pattern matching, error handling, and more.
         </p>
       </a>
-      <a href="https://marketplace.visualstudio.com/items?itemName=ziadstr.nashmic" class="card" target="_blank" rel="noopener">
+      <a href="https://marketplace.visualstudio.com/items?itemName=nashmic.nashmic-vscode" class="card" target="_blank" rel="noopener">
         <div class="card-icon">&#128640;</div>
         <h3>VS Code Extension</h3>
         <p>
@@ -141,11 +143,12 @@
   <div class="footer-links">
     <a href="https://github.com/Ziadstr/nashmic">GitHub</a>
     <a href="../index.html">Documentation</a>
-    <a href="https://marketplace.visualstudio.com/items?itemName=ziadstr.nashmic">VS Code Extension</a>
+    <a href="https://marketplace.visualstudio.com/items?itemName=nashmic.nashmic-vscode">VS Code Extension</a>
   </div>
   <p>NashmiC &mdash; A programming language from Jordan</p>
 </footer>
 
+<script src="nashmic.js"></script>
 <script src="examples.js"></script>
 <script src="app.js"></script>
 </body>

@@ -22,7 +22,14 @@ function initWasm() {
     return;
   }
 
-  NashmiCModule().then(function (Module) {
+  /* Capture stderr output from the WASM module */
+  STATE._stderrCapture = [];
+
+  NashmiCModule({
+    printErr: function (text) {
+      STATE._stderrCapture.push(text);
+    }
+  }).then(function (Module) {
     STATE.wasmModule = Module;
 
     STATE.nshCompile = Module.cwrap("nsh_compile", "number", ["string"]);
@@ -60,6 +67,9 @@ function compileWithWasm(sourceCode) {
 
   var Module = STATE.wasmModule;
 
+  /* Clear stderr capture buffer before compilation */
+  STATE._stderrCapture = [];
+
   var resultPtr = STATE.nshCompile(sourceCode);
   var generatedC = "";
   if (resultPtr) {
@@ -72,6 +82,12 @@ function compileWithWasm(sourceCode) {
   if (errPtr) {
     errors = Module.UTF8ToString(errPtr);
     STATE.wasmFree(errPtr);
+  }
+
+  /* Combine stderr output with diagnostic summary */
+  var stderrOutput = STATE._stderrCapture.join("\n");
+  if (stderrOutput) {
+    errors = stderrOutput + (errors ? "\n" + errors : "");
   }
 
   return { generatedC: generatedC, errors: errors };

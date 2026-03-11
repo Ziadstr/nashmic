@@ -645,3 +645,32 @@ body {
     width: 100%;
   }
 }
+
+/* ---- WASM Status Indicator ---- */
+
+.wasm-status {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  padding: 3px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.wasm-status.loading {
+  color: var(--gold);
+  background: rgba(212, 160, 74, 0.1);
+  border: 1px solid rgba(212, 160, 74, 0.2);
+}
+
+.wasm-status.ready {
+  color: var(--green-bright);
+  background: rgba(46, 168, 93, 0.1);
+  border: 1px solid rgba(46, 168, 93, 0.2);
+}
+
+.wasm-status.failed {
+  color: var(--text-muted);
+  background: rgba(92, 95, 115, 0.1);
+  border: 1px solid rgba(92, 95, 115, 0.2);
+}

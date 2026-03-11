@@ -1,21 +1,116 @@
-/* NashmiC Playground — Main Application Logic */
+/* NashmiC Playground — Main Application Logic (WASM-enabled) */
 
 const STATE = {
   currentExample: null,
   isCustomCode: false,
   activeTab: "output",
   isRunning: false,
+  wasmReady: false,
+  wasmModule: null,
+  nshCompile: null,
+  nshGetErrors: null,
+  wasmFree: null,
 };
+
+/* ---- WASM Initialization ---- */
+
+function initWasm() {
+  const statusEl = document.getElementById("wasm-status");
+
+  if (typeof NashmiCModule === "undefined") {
+    markWasmFailed(statusEl, "WASM module not found");
+    return;
+  }
+
+  /* Capture stderr output from the WASM module */
+  STATE._stderrCapture = [];
+
+  NashmiCModule({
+    printErr: function (text) {
+      STATE._stderrCapture.push(text);
+    }
+  }).then(function (Module) {
+    STATE.wasmModule = Module;
+
+    STATE.nshCompile = Module.cwrap("nsh_compile", "number", ["string"]);
+    STATE.nshGetErrors = Module.cwrap("nsh_get_errors", "number", []);
+    STATE.wasmFree = Module._free;
+
+    STATE.wasmReady = true;
+
+    if (statusEl) {
+      statusEl.textContent = "Compiler loaded";
+      statusEl.className = "wasm-status ready";
+    }
+  }).catch(function (err) {
+    markWasmFailed(statusEl, err.message || "Failed to load");
+  });
+}
+
+function markWasmFailed(statusEl, reason) {
+  STATE.wasmReady = false;
+  if (statusEl) {
+    statusEl.textContent = "WASM unavailable";
+    statusEl.className = "wasm-status failed";
+    statusEl.title = reason;
+  }
+}
+
+/*
+ * Call the WASM compiler and return { generatedC, errors }.
+ * Returns null if WASM is not available.
+ */
+function compileWithWasm(sourceCode) {
+  if (!STATE.wasmReady || !STATE.wasmModule) {
+    return null;
+  }
+
+  var Module = STATE.wasmModule;
+
+  /* Clear stderr capture buffer before compilation */
+  STATE._stderrCapture = [];
+
+  var resultPtr = STATE.nshCompile(sourceCode);
+  var generatedC = "";
+  if (resultPtr) {
+    generatedC = Module.UTF8ToString(resultPtr);
+    STATE.wasmFree(resultPtr);
+  }
+
+  var errPtr = STATE.nshGetErrors();
+  var errors = "";
+  if (errPtr) {
+    errors = Module.UTF8ToString(errPtr);
+    STATE.wasmFree(errPtr);
+  }
+
+  /* Combine stderr output with diagnostic summary */
+  var stderrOutput = STATE._stderrCapture.join("\n");
+  if (stderrOutput) {
+    errors = stderrOutput + (errors ? "\n" + errors : "");
+  }
+
+  return { generatedC: generatedC, errors: errors };
+}
+
+/* ---- Strip ANSI escape codes for browser display ---- */
+
+function stripAnsi(text) {
+  return text.replace(/\x1b\[[0-9;]*m/g, "");
+}
+
+/* ---- Playground Core ---- */
 
 function initPlayground() {
   populateExampleDropdown();
   bindEventListeners();
   loadExample(EXAMPLES[0].id);
+  initWasm();
 }
 
 function populateExampleDropdown() {
   const select = document.getElementById("example-select");
-  EXAMPLES.forEach((example) => {
+  EXAMPLES.forEach(function (example) {
     const option = document.createElement("option");
     option.value = example.id;
     option.textContent = example.name;
@@ -30,22 +125,20 @@ function bindEventListeners() {
   const tabOutput = document.getElementById("tab-output");
   const tabGenC = document.getElementById("tab-genc");
 
-  select.addEventListener("change", (event) => {
+  select.addEventListener("change", function (event) {
     loadExample(event.target.value);
   });
 
   runBtn.addEventListener("click", handleRun);
-
   editor.addEventListener("input", handleEditorChange);
-
-  tabOutput.addEventListener("click", () => switchTab("output"));
-  tabGenC.addEventListener("click", () => switchTab("genc"));
+  tabOutput.addEventListener("click", function () { switchTab("output"); });
+  tabGenC.addEventListener("click", function () { switchTab("genc"); });
 
   initResizeHandle();
 }
 
 function loadExample(exampleId) {
-  const example = EXAMPLES.find((ex) => ex.id === exampleId);
+  const example = EXAMPLES.find(function (ex) { return ex.id === exampleId; });
   if (!example) return;
 
   STATE.currentExample = example;
@@ -85,17 +178,117 @@ function updateRunButtonState() {
   runBtn.classList.toggle("custom-mode", STATE.isCustomCode);
 }
 
+/* ---- Run Handler ---- */
+
 function handleRun() {
   if (STATE.isRunning) return;
 
+  const editor = document.getElementById("code-editor");
+  const sourceCode = editor.value;
+
   if (STATE.isCustomCode) {
-    showCustomCodeNotice();
+    handleCustomRun(sourceCode);
     return;
   }
 
   if (!STATE.currentExample) return;
 
+  /* Pre-loaded example: try WASM first for generated C, show cached output */
+  if (STATE.wasmReady) {
+    handleWasmRun(sourceCode, true);
+  } else {
+    handleCachedRun();
+  }
+}
+
+/*
+ * Run custom code through WASM. If WASM is unavailable, show a fallback notice.
+ */
+function handleCustomRun(sourceCode) {
+  if (!STATE.wasmReady) {
+    showCustomCodeFallback();
+    return;
+  }
+
+  handleWasmRun(sourceCode, false);
+}
+
+/*
+ * Compile via WASM and display results.
+ * If isCachedExample is true, the Output tab shows the cached program output
+ * and the Generated C tab shows the WASM-compiled C code.
+ */
+function handleWasmRun(sourceCode, isCachedExample) {
   STATE.isRunning = true;
+  const runBtn = document.getElementById("run-btn");
+  const outputEl = document.getElementById("output-text");
+
+  runBtn.disabled = true;
+  runBtn.innerHTML =
+    '<span class="btn-icon running-indicator">\u25b6</span> \u0634\u063a\u0651\u0644 \u2014 Compiling...';
+
+  outputEl.className = "output-text running";
+  outputEl.textContent = "\u25b6 Compiling in-browser via WASM...\n";
+
+  /* Use a short timeout so the UI updates before the synchronous WASM call */
+  setTimeout(function () {
+    var result = compileWithWasm(sourceCode);
+
+    STATE.isRunning = false;
+    runBtn.disabled = false;
+    runBtn.innerHTML =
+      '<span class="btn-icon">\u25b6</span> \u0634\u063a\u0651\u0644 \u2014 Run';
+
+    if (!result) {
+      outputEl.className = "output-text";
+      outputEl.textContent = "WASM compilation failed unexpectedly.";
+      return;
+    }
+
+    var cleanErrors = stripAnsi(result.errors);
+    var hasGenC = result.generatedC && result.generatedC.length > 0;
+
+    /* Store the WASM-generated C on the current state for tab switching */
+    STATE._wasmGeneratedC = hasGenC ? result.generatedC : null;
+    STATE._wasmErrors = cleanErrors;
+    STATE._isCachedExample = isCachedExample;
+
+    if (STATE.activeTab === "genc") {
+      showWasmGeneratedC(result.generatedC);
+    } else {
+      showWasmOutput(cleanErrors, isCachedExample);
+    }
+  }, 50);
+}
+
+function showWasmOutput(errors, isCachedExample) {
+  const outputEl = document.getElementById("output-text");
+  outputEl.className = "output-text animate";
+
+  if (isCachedExample && STATE.currentExample) {
+    /* For pre-loaded examples, show the cached program output */
+    outputEl.textContent = STATE.currentExample.output;
+  } else {
+    /* For custom code, show compiler diagnostics */
+    outputEl.textContent = errors || "Compilation successful. Switch to the Generated C tab to see the output.";
+  }
+}
+
+function showWasmGeneratedC(generatedC) {
+  const outputEl = document.getElementById("output-text");
+  outputEl.className = "output-text animate";
+  outputEl.textContent = generatedC || "(No C code generated — check errors in Output tab)";
+}
+
+/*
+ * Pre-loaded example run with cached output (no WASM available).
+ */
+function handleCachedRun() {
+  STATE.isRunning = true;
+  STATE._wasmGeneratedC = null;
+  STATE._wasmErrors = null;
+  STATE._isCachedExample = true;
+
   const runBtn = document.getElementById("run-btn");
   const outputEl = document.getElementById("output-text");
 
@@ -122,14 +315,14 @@ function handleRun() {
     },
   ];
 
-  steps.forEach((step) => {
-    setTimeout(() => {
+  steps.forEach(function (step) {
+    setTimeout(function () {
       outputEl.textContent = step.text;
     }, step.delay);
   });
 
-  setTimeout(() => {
-    displayResult();
+  setTimeout(function () {
+    displayCachedResult();
     STATE.isRunning = false;
     runBtn.disabled = false;
     runBtn.innerHTML =
@@ -137,7 +330,7 @@ function handleRun() {
   }, 1500);
 }
 
-function displayResult() {
+function displayCachedResult() {
   const outputEl = document.getElementById("output-text");
 
   if (STATE.activeTab === "output") {
@@ -148,7 +341,9 @@ function displayResult() {
   }
 }
 
-function showCustomCodeNotice() {
+/* ---- Fallback for custom code when WASM is unavailable ---- */
+
+function showCustomCodeFallback() {
   const outputEl = document.getElementById("output-text");
   outputEl.className = "output-text";
   outputEl.innerHTML = "";
@@ -156,15 +351,17 @@ function showCustomCodeNotice() {
   const notice = document.createElement("div");
   notice.className = "custom-notice";
   notice.innerHTML =
-    "<strong>Full compilation coming soon!</strong><br><br>" +
-    "WASM-based in-browser compilation is on the roadmap. " +
-    "For now, try the pre-loaded examples or install mansaf locally:<br><br>" +
+    "<strong>In-browser compiler could not load.</strong><br><br>" +
+    "WASM failed to initialize. You can still try the pre-loaded examples, " +
+    "or install mansaf locally:<br><br>" +
     "<code>git clone https://github.com/Ziadstr/nashmic</code><br>" +
     "<code>cd nashmic && make install</code><br>" +
     "<code>mansaf run your_file.nsh</code>";
 
   outputEl.appendChild(notice);
 }
+
+/* ---- Tab Switching ---- */
 
 function switchTab(tab) {
   STATE.activeTab = tab;
@@ -175,11 +372,22 @@ function switchTab(tab) {
   tabOutput.classList.toggle("active", tab === "output");
   tabGenC.classList.toggle("active", tab === "genc");
 
-  if (!STATE.currentExample) return;
+  if (STATE.isRunning) return;
 
   const outputEl = document.getElementById("output-text");
 
-  if (STATE.isRunning) return;
+  /* If we have WASM results from the last run, use those */
+  if (STATE._wasmGeneratedC !== undefined && STATE._wasmGeneratedC !== null) {
+    if (tab === "genc") {
+      showWasmGeneratedC(STATE._wasmGeneratedC);
+    } else {
+      showWasmOutput(STATE._wasmErrors, STATE._isCachedExample);
+    }
+    return;
+  }
+
+  /* Fallback: cached example data */
+  if (!STATE.currentExample) return;
 
   if (tab === "output") {
     if (outputEl.textContent && !outputEl.querySelector(".custom-notice")) {
@@ -198,11 +406,17 @@ function showGeneratedC() {
 }
 
 function clearOutput() {
+  STATE._wasmGeneratedC = null;
+  STATE._wasmErrors = null;
+  STATE._isCachedExample = false;
+
   const outputEl = document.getElementById("output-text");
   outputEl.className = "output-text placeholder";
   outputEl.innerHTML =
     '<span>Press <strong>\u0634\u063a\u0651\u0644 \u2014 Run</strong> to see the output</span>';
 }
+
+/* ---- Resize Handle ---- */
 
 function initResizeHandle() {
   const handle = document.getElementById("resize-handle");
@@ -213,7 +427,7 @@ function initResizeHandle() {
 
   let isResizing = false;
 
-  handle.addEventListener("mousedown", (event) => {
+  handle.addEventListener("mousedown", function (event) {
     isResizing = true;
     handle.classList.add("active");
     document.body.style.cursor = "col-resize";
@@ -221,7 +435,7 @@ function initResizeHandle() {
     event.preventDefault();
   });
 
-  document.addEventListener("mousemove", (event) => {
+  document.addEventListener("mousemove", function (event) {
     if (!isResizing) return;
 
     const playgroundRect = playground.getBoundingClientRect();
@@ -233,7 +447,7 @@ function initResizeHandle() {
     leftPane.style.width = percentage + "%";
   });
 
-  document.addEventListener("mouseup", () => {
+  document.addEventListener("mouseup", function () {
     if (!isResizing) return;
     isResizing = false;
     handle.classList.remove("active");
@@ -243,7 +457,7 @@ function initResizeHandle() {
 }
 
 /* ---- Keyboard shortcuts ---- */
-document.addEventListener("keydown", (event) => {
+document.addEventListener("keydown", function (event) {
   if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
     event.preventDefault();
     handleRun();
@@ -251,11 +465,11 @@ document.addEventListener("keydown", (event) => {
 });
 
 /* ---- Tab support in textarea ---- */
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", function () {
   const editor = document.getElementById("code-editor");
   if (!editor) return;
 
-  editor.addEventListener("keydown", (event) => {
+  editor.addEventListener("keydown", function (event) {
     if (event.key === "Tab") {
       event.preventDefault();
       const start = editor.selectionStart;
