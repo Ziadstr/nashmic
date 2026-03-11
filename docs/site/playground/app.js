@@ -1,4 +1,4 @@
-/* NashmiC Playground — Main Application Logic (WASM-enabled) */
+/* NashmiC Playground — Main Application Logic (WASM + Remote Execution) */
 
 const STATE = {
   currentExample: null,
@@ -12,6 +12,91 @@ const STATE = {
   wasmFree: null,
 };
 
+/* ---- Embedded NashmiC Runtime ---- */
+/* This gets prepended to the generated C so it compiles standalone on Wandbox */
+
+const NSH_RUNTIME = `
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <string.h>
+#include <stdint.h>
+#include <locale.h>
+#include <time.h>
+
+void nsh_runtime_init(void) { setlocale(LC_ALL, ""); }
+void nsh_runtime_shutdown(void) { fflush(stdout); fflush(stderr); }
+
+void nsh_itba3(const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    vprintf(fmt, args);
+    va_end(args);
+}
+
+char *nsh_i2ra(void) {
+    char *line = NULL;
+    size_t len = 0;
+    ssize_t nread = getline(&line, &len, stdin);
+    if (nread == -1) { free(line); return NULL; }
+    if (nread > 0 && line[nread - 1] == '\\n') line[nread - 1] = '\\0';
+    return line;
+}
+
+void nsh_itla3(int code) { nsh_runtime_shutdown(); exit(code); }
+
+void nsh_array_push(void **data, int64_t *len, int64_t *cap,
+                    const void *elem, int64_t elem_size) {
+    if (*len >= *cap) {
+        int64_t new_cap = (*cap == 0) ? 8 : (*cap) * 2;
+        void *new_data = realloc(*data, new_cap * elem_size);
+        if (!new_data) { fprintf(stderr, "out of memory\\n"); exit(1); }
+        *data = new_data;
+        *cap = new_cap;
+    }
+    memcpy((char *)(*data) + (*len) * elem_size, elem, elem_size);
+    (*len)++;
+}
+
+int64_t nsh_array_len(int64_t len) { return len; }
+void nsh_array_free(void *data) { free(data); }
+
+char *nsh_str_concat(const char *a, const char *b) {
+    if (!a) a = "";
+    if (!b) b = "";
+    size_t la = strlen(a), lb = strlen(b);
+    char *r = malloc(la + lb + 1);
+    if (!r) { fprintf(stderr, "out of memory\\n"); exit(1); }
+    memcpy(r, a, la);
+    memcpy(r + la, b, lb);
+    r[la + lb] = '\\0';
+    return r;
+}
+
+int64_t nsh_str_len(const char *s) { return s ? (int64_t)strlen(s) : 0; }
+
+static const char *PROVERBS[] = {
+    "patience turns sour to sweet",
+    "the rope of lies is short",
+    "the neighbor before the house",
+    "a friend in need is a friend indeed",
+    "knowledge is light, ignorance is darkness"
+};
+static int drobi_seeded = 0, drobi_count = 0;
+
+void nsh_drobi(void) {
+    if (!drobi_seeded) { srand((unsigned)time(NULL)); drobi_seeded = 1; }
+    drobi_count++;
+    if (drobi_count > 5) { printf("enough jokes — get back to coding\\n"); return; }
+    printf("%s\\n", PROVERBS[rand() % 5]);
+}
+
+void nsh_mansaf(void) { printf("mansaf recipe — best served with jameed\\n"); }
+void nsh_sahteen(void) { printf("bon appetit!\\n"); }
+void nsh_nashmi(void) { printf("NashmiC — Franco-Arab Programming Language\\n"); }
+`;
+
 /* ---- WASM Initialization ---- */
 
 function initWasm() {
@@ -22,7 +107,6 @@ function initWasm() {
     return;
   }
 
-  /* Capture stderr output from the WASM module */
   STATE._stderrCapture = [];
 
   NashmiCModule({
@@ -31,15 +115,13 @@ function initWasm() {
     }
   }).then(function (Module) {
     STATE.wasmModule = Module;
-
     STATE.nshCompile = Module.cwrap("nsh_compile", "number", ["string"]);
     STATE.nshGetErrors = Module.cwrap("nsh_get_errors", "number", []);
     STATE.wasmFree = Module._free;
-
     STATE.wasmReady = true;
 
     if (statusEl) {
-      statusEl.textContent = "Compiler loaded";
+      statusEl.textContent = "Compiler ready";
       statusEl.className = "wasm-status ready";
     }
   }).catch(function (err) {
@@ -56,18 +138,12 @@ function markWasmFailed(statusEl, reason) {
   }
 }
 
-/*
- * Call the WASM compiler and return { generatedC, errors }.
- * Returns null if WASM is not available.
- */
+/* ---- WASM Transpile: NashmiC → C ---- */
+
 function compileWithWasm(sourceCode) {
-  if (!STATE.wasmReady || !STATE.wasmModule) {
-    return null;
-  }
+  if (!STATE.wasmReady || !STATE.wasmModule) return null;
 
   var Module = STATE.wasmModule;
-
-  /* Clear stderr capture buffer before compilation */
   STATE._stderrCapture = [];
 
   var resultPtr = STATE.nshCompile(sourceCode);
@@ -84,7 +160,6 @@ function compileWithWasm(sourceCode) {
     STATE.wasmFree(errPtr);
   }
 
-  /* Combine stderr output with diagnostic summary */
   var stderrOutput = STATE._stderrCapture.join("\n");
   if (stderrOutput) {
     errors = stderrOutput + (errors ? "\n" + errors : "");
@@ -93,7 +168,40 @@ function compileWithWasm(sourceCode) {
   return { generatedC: generatedC, errors: errors };
 }
 
-/* ---- Strip ANSI escape codes for browser display ---- */
+/* ---- Remote Execution via Wandbox ---- */
+
+function buildStandaloneC(generatedC) {
+  /* Strip the #include "nsh_runtime.h" line — we inline the runtime */
+  var code = generatedC.replace(/#include\s*"nsh_runtime\.h"\s*\n?/g, "");
+  return NSH_RUNTIME + "\n" + code;
+}
+
+function executeOnWandbox(fullCCode) {
+  return fetch("https://wandbox.org/api/compile.json", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      code: fullCCode,
+      compiler: "gcc-head",
+      options: "-std=gnu11 -O2 -lm",
+      "compiler-option-raw": "-w"
+    })
+  })
+  .then(function (response) {
+    if (!response.ok) throw new Error("Wandbox returned " + response.status);
+    return response.json();
+  })
+  .then(function (data) {
+    return {
+      output: data.program_output || "",
+      compilerError: data.compiler_error || "",
+      programError: data.program_error || "",
+      status: data.status || "0"
+    };
+  });
+}
+
+/* ---- Strip ANSI escape codes ---- */
 
 function stripAnsi(text) {
   return text.replace(/\x1b\[[0-9;]*m/g, "");
@@ -160,10 +268,7 @@ function handleEditorChange() {
   if (!STATE.currentExample) return;
 
   const editor = document.getElementById("code-editor");
-  const currentCode = editor.value;
-  const originalCode = STATE.currentExample.code;
-
-  STATE.isCustomCode = currentCode !== originalCode;
+  STATE.isCustomCode = editor.value !== STATE.currentExample.code;
 
   const fileName = document.getElementById("file-name");
   fileName.textContent = STATE.isCustomCode
@@ -186,108 +291,117 @@ function handleRun() {
   const editor = document.getElementById("code-editor");
   const sourceCode = editor.value;
 
-  if (STATE.isCustomCode) {
-    handleCustomRun(sourceCode);
-    return;
-  }
-
-  if (!STATE.currentExample) return;
-
-  /* Pre-loaded example: try WASM first for generated C, show cached output */
-  if (STATE.wasmReady) {
-    handleWasmRun(sourceCode, true);
-  } else {
-    handleCachedRun();
-  }
-}
-
-/*
- * Run custom code through WASM. If WASM is unavailable, show a fallback notice.
- */
-function handleCustomRun(sourceCode) {
   if (!STATE.wasmReady) {
-    showCustomCodeFallback();
+    /* No WASM — use cached output for pre-loaded examples */
+    if (!STATE.isCustomCode && STATE.currentExample) {
+      handleCachedRun();
+    } else {
+      showCustomCodeFallback();
+    }
     return;
   }
 
-  handleWasmRun(sourceCode, false);
+  /* Transpile NashmiC → C via WASM, then execute via Wandbox */
+  runFullPipeline(sourceCode);
 }
 
-/*
- * Compile via WASM and display results.
- * If isCachedExample is true, the Output tab shows the cached program output
- * and the Generated C tab shows the WASM-compiled C code.
- */
-function handleWasmRun(sourceCode, isCachedExample) {
+function runFullPipeline(sourceCode) {
   STATE.isRunning = true;
   const runBtn = document.getElementById("run-btn");
   const outputEl = document.getElementById("output-text");
 
   runBtn.disabled = true;
   runBtn.innerHTML =
-    '<span class="btn-icon running-indicator">\u25b6</span> \u0634\u063a\u0651\u0644 \u2014 Compiling...';
+    '<span class="btn-icon running-indicator">\u25b6</span> \u0634\u063a\u0651\u0644 \u2014 Transpiling...';
 
   outputEl.className = "output-text running";
-  outputEl.textContent = "\u25b6 Compiling in-browser via WASM...\n";
+  outputEl.textContent = "\u25b6 Transpiling NashmiC \u2192 C...\n";
 
-  /* Use a short timeout so the UI updates before the synchronous WASM call */
   setTimeout(function () {
+    /* Step 1: Transpile */
     var result = compileWithWasm(sourceCode);
 
-    STATE.isRunning = false;
-    runBtn.disabled = false;
-    runBtn.innerHTML =
-      '<span class="btn-icon">\u25b6</span> \u0634\u063a\u0651\u0644 \u2014 Run';
+    if (!result || !result.generatedC) {
+      STATE.isRunning = false;
+      runBtn.disabled = false;
+      runBtn.innerHTML =
+        '<span class="btn-icon">\u25b6</span> \u0634\u063a\u0651\u0644 \u2014 Run';
 
-    if (!result) {
-      outputEl.className = "output-text";
-      outputEl.textContent = "WASM compilation failed unexpectedly.";
+      var cleanErrors = result ? stripAnsi(result.errors) : "Transpilation failed.";
+      outputEl.className = "output-text error";
+      outputEl.textContent = cleanErrors;
+
+      STATE._wasmGeneratedC = null;
+      STATE._wasmErrors = cleanErrors;
+      STATE._programOutput = null;
       return;
     }
 
     var cleanErrors = stripAnsi(result.errors);
-    var hasGenC = result.generatedC && result.generatedC.length > 0;
-
-    /* Store the WASM-generated C on the current state for tab switching */
-    STATE._wasmGeneratedC = hasGenC ? result.generatedC : null;
+    STATE._wasmGeneratedC = result.generatedC;
     STATE._wasmErrors = cleanErrors;
-    STATE._isCachedExample = isCachedExample;
 
-    if (STATE.activeTab === "genc") {
-      showWasmGeneratedC(result.generatedC);
-    } else {
-      showWasmOutput(cleanErrors, isCachedExample);
-    }
+    outputEl.textContent = "\u25b6 Transpiling NashmiC \u2192 C...\n\u2713 Transpiled successfully\n\u25b6 Compiling & running C code...\n";
+    runBtn.innerHTML =
+      '<span class="btn-icon running-indicator">\u25b6</span> \u0634\u063a\u0651\u0644 \u2014 Running...';
+
+    /* Step 2: Build standalone C and execute */
+    var fullC = buildStandaloneC(result.generatedC);
+
+    executeOnWandbox(fullC)
+      .then(function (execResult) {
+        STATE.isRunning = false;
+        runBtn.disabled = false;
+        runBtn.innerHTML =
+          '<span class="btn-icon">\u25b6</span> \u0634\u063a\u0651\u0644 \u2014 Run';
+
+        var programOutput = "";
+        if (execResult.compilerError) {
+          programOutput += "Compiler:\n" + execResult.compilerError + "\n";
+        }
+        if (execResult.output) {
+          programOutput += execResult.output;
+        }
+        if (execResult.programError) {
+          programOutput += execResult.programError;
+        }
+        if (!programOutput) {
+          programOutput = "(no output)";
+        }
+
+        STATE._programOutput = programOutput;
+
+        if (STATE.activeTab === "genc") {
+          showGenCTab();
+        } else {
+          outputEl.className = "output-text animate";
+          outputEl.textContent = programOutput;
+        }
+      })
+      .catch(function (err) {
+        STATE.isRunning = false;
+        runBtn.disabled = false;
+        runBtn.innerHTML =
+          '<span class="btn-icon">\u25b6</span> \u0634\u063a\u0651\u0644 \u2014 Run';
+
+        STATE._programOutput = null;
+        outputEl.className = "output-text error";
+        outputEl.textContent =
+          "Failed to execute: " + err.message + "\n\n" +
+          "The code transpiled successfully. Switch to the Generated C tab to see the output.\n" +
+          "You can copy the C code and compile it locally with:\n" +
+          "  gcc -std=gnu11 -O2 -o output code.c -lm";
+      });
   }, 50);
 }
 
-function showWasmOutput(errors, isCachedExample) {
-  const outputEl = document.getElementById("output-text");
-  outputEl.className = "output-text animate";
+/* ---- Cached run (no WASM, pre-loaded examples only) ---- */
 
-  if (isCachedExample && STATE.currentExample) {
-    /* For pre-loaded examples, show the cached program output */
-    outputEl.textContent = STATE.currentExample.output;
-  } else {
-    /* For custom code, show compiler diagnostics */
-    outputEl.textContent = errors || "Compilation successful. Switch to the Generated C tab to see the output.";
-  }
-}
-
-function showWasmGeneratedC(generatedC) {
-  const outputEl = document.getElementById("output-text");
-  outputEl.className = "output-text animate";
-  outputEl.textContent = generatedC || "(No C code generated — check errors in Output tab)";
-}
-
-/*
- * Pre-loaded example run with cached output (no WASM available).
- */
 function handleCachedRun() {
   STATE.isRunning = true;
   STATE._wasmGeneratedC = null;
   STATE._wasmErrors = null;
-  STATE._isCachedExample = true;
+  STATE._programOutput = null;
 
   const runBtn = document.getElementById("run-btn");
   const outputEl = document.getElementById("output-text");
@@ -297,48 +411,18 @@ function handleCachedRun() {
     '<span class="btn-icon running-indicator">\u25b6</span> \u0634\u063a\u0651\u0644 \u2014 Running...';
 
   outputEl.className = "output-text running";
-  outputEl.textContent = "\u25b6 Compiling with mansaf...\n";
-
-  const steps = [
-    { delay: 300, text: "\u25b6 Compiling with mansaf...\n\u2713 Parsed successfully\n" },
-    {
-      delay: 600,
-      text: "\u25b6 Compiling with mansaf...\n\u2713 Parsed successfully\n\u2713 Generated C code\n",
-    },
-    {
-      delay: 900,
-      text: "\u25b6 Compiling with mansaf...\n\u2713 Parsed successfully\n\u2713 Generated C code\n\u2713 Compiled with gcc\n",
-    },
-    {
-      delay: 1200,
-      text: "\u25b6 Compiling with mansaf...\n\u2713 Parsed successfully\n\u2713 Generated C code\n\u2713 Compiled with gcc\n\u2713 Running...\n\n",
-    },
-  ];
-
-  steps.forEach(function (step) {
-    setTimeout(function () {
-      outputEl.textContent = step.text;
-    }, step.delay);
-  });
+  outputEl.textContent = "\u25b6 Running...\n";
 
   setTimeout(function () {
-    displayCachedResult();
     STATE.isRunning = false;
     runBtn.disabled = false;
     runBtn.innerHTML =
       '<span class="btn-icon">\u25b6</span> \u0634\u063a\u0651\u0644 \u2014 Run';
-  }, 1500);
-}
 
-function displayCachedResult() {
-  const outputEl = document.getElementById("output-text");
-
-  if (STATE.activeTab === "output") {
+    STATE._programOutput = STATE.currentExample.output;
     outputEl.className = "output-text animate";
     outputEl.textContent = STATE.currentExample.output;
-  } else {
-    showGeneratedC();
-  }
+  }, 800);
 }
 
 /* ---- Fallback for custom code when WASM is unavailable ---- */
@@ -351,9 +435,8 @@ function showCustomCodeFallback() {
   const notice = document.createElement("div");
   notice.className = "custom-notice";
   notice.innerHTML =
-    "<strong>In-browser compiler could not load.</strong><br><br>" +
-    "WASM failed to initialize. You can still try the pre-loaded examples, " +
-    "or install mansaf locally:<br><br>" +
+    "<strong>In-browser compiler not available.</strong><br><br>" +
+    "Install mansaf locally to run custom code:<br><br>" +
     "<code>git clone https://github.com/Ziadstr/nashmic</code><br>" +
     "<code>cd nashmic && make install</code><br>" +
     "<code>mansaf run your_file.nsh</code>";
@@ -374,41 +457,41 @@ function switchTab(tab) {
 
   if (STATE.isRunning) return;
 
-  const outputEl = document.getElementById("output-text");
-
-  /* If we have WASM results from the last run, use those */
-  if (STATE._wasmGeneratedC !== undefined && STATE._wasmGeneratedC !== null) {
-    if (tab === "genc") {
-      showWasmGeneratedC(STATE._wasmGeneratedC);
-    } else {
-      showWasmOutput(STATE._wasmErrors, STATE._isCachedExample);
-    }
-    return;
-  }
-
-  /* Fallback: cached example data */
-  if (!STATE.currentExample) return;
-
-  if (tab === "output") {
-    if (outputEl.textContent && !outputEl.querySelector(".custom-notice")) {
-      outputEl.className = "output-text animate";
-      outputEl.textContent = STATE.currentExample.output;
-    }
+  if (tab === "genc") {
+    showGenCTab();
   } else {
-    showGeneratedC();
+    showOutputTab();
   }
 }
 
-function showGeneratedC() {
+function showGenCTab() {
   const outputEl = document.getElementById("output-text");
   outputEl.className = "output-text animate";
-  outputEl.textContent = STATE.currentExample.generatedC;
+
+  if (STATE._wasmGeneratedC) {
+    outputEl.textContent = STATE._wasmGeneratedC;
+  } else if (STATE.currentExample && STATE.currentExample.generatedC) {
+    outputEl.textContent = STATE.currentExample.generatedC;
+  } else {
+    outputEl.textContent = "(Run the code first to see generated C)";
+  }
+}
+
+function showOutputTab() {
+  const outputEl = document.getElementById("output-text");
+  outputEl.className = "output-text animate";
+
+  if (STATE._programOutput) {
+    outputEl.textContent = STATE._programOutput;
+  } else if (STATE.currentExample) {
+    outputEl.textContent = STATE.currentExample.output || "(Run the code to see output)";
+  }
 }
 
 function clearOutput() {
   STATE._wasmGeneratedC = null;
   STATE._wasmErrors = null;
-  STATE._isCachedExample = false;
+  STATE._programOutput = null;
 
   const outputEl = document.getElementById("output-text");
   outputEl.className = "output-text placeholder";

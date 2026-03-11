@@ -414,6 +414,10 @@ body {
   color: var(--green-bright);
 }
 
+.output-text.error {
+  color: var(--red);
+}
+
 .output-text .error-line {
   color: var(--red);
 }
