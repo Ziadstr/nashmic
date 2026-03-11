@@ -277,8 +277,8 @@ function executeOnWandbox(fullCCode) {
     body: JSON.stringify({
       code: fullCCode,
       compiler: "gcc-head-c",
-      options: "-std=gnu11 -O2 -lm",
-      "compiler-option-raw": "-w"
+      options: "-std=gnu11 -O2",
+      "compiler-option-raw": "-w\n-lm"
     })
   })
   .then(function (response) {
