@@ -235,6 +235,7 @@ tbody tr:last-child td{border-bottom:none}
     <a class="nav-item" href="#" data-section="reference" onclick="nav(this);return false">Keywords</a>
     <a class="nav-item" href="#" data-section="types-ref" onclick="nav(this);return false">Types</a>
     <a class="nav-item" href="#" data-section="builtins" onclick="nav(this);return false">Built-in Functions</a>
+    <a class="nav-item" href="#" data-section="stdlib" onclick="nav(this);return false">Standard Library</a>
     <a class="nav-item" href="#" data-section="compiler" onclick="nav(this);return false">Compiler Messages</a>
   </div>
   <div class="nav-group" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
@@ -293,18 +294,34 @@ tbody tr:last-child td{border-bottom:none}
 </ul>
 
 <h2>Install</h2>
+
+<h3>Homebrew (macOS / Linux)</h3>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code>brew tap Ziadstr/nashmic
+brew install nashmic</code></pre></div>
+
+<h3>AUR (Arch Linux)</h3>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code>yay -S nashmic-git</code></pre></div>
+
+<h3>Debian / Ubuntu</h3>
+<p>Download the <code class="inline-code">.deb</code> from <a href="https://github.com/Ziadstr/nashmic/releases">Releases</a> and install:</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code>sudo dpkg -i nashmic_*.deb</code></pre></div>
+
+<h3>One-liner</h3>
 <div class="code-block"><div class="code-block-header"><span class="code-block-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code>curl -fsSL https://raw.githubusercontent.com/Ziadstr/nashmic/main/install.sh | bash</code></pre></div>
-<p>This checks for dependencies, clones and builds the compiler, installs to <code class="inline-code">~/.nashmic/</code>, and adds <code class="inline-code">mansaf</code> to your PATH. No sudo needed.</p>
 
 <h3>Build from source</h3>
 <div class="code-block"><div class="code-block-header"><span class="code-block-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code>git clone https://github.com/Ziadstr/nashmic.git
 cd nashmic
-make</code></pre></div>
+make
+sudo make install</code></pre></div>
 
 <h2>Editor Support</h2>
 <p>Install the VS Code extension for syntax highlighting and snippets:</p>
 <div class="code-block"><div class="code-block-header"><span class="code-block-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code>code --install-extension ziadstr.nashmic</code></pre></div>
-<p>Or search <strong>"NashmiC"</strong> in the Extensions panel (<code class="inline-code">Ctrl+Shift+X</code>). Includes syntax highlighting for 80+ keywords, 15 code snippets, bracket matching, and auto-indentation.</p>
+<p>Or search <strong>"NashmiC"</strong> in the Extensions panel (<code class="inline-code">Ctrl+Shift+X</code>). Includes syntax highlighting for 80+ keywords, 22 code snippets, bracket matching, format-on-save, and run/build commands.</p>
+
+<h3>Neovim / Helix / Zed (Tree-sitter)</h3>
+<p>NashmiC has a full <a href="https://github.com/Ziadstr/nashmic/tree/main/editor/tree-sitter-nashmic">tree-sitter grammar</a> with syntax highlighting queries. See the <a href="https://github.com/Ziadstr/nashmic/blob/main/editor/tree-sitter-nashmic/nvim-setup.md">Neovim setup guide</a> for installation instructions.</p>
 
 <h2>Try It Online</h2>
 <p>Don't want to install? Try NashmiC in your browser with pre-loaded examples:</p>
@@ -1276,6 +1293,98 @@ Point_distance(&p, q);</code></pre></div>
     <span class="c-fn">drobi</span>()     <span class="c-comment">// random proverb</span>
     <span class="c-fn">mansaf</span>()    <span class="c-comment">// the recipe</span>
     <span class="c-fn">sahteen</span>()   <span class="c-comment">// bon appetit</span>
+}</code></pre></div>
+
+<div class="footer">
+<span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
+<span>MIT License</span>
+</div>
+</div>
+</div>
+
+<!-- ═══════════ STANDARD LIBRARY ═══════════ -->
+<div class="section" id="sec-stdlib">
+<div class="content">
+<h1>Standard Library</h1>
+<p class="section-desc">Three modules ship with NashmiC out of the box. All functions are available globally -- no imports needed.</p>
+
+<h2>riyadiyat (Math)</h2>
+<p>Mathematical functions wrapping C's <code class="inline-code">&lt;math.h&gt;</code>. All take and return <code class="inline-code">fasle64</code> (double) unless noted.</p>
+
+<div class="table-wrap"><table>
+<thead><tr><th>Function</th><th>Description</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td><code>jadhr(x)</code></td><td>Square root</td><td><code>jadhr(16.0)</code> = 4.0</td></tr>
+<tr><td><code>qowa(x, n)</code></td><td>Power (x^n)</td><td><code>qowa(2.0, 10.0)</code> = 1024.0</td></tr>
+<tr><td><code>mutlaq(x)</code></td><td>Absolute value</td><td><code>mutlaq(-7.5)</code> = 7.5</td></tr>
+<tr><td><code>3shwa2i(min, max)</code></td><td>Random integer in [min, max]</td><td><code>3shwa2i(1, 6)</code></td></tr>
+<tr><td><code>jeta(x)</code></td><td>Sine</td><td><code>jeta(NSH_PI / 2.0)</code> = 1.0</td></tr>
+<tr><td><code>jeta_tamam(x)</code></td><td>Cosine</td><td><code>jeta_tamam(0.0)</code> = 1.0</td></tr>
+<tr><td><code>dal(x)</code></td><td>Tangent</td><td><code>dal(0.0)</code> = 0.0</td></tr>
+<tr><td><code>ardiye(x)</code></td><td>Floor</td><td><code>ardiye(3.7)</code> = 3.0</td></tr>
+<tr><td><code>sa2fiye(x)</code></td><td>Ceiling</td><td><code>sa2fiye(3.2)</code> = 4.0</td></tr>
+<tr><td><code>da2reb(x)</code></td><td>Round</td><td><code>da2reb(3.5)</code> = 4.0</td></tr>
+<tr><td><code>aqall(a, b)</code></td><td>Minimum</td><td><code>aqall(3.0, 7.0)</code> = 3.0</td></tr>
+<tr><td><code>akthar(a, b)</code></td><td>Maximum</td><td><code>akthar(3.0, 7.0)</code> = 7.0</td></tr>
+<tr><td><code>log_tabi3i(x)</code></td><td>Natural log (ln)</td><td><code>log_tabi3i(NSH_E)</code> = 1.0</td></tr>
+<tr><td><code>log10(x)</code></td><td>Log base 10</td><td><code>log10(100.0)</code> = 2.0</td></tr>
+</tbody></table></div>
+
+<p>Constants: <code class="inline-code">NSH_PI</code> (3.14159...) and <code class="inline-code">NSH_E</code> (2.71828...)</p>
+
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-fn">yalla</span>() {
+    <span class="c-fn">itba3</span>(<span class="c-str">"jadhr(16) = %f\n"</span>, <span class="c-fn">jadhr</span>(16.0))
+    <span class="c-fn">itba3</span>(<span class="c-str">"qowa(2, 10) = %f\n"</span>, <span class="c-fn">qowa</span>(2.0, 10.0))
+    <span class="c-fn">itba3</span>(<span class="c-str">"3shwa2i(1, 100) = %lld\n"</span>, <span class="c-fn">3shwa2i</span>(1, 100))
+}</code></pre></div>
+
+<h2>nusoos (Strings)</h2>
+<p>String manipulation functions. Functions returning strings allocate new memory.</p>
+
+<div class="table-wrap"><table>
+<thead><tr><th>Function</th><th>Description</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td><code>toul(s)</code></td><td>String length</td><td><code>toul("marhaba")</code> = 7</td></tr>
+<tr><td><code>yihtawi(s, sub)</code></td><td>Contains substring</td><td><code>yihtawi("marhaba", "hab")</code> = ah</td></tr>
+<tr><td><code>bdaya(s, prefix)</code></td><td>Starts with</td><td><code>bdaya("marhaba", "mar")</code> = ah</td></tr>
+<tr><td><code>nihaya(s, suffix)</code></td><td>Ends with</td><td><code>nihaya("marhaba", "aba")</code> = ah</td></tr>
+<tr><td><code>a3la(s)</code></td><td>Uppercase</td><td><code>a3la("marhaba")</code> = "MARHABA"</td></tr>
+<tr><td><code>asfal(s)</code></td><td>Lowercase</td><td><code>asfal("HELLO")</code> = "hello"</td></tr>
+<tr><td><code>badel(s, old, new)</code></td><td>Replace all occurrences</td><td><code>badel("aa", "a", "b")</code> = "bb"</td></tr>
+<tr><td><code>karrer(s, n)</code></td><td>Repeat n times</td><td><code>karrer("ha", 3)</code> = "hahaha"</td></tr>
+<tr><td><code>juz2(s, start, end)</code></td><td>Substring slice</td><td><code>juz2("marhaba", 0, 3)</code> = "mar"</td></tr>
+<tr><td><code>harf_3ind(s, i)</code></td><td>Character at index</td><td><code>harf_3ind("abc", 1)</code> = 'b'</td></tr>
+<tr><td><code>qass(s, delim)</code></td><td>Split string</td><td><code>qass("a,b,c", ",")</code></td></tr>
+<tr><td><code>damj(arr, sep)</code></td><td>Join array</td><td><code>damj(parts, "-")</code></td></tr>
+</tbody></table></div>
+
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-fn">yalla</span>() {
+    <span class="c-kw">khalli</span> name: <span class="c-type">nass</span> = <span class="c-str">"nashmic"</span>
+    <span class="c-fn">itba3</span>(<span class="c-str">"toul: %lld\n"</span>, <span class="c-fn">toul</span>(name))
+    <span class="c-fn">itba3</span>(<span class="c-str">"a3la: %s\n"</span>, <span class="c-fn">a3la</span>(name))
+    <span class="c-fn">itba3</span>(<span class="c-str">"karrer: %s\n"</span>, <span class="c-fn">karrer</span>(name, 3))
+}</code></pre></div>
+
+<h2>malafat (Files)</h2>
+<p>File I/O operations for reading, writing, and managing files.</p>
+
+<div class="table-wrap"><table>
+<thead><tr><th>Function</th><th>Description</th><th>Returns</th></tr></thead>
+<tbody>
+<tr><td><code>i2ra_kol(path)</code></td><td>Read entire file to string</td><td><code>nass</code></td></tr>
+<tr><td><code>uktub_malaf(path, content)</code></td><td>Write string to file</td><td><code>mante2</code></td></tr>
+<tr><td><code>dahef_malaf(path, content)</code></td><td>Append to file</td><td><code>mante2</code></td></tr>
+<tr><td><code>mawjood(path)</code></td><td>Check if file exists</td><td><code>mante2</code></td></tr>
+<tr><td><code>imsah_malaf(path)</code></td><td>Delete file</td><td><code>mante2</code></td></tr>
+<tr><td><code>hajm_malaf(path)</code></td><td>File size in bytes</td><td><code>adad</code></td></tr>
+<tr><td><code>i2ra_sutoor(path)</code></td><td>Read file as array of lines</td><td><code>saff&lt;nass&gt;</code></td></tr>
+</tbody></table></div>
+
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-fn">yalla</span>() {
+    <span class="c-fn">uktub_malaf</span>(<span class="c-str">"test.txt"</span>, <span class="c-str">"marhaba ya dunya!\n"</span>)
+    <span class="c-kw">khalli</span> content: <span class="c-type">nass</span> = <span class="c-fn">i2ra_kol</span>(<span class="c-str">"test.txt"</span>)
+    <span class="c-fn">itba3</span>(<span class="c-str">"content: %s"</span>, content)
+    <span class="c-fn">imsah_malaf</span>(<span class="c-str">"test.txt"</span>)
 }</code></pre></div>
 
 <div class="footer">
