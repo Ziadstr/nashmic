@@ -33,6 +33,30 @@ NashmiC is built on five principles:
 
 5. **Cultural identity** - easter eggs, build messages, and proverbs are baked into the language. `drobi()` gives you a random Jordanian proverb. `mansaf()` prints the national dish recipe in ASCII art. This isn't decoration; it's identity.
 
+## Feature Status
+
+Everything listed below is fully implemented, compiles, and runs.
+
+| Feature | Status | Keyword(s) |
+|---------|--------|-------------|
+| Variables & constants | Working | `khalli`, `thabet` |
+| Functions & recursion | Working | `dalle`, `rajje3`, `yalla` |
+| Control flow (if/else, while, for-each, loop) | Working | `iza`, `wala`, `wala_iza`, `tool_ma`, `lakol`, `liff` |
+| Break & continue | Working | `khalas`, `kammel` |
+| Range iteration | Working | `lakol i fi 0..20` |
+| String interpolation | Working | `"hello {name}"` |
+| String concatenation | Working | `"hello " + name` |
+| Structs | Working | `haikal` |
+| Enums (tagged unions) | Working | `ta3dad` |
+| Pattern matching | Working | `hasab`, `hale`, `3adi` |
+| Result type + error propagation | Working | `natije<T>`, `tamam`, `ghalat`, `wala?` |
+| Optional type | Working | `yimkin<T>`, `fi`, `mafi`, `iza fi` |
+| Methods & impl blocks | Working | `tabbe2`, `had` |
+| Defer (cleanup on scope exit) | Working | `ba3dain` |
+| Arrays | Working | `saff<T>`, `.zeed()`, `.toul()` |
+| Cultural easter eggs | Working | `drobi()`, `mansaf()`, `sahteen()`, `nashmi()` |
+| Compiler messages with proverbs | Working | Jordanian proverbs on errors |
+
 ## How It Works
 
 NashmiC compiles through C:
@@ -47,26 +71,14 @@ Your `.nsh` source gets tokenized, parsed into an AST, transpiled to C11, then c
 
 NashmiC source files use the `.nsh` extension.
 
-## Current Status
+## Editor Support
 
-NashmiC is in active development. The core language is fully working:
+NashmiC has a VS Code extension with syntax highlighting, snippets, bracket matching, and code folding. Install it from the marketplace:
 
-- Functions, variables, constants
-- Control flow (if/else, while, for-each, loop, break, continue)
-- Range iteration (`lakol i fi 0..20`)
-- String interpolation (`"hello {name}"`)
-- Structs (declaration, literals, member access)
-- Recursive functions
-- Cultural compiler messages with proverbs
+```bash
+code --install-extension ziadstr.nashmic
+```
 
-These features are parsed but awaiting codegen completion:
-
-- Error handling (`natije<T>` + `wala?`)
-- Optional types (`yimkin<T>`)
-- Enums and pattern matching (`ta3dad`, `hasab`/`hale`)
-- Methods and impl blocks (`tabbe2`)
-- Defer (`ba3dain`)
-
-Each documentation page marks its status clearly. Features that work today have runnable examples. Features in progress show the planned syntax and behavior.
+Or search **"NashmiC"** in the VS Code Extensions panel (`Ctrl+Shift+X`).
 
 Ready to start? See [Getting Started](getting-started.md).

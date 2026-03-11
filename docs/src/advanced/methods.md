@@ -9,18 +9,20 @@
 ```
 haikal Point {
     x: fasle64,
-    y: fasle64,
+    y: fasle64
 }
 
 tabbe2 Point {
-    dalle distance(had, other: Point) -> fasle64 {
-        khalli dx: fasle64 = had.x - other.x
-        khalli dy: fasle64 = had.y - other.y
-        rajje3 sqrt(dx * dx + dy * dy)
+    dalle distance(had) -> fasle64 {
+        rajje3 sqrt(had.x * had.x + had.y * had.y)
     }
 
-    dalle origin() -> Point {
-        rajje3 Point{ x: 0.0, y: 0.0 }
+    dalle translate(had, dx: fasle64, dy: fasle64) -> Point {
+        rajje3 Point{ x: had.x + dx, y: had.y + dy }
+    }
+
+    dalle display(had) {
+        itba3("(%g, %g)", had.x, had.y)
     }
 }
 ```
@@ -28,14 +30,6 @@ tabbe2 Point {
 ## `had` - The Self Reference
 
 `had` (هاد) means "this" or "this thing" in Jordanian dialect. It's the receiver: the instance the method is called on. Equivalent to `self` in Rust or `this` in Java/C++.
-
-```
-tabbe2 Point {
-    dalle magnitude(had) -> fasle64 {
-        rajje3 sqrt(had.x * had.x + had.y * had.y)
-    }
-}
-```
 
 `had` must be the first parameter of a method. It receives the struct instance automatically when the method is called.
 
@@ -45,78 +39,92 @@ Dot notation:
 
 ```
 khalli p: Point = Point{ x: 3.0, y: 4.0 }
-khalli q: Point = Point{ x: 6.0, y: 8.0 }
 
-khalli d: fasle64 = p.distance(q)
-khalli m: fasle64 = p.magnitude()
+khalli dist: fasle64 = p.distance()
+itba3("Distance from origin: %g\n", dist)
+
+khalli moved: Point = p.translate(1.0, -1.0)
+moved.display()
 ```
 
 The instance before the dot becomes the `had` parameter.
-
-## Static Methods
-
-Methods without `had` as the first parameter are static. They belong to the type, not an instance:
-
-```
-tabbe2 Point {
-    dalle origin() -> Point {
-        rajje3 Point{ x: 0.0, y: 0.0 }
-    }
-}
-```
-
-The calling convention for static methods is still being finalized.
 
 ## Multiple Methods
 
 A single `tabbe2` block can contain any number of methods:
 
 ```
-haikal Rectangle {
-    width: fasle64,
-    height: fasle64,
+haikal Counter {
+    count: adad64
 }
 
-tabbe2 Rectangle {
-    dalle area(had) -> fasle64 {
-        rajje3 had.width * had.height
+tabbe2 Counter {
+    dalle value(had) -> adad64 {
+        rajje3 had.count
     }
 
-    dalle perimeter(had) -> fasle64 {
-        rajje3 2.0 * (had.width + had.height)
-    }
-
-    dalle is_square(had) -> mante2 {
-        rajje3 had.width == had.height
+    dalle describe(had) {
+        itba3("Counter is at %lld", had.count)
     }
 }
 ```
 
-## Full Example
+## Full Working Example
+
+From `examples/methods.nsh`:
 
 ```
 haikal Point {
     x: fasle64,
-    y: fasle64,
+    y: fasle64
 }
 
 tabbe2 Point {
-    dalle magnitude(had) -> fasle64 {
+    dalle distance(had) -> fasle64 {
         rajje3 sqrt(had.x * had.x + had.y * had.y)
     }
 
-    dalle distance(had, other: Point) -> fasle64 {
-        khalli dx: fasle64 = had.x - other.x
-        khalli dy: fasle64 = had.y - other.y
-        rajje3 sqrt(dx * dx + dy * dy)
+    dalle translate(had, dx: fasle64, dy: fasle64) -> Point {
+        rajje3 Point{ x: had.x + dx, y: had.y + dy }
+    }
+
+    dalle display(had) {
+        itba3("(%g, %g)", had.x, had.y)
+    }
+}
+
+haikal Counter {
+    count: adad64
+}
+
+tabbe2 Counter {
+    dalle value(had) -> adad64 {
+        rajje3 had.count
+    }
+
+    dalle describe(had) {
+        itba3("Counter is at %lld", had.count)
     }
 }
 
 yalla() {
     khalli p: Point = Point{ x: 3.0, y: 4.0 }
-    khalli q: Point = Point{ x: 6.0, y: 8.0 }
-    itba3("p magnitude: {p.magnitude()}\n")
-    itba3("distance p to q: {p.distance(q)}\n")
+    itba3("Point: ")
+    p.display()
+    itba3("\n")
+
+    khalli dist: fasle64 = p.distance()
+    itba3("Distance from origin: %g\n", dist)
+
+    khalli moved: Point = p.translate(1.0, -1.0)
+    itba3("After translate(1, -1): ")
+    moved.display()
+    itba3("\n")
+
+    khalli c: Counter = Counter{ count: 42 }
+    c.describe()
+    itba3("\n")
+    itba3("Value: %lld\n", c.value())
 }
 ```
 
@@ -125,9 +133,9 @@ yalla() {
 In the generated C code, methods become regular functions with the struct passed as the first argument:
 
 ```c
-// NashmiC: p.distance(q)
-// Generated C: Point_distance(&p, q)
-double Point_distance(struct Point *had, struct Point other) { ... }
+// NashmiC: p.distance()
+// Generated C: Point_distance(&p)
+double Point_distance(struct Point *had) { ... }
 ```
 
 The dot syntax is syntactic sugar that the compiler translates.

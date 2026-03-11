@@ -4,40 +4,108 @@
 
 ## What is Defer?
 
-`ba3dain` (بعدين) means "later" in Jordanian dialect. It's the word you say when someone asks you to do something and you'll get to it... eventually. In NashmiC, `ba3dain` schedules a statement to run when the current scope exits. Procrastination as a language feature.
+`ba3dain` (بعدين) means "later" in Jordanian dialect. It's the word you say when someone asks you to do something and you'll get to it... eventually. In NashmiC, `ba3dain` schedules a block to run when the current scope exits. Procrastination as a language feature.
 
 ```
-khalli f = iftah("data.txt")
-ba3dain sakker(f)
-// ... use f ...
-// sakker(f) runs automatically when scope exits
+dalle greet() {
+    itba3("start\n")
+    ba3dain {
+        itba3("cleanup 1\n")
+    }
+    itba3("middle\n")
+    rajje3
+}
 ```
+
+When `greet()` returns, the deferred block runs after "middle" prints.
 
 ## Execution Order
 
 Multiple defers execute in LIFO (last-in, first-out) order:
 
 ```
-dalle example() {
-    itba3("1\n")
-    ba3dain itba3("deferred 1\n")
-    itba3("2\n")
-    ba3dain itba3("deferred 2\n")
-    itba3("3\n")
+dalle greet() {
+    itba3("start\n")
+    ba3dain {
+        itba3("cleanup 1\n")
+    }
+    ba3dain {
+        itba3("cleanup 2\n")
+    }
+    itba3("middle\n")
+    rajje3
 }
 ```
 
 Output:
 
 ```
-1
-2
-3
-deferred 2
-deferred 1
+start
+middle
+cleanup 2
+cleanup 1
 ```
 
 The last `ba3dain` registered runs first. Stack order, just like Go's `defer`.
+
+## With Return Values
+
+`ba3dain` works in functions that return values too. The deferred code runs after the return value is computed:
+
+```
+dalle compute(x: adad64) -> adad64 {
+    ba3dain {
+        itba3("  compute done\n")
+    }
+    rajje3 x * 2
+}
+
+yalla() {
+    khalli result: adad64 = compute(21)
+    itba3("  result = %lld\n", result)
+}
+```
+
+Output:
+
+```
+  compute done
+  result = 42
+```
+
+## Full Working Example
+
+From `examples/defer.nsh`:
+
+```
+dalle greet() {
+    itba3("start\n")
+    ba3dain {
+        itba3("cleanup 1\n")
+    }
+    ba3dain {
+        itba3("cleanup 2\n")
+    }
+    itba3("middle\n")
+    rajje3
+}
+
+dalle compute(x: adad64) -> adad64 {
+    ba3dain {
+        itba3("  compute done\n")
+    }
+    rajje3 x * 2
+}
+
+yalla() {
+    itba3("--- void function ---\n")
+    greet()
+
+    itba3("\n--- function with return value ---\n")
+    khalli result: adad64 = compute(21)
+    itba3("  result = %lld\n", result)
+}
+```
 
 ## Use Cases
 
@@ -51,7 +119,6 @@ dalle process_file(path: nass) -> natije<nass> {
     ba3dain sakker(f)
 
     khalli data = i2ra_kol(f) wala?
-    // ... process data ...
     rajje3 tamam(result)
     // sakker(f) runs here, whether tamam or ghalat
 }
@@ -64,7 +131,9 @@ You declare cleanup right next to acquisition. The compiler guarantees it runs r
 ```
 dalle handle_request(req: Request) {
     itba3("request started\n")
-    ba3dain itba3("request finished\n")
+    ba3dain {
+        itba3("request finished\n")
+    }
     // ... handle the request ...
 }
 ```

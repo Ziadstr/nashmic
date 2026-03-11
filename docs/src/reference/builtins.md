@@ -42,6 +42,36 @@ itla3(0)    // success
 itla3(1)    // error
 ```
 
+### `toul(str)` - String Length
+
+Returns the length of a string.
+
+```
+khalli ism: nass = "NashmiC"
+khalli len = toul(ism)
+itba3("length: %lld\n", len)
+```
+
+## Array Methods
+
+### `.zeed(value)` - Push
+
+`zeed` (زيد) means "add more." Appends an element to the end of the array.
+
+```
+khalli nums: saff<adad64> = [1, 2, 3]
+nums.zeed(4)
+```
+
+### `.toul()` - Array Length
+
+`toul` (طول) means "length." Returns the number of elements.
+
+```
+khalli nums: saff<adad64> = [1, 2, 3]
+itba3("length: %lld\n", nums.toul())
+```
+
 ## Easter Eggs
 
 NashmiC wouldn't be Jordanian without personality baked in.
@@ -115,6 +145,7 @@ All built-in functions map to C functions in `runtime/nsh_runtime.c`:
 | `itba3()` | `nsh_itba3()` | Print to stdout |
 | `i2ra()` | `nsh_i2ra()` | Read line from stdin |
 | `itla3()` | `nsh_itla3()` | Exit program |
+| `toul()` | `nsh_toul()` | String length |
 | `drobi()` | `nsh_drobi()` | Random proverb (rate-limited) |
 | `mansaf()` | `nsh_mansaf()` | Mansaf recipe ASCII art |
 | `sahteen()` | `nsh_sahteen()` | "Bon appetit" |

@@ -1,5 +1,7 @@
 # Variables & Constants
 
+> **Status:** Working.
+
 ## Variables with `khalli`
 
 `khalli` (خلّي) means "let there be" in Jordanian dialect. It declares a variable.
@@ -49,9 +51,9 @@ thabet GREETING: nass = "marhaba"
 
 Constants cannot be reassigned after declaration. Attempting to do so is a compiler error.
 
-## Types
+## Type Annotations
 
-Every variable needs an explicit type annotation. NashmiC does not have type inference (yet).
+Every variable needs an explicit type annotation:
 
 ```
 // Correct
@@ -114,3 +116,29 @@ Strings support interpolation with `{expr}`. See [Strings & Interpolation](strin
 | `fadi` | `void` | No value. "fadi" (فاضي) means "empty" |
 
 `fadi` is used for functions that don't return a value. You don't use it for variables.
+
+## Full Working Example
+
+```
+dalle describe_person(name: nass, age: adad64) {
+    itba3("{name} is {age} years old\n")
+}
+
+yalla() {
+    // Variables with type annotations
+    khalli name: nass = "Ziad"
+    khalli age: adad64 = 23
+    khalli height: fasle64 = 1.78
+    khalli isStudent: mante2 = la
+
+    describe_person(name, age)
+
+    // Constants
+    thabet MAX_AGE: adad64 = 120
+    itba3("max age: {MAX_AGE}\n")
+
+    // Mutable reassignment
+    age = age + 1
+    itba3("happy birthday! now {age}\n")
+}
+```

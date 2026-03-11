@@ -50,6 +50,24 @@ Add those lines to your `.bashrc` or `.zshrc` to make them permanent.
 ./uninstall.sh
 ```
 
+## Editor Support
+
+NashmiC has a VS Code extension with syntax highlighting, snippets, bracket matching, and code folding.
+
+### Install from VS Code Marketplace
+
+Search for **"NashmiC"** in the Extensions panel (`Ctrl+Shift+X`), or install from the command line:
+
+```bash
+code --install-extension ziadstr.nashmic
+```
+
+The extension provides:
+- Full syntax highlighting for 80+ keywords
+- Snippets for common patterns (`yalla`, `dalle`, `iza`, `hasab`, etc.)
+- Bracket matching and auto-closing
+- Code folding and auto-indentation
+
 ## Write Your First Program
 
 Create a file called `marhaba.nsh`:
@@ -172,7 +190,7 @@ This demonstrates:
 
 ## Running the Shipped Examples
 
-NashmiC comes with six example programs:
+NashmiC comes with working examples in the `examples/` directory:
 
 ```bash
 # Run all examples at once
@@ -185,6 +203,12 @@ mansaf run examples/ranges.nsh         # Range iteration
 mansaf run examples/interpolation.nsh  # String interpolation
 mansaf run examples/structs.nsh        # Struct basics
 mansaf run examples/easter_eggs.nsh    # Cultural easter eggs
+mansaf run examples/enums.nsh          # Enums + pattern matching
+mansaf run examples/natije.nsh         # Result type + error propagation
+mansaf run examples/yimkin.nsh         # Optional type
+mansaf run examples/methods.nsh        # Methods + impl blocks
+mansaf run examples/defer.nsh          # Defer (ba3dain)
+mansaf run examples/arrays.nsh         # Arrays, push, iteration
 ```
 
 ## Debug: Dump Tokens
@@ -201,3 +225,7 @@ This prints the token stream, useful for understanding how the lexer processes y
 - [Functions](basics/functions.md) - defining functions with `dalle`
 - [Control Flow](basics/control-flow.md) - `iza`, `wala`, loops, and more
 - [Strings & Interpolation](basics/strings.md) - string interpolation and type-aware formatting
+- [Arrays](basics/arrays.md) - `saff<T>` arrays with push and iteration
+- [Enums](types/enums.md) - tagged unions with `ta3dad`
+- [Error Handling](error-handling/natije.md) - `natije<T>` result type
+- [Pattern Matching](advanced/pattern-matching.md) - `hasab`/`hale` destructuring

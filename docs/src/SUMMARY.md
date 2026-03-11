@@ -12,6 +12,7 @@
 - [Functions](basics/functions.md)
 - [Control Flow](basics/control-flow.md)
 - [Strings & Interpolation](basics/strings.md)
+- [Arrays](basics/arrays.md)
 
 # Type System
 

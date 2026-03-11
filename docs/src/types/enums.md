@@ -1,6 +1,6 @@
 # Enums (Tagged Unions)
 
-> **Status:** Working. Enums compile and run.
+> **Status:** Working. See `examples/enums.nsh`.
 
 ## Declaring Enums with `ta3dad`
 
@@ -71,6 +71,70 @@ hasab shape {
 ```
 
 See [Pattern Matching](../advanced/pattern-matching.md) for full details.
+
+## Full Working Example
+
+From `examples/enums.nsh`:
+
+```
+ta3dad Shape {
+    Da2ira(fasle64),
+    Mustateel(fasle64),
+    Noqta,
+}
+
+ta3dad Color {
+    Ahmar,
+    Azra2,
+    Akhdar,
+}
+
+dalle describe_shape(s: Shape) {
+    hasab s {
+        hale Da2ira(radius) => {
+            itba3("Da2ira (circle) with radius %g\n", radius)
+        }
+        hale Mustateel(width) => {
+            itba3("Mustateel (rectangle) with width %g\n", width)
+        }
+        hale Noqta => {
+            itba3("Noqta (just a point)\n")
+        }
+    }
+}
+
+dalle color_name(c: Color) {
+    hasab c {
+        hale Ahmar => {
+            itba3("ahmar (red)\n")
+        }
+        hale Azra2 => {
+            itba3("azra2 (blue)\n")
+        }
+        hale Akhdar => {
+            itba3("akhdar (green)\n")
+        }
+    }
+}
+
+yalla() {
+    // Create enum values
+    khalli circle: Shape = Da2ira(5.0)
+    khalli rect: Shape = Mustateel(3.0)
+    khalli point: Shape = Noqta
+
+    // Pattern match on shapes
+    describe_shape(circle)
+    describe_shape(rect)
+    describe_shape(point)
+
+    // Simple enums (no payload)
+    khalli fav: Color = Ahmar
+    color_name(fav)
+    color_name(Azra2)
+    color_name(Akhdar)
+}
+```
 
 ## Under the Hood
 

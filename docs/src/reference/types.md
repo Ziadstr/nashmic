@@ -19,6 +19,7 @@
 |---------|---------|-------------|
 | Struct | `haikal` | Named product type with typed fields |
 | Tagged Union | `ta3dad` | Sum type with variants that can carry data |
+| Array | `saff<T>` | Dynamic array of elements of type `T` |
 
 ## Generic Types
 
@@ -26,6 +27,7 @@
 |---------|-----------|-------------|
 | `natije<T>` | `Result<T, String>` | Result type: `tamam(T)` or `ghalat(nass)` |
 | `yimkin<T>` | `Option<T>` | Optional type: `fi(T)` or `mafi` |
+| `saff<T>` | `Vec<T>` / `[]T` | Dynamic array: `.zeed()` push, `.toul()` length |
 
 ## Boolean Values
 
@@ -71,3 +73,4 @@ Each type name comes from Arabic/Jordanian vocabulary:
 | `fadi` | فاضي | empty / free |
 | `natije` | نتيجة | result / outcome |
 | `yimkin` | يمكن | maybe / possibly |
+| `saff` | صف | row / line |

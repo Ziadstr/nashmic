@@ -1,6 +1,6 @@
 # Result Type (`natije`)
 
-> **Status:** Working. You can compile and run natije programs now. See `examples/natije.nsh`.
+> **Status:** Working. See `examples/natije.nsh`.
 
 ## Errors Are Values
 
@@ -16,12 +16,11 @@ A `natije<T>` is one of two things:
 - `ghalat(message)` - error. "ghalat" (غلط) means "wrong" or "mistake." Equivalent to Rust's `Err`.
 
 ```
-dalle parse_number(input: nass) -> natije<adad64> {
-    // ... parsing logic ...
-    iza success {
-        rajje3 tamam(parsed_value)
+dalle divide(a: fasle64, b: fasle64) -> natije<fasle64> {
+    iza b == 0.0 {
+        rajje3 ghalat("ya zalameh, division by zero!")
     }
-    rajje3 ghalat("مو رقم يا زلمة")  // "that's not a number, man"
+    rajje3 tamam(a / b)
 }
 ```
 
@@ -30,10 +29,10 @@ dalle parse_number(input: nass) -> natije<adad64> {
 `wala?` is the error propagation operator. It means "or?" as in "it worked, or?" If the result is `ghalat`, it returns the error up the call chain automatically.
 
 ```
-dalle read_config(path: nass) -> natije<nass> {
-    khalli f = iftah(path) wala? "ما قدرت افتح الملف"
-    khalli content = i2ra_kol(f) wala?
-    rajje3 tamam(content)
+dalle safe_math(x: fasle64) -> natije<fasle64> {
+    // wala? unwraps tamam or propagates ghalat automatically
+    khalli result: fasle64 = divide(x, 2.0) wala?
+    rajje3 tamam(result + 1.0)
 }
 ```
 
@@ -41,36 +40,20 @@ How `wala?` works:
 - If the expression returns `tamam(value)`, unwrap it and continue with `value`
 - If the expression returns `ghalat(err)`, immediately return `ghalat(err)` from the current function
 
-The original error propagates unchanged:
-
-```
-khalli data = read_file(path) wala?
-```
-
-> **Note:** `wala?` with context messages (`wala? "message"`) is planned for a future release. Currently only bare `wala?` is supported.
-
-## Mandatory Handling
-
-If a function returns `natije<T>`, you should either:
-
-1. Use `wala?` to propagate the error
-2. Handle it with `hasab` (pattern matching)
-3. Explicitly unwrap it
-
-> **Note:** Mandatory handling enforcement is planned for Phase 2 (semantic analysis). Currently you can ignore a result without a compiler error.
-
 ## Pattern Matching on Results
 
 Match on a `natije<T>` to handle both cases explicitly:
 
 ```
-hasab parse_number(input) {
-    hale tamam(n) => itba3("parsed: {n}\n")
-    hale ghalat(msg) => itba3("error: {msg}\n")
+hasab divide(10.0, 3.0) {
+    hale tamam(val) => {
+        itba3("%g\n", val)
+    }
+    hale ghalat(msg) => {
+        itba3("Error: %s\n", msg)
+    }
 }
 ```
-
-See [Pattern Matching](../advanced/pattern-matching.md) for more details.
 
 ## `faz3a` - Panic
 
@@ -81,6 +64,59 @@ faz3a("something went very wrong")
 ```
 
 Use `faz3a` only for truly unrecoverable situations: programmer errors, violated invariants, things that should never happen. For expected failures, use `natije<T>`.
+
+## Full Working Example
+
+From `examples/natije.nsh`:
+
+```
+dalle divide(a: fasle64, b: fasle64) -> natije<fasle64> {
+    iza b == 0.0 {
+        rajje3 ghalat("ya zalameh, division by zero!")
+    }
+    rajje3 tamam(a / b)
+}
+
+dalle safe_math(x: fasle64) -> natije<fasle64> {
+    // wala? unwraps tamam or propagates ghalat automatically
+    khalli result: fasle64 = divide(x, 2.0) wala?
+    rajje3 tamam(result + 1.0)
+}
+
+yalla() {
+    // Direct pattern matching on results
+    itba3("10 / 3 = ")
+    hasab divide(10.0, 3.0) {
+        hale tamam(val) => {
+            itba3("%g\n", val)
+        }
+        hale ghalat(msg) => {
+            itba3("Error: %s\n", msg)
+        }
+    }
+
+    itba3("10 / 0 = ")
+    hasab divide(10.0, 0.0) {
+        hale tamam(val) => {
+            itba3("%g\n", val)
+        }
+        hale ghalat(msg) => {
+            itba3("Error: %s\n", msg)
+        }
+    }
+
+    // wala? propagation
+    itba3("\nsafe_math(8) = ")
+    hasab safe_math(8.0) {
+        hale tamam(val) => {
+            itba3("%g\n", val)
+        }
+        hale ghalat(msg) => {
+            itba3("Error: %s\n", msg)
+        }
+    }
+}
+```
 
 ## Design Rationale
 

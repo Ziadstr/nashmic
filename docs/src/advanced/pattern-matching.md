@@ -1,6 +1,6 @@
 # Pattern Matching
 
-> **Status:** Working. Pattern matching on enums compiles and runs.
+> **Status:** Working. Pattern matching on enums, results, and optionals all compile and run.
 
 ## `hasab` / `hale`
 
@@ -8,9 +8,12 @@
 
 ```
 hasab shape {
-    hale Da2ira(r) => itba3("Circle: radius {r}\n")
-    hale Mustateel(w, h) => itba3("Rect: {w}x{h}\n")
-    hale Noqta => itba3("Point\n")
+    hale Da2ira(r) => {
+        itba3("Circle: radius %g\n", r)
+    }
+    hale Noqta => {
+        itba3("Point\n")
+    }
 }
 ```
 
@@ -59,9 +62,22 @@ hasab value {
 Pattern matching works with `natije<T>` for explicit error handling:
 
 ```
-hasab parse_number(input) {
-    hale tamam(n) => itba3("got: {n}\n")
-    hale ghalat(msg) => itba3("error: {msg}\n")
+dalle divide(a: fasle64, b: fasle64) -> natije<fasle64> {
+    iza b == 0.0 {
+        rajje3 ghalat("ya zalameh, division by zero!")
+    }
+    rajje3 tamam(a / b)
+}
+
+yalla() {
+    hasab divide(10.0, 3.0) {
+        hale tamam(val) => {
+            itba3("%g\n", val)
+        }
+        hale ghalat(msg) => {
+            itba3("Error: %s\n", msg)
+        }
+    }
 }
 ```
 
@@ -70,13 +86,28 @@ hasab parse_number(input) {
 Match on `yimkin<T>`:
 
 ```
-hasab find_user(42) {
-    hale fi(user) => itba3("found: {user.name}\n")
-    hale mafi => itba3("not found\n")
+dalle find_even(n: adad64) -> yimkin<adad64> {
+    iza n % 2 == 0 {
+        rajje3 fi(n)
+    }
+    rajje3 mafi
+}
+
+yalla() {
+    hasab find_even(7) {
+        hale fi(val) => {
+            itba3("%lld\n", val)
+        }
+        hale mafi => {
+            itba3("nothing\n")
+        }
+    }
 }
 ```
 
-## Full Example
+## Full Working Example
+
+From `examples/enums.nsh`:
 
 ```
 ta3dad Shape {
@@ -102,7 +133,10 @@ dalle describe_shape(s: Shape) {
 yalla() {
     khalli circle: Shape = Da2ira(5.0)
     khalli rect: Shape = Mustateel(3.0)
+    khalli point: Shape = Noqta
+
     describe_shape(circle)
     describe_shape(rect)
+    describe_shape(point)
 }
 ```

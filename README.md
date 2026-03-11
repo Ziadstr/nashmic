@@ -14,6 +14,7 @@
   <a href="https://github.com/Ziadstr/nashmic/releases"><img src="https://img.shields.io/github/v/release/Ziadstr/nashmic?include_prereleases&label=version" alt="Version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
   <a href="https://ziadstr.github.io/nashmic/"><img src="https://img.shields.io/badge/docs-live-brightgreen.svg" alt="Docs"></a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=ziadstr.nashmic"><img src="https://img.shields.io/visual-studio-marketplace/v/ziadstr.nashmic?label=VS%20Code&color=007ACC" alt="VS Code"></a>
 </p>
 
 ---
@@ -33,14 +34,17 @@ yalla() {
 
 - **Franco-Arab keywords:** `iza`, `wala`, `khalli`, `dalle`, `rajje3`, `yalla`
 - **String interpolation:** `"marhaba ya {name}"` with type-aware formatting
+- **String concatenation:** `"hello " + name + "!"` with `+` operator
 - **`natije<T>` + `wala?`:** mandatory error handling with inline propagation
 - **`yimkin<T>`:** no null, ever. `fi`/`mafi` for optionals
 - **`ba3dain` defer:** cleanup that runs on scope exit
 - **Pattern matching:** `hasab`/`hale` with destructuring
 - **Structs + methods:** `haikal` with `tabbe2` impl blocks
 - **Tagged unions:** `ta3dad` with typed variants
+- **Arrays:** `saff<T>` with `.zeed()` push, `.toul()` length, iteration
 - **Compiler personality:** errors come with Jordanian proverbs
 - **Easter eggs:** `drobi()` for proverbs, `mansaf()` for the recipe
+- **VS Code extension:** syntax highlighting, snippets, bracket matching
 
 ## Installation
 
@@ -319,7 +323,15 @@ nashmic/
 │   ├── ranges.nsh         # Range iteration demo
 │   ├── interpolation.nsh  # String interpolation demo
 │   ├── structs.nsh        # Struct declaration + literals
-│   └── easter_eggs.nsh    # Cultural easter eggs
+│   ├── easter_eggs.nsh    # Cultural easter eggs
+│   ├── enums.nsh          # Enums + pattern matching
+│   ├── natije.nsh         # Result type + error propagation
+│   ├── yimkin.nsh         # Optional type
+│   ├── methods.nsh        # Methods + impl blocks
+│   ├── defer.nsh          # Defer (ba3dain)
+│   └── arrays.nsh         # Arrays, push, iteration
+├── editor/                # Editor extensions
+│   └── vscode-nashmic/    # VS Code extension
 ├── install.sh             # One-liner installer
 ├── uninstall.sh           # Clean removal script
 ├── Makefile
@@ -338,6 +350,24 @@ NashmiC compiles through C:
 
 The generated C code links against `nsh_runtime.c` for print/read/exit and easter eggs.
 
+## Editor Support
+
+NashmiC has a VS Code extension with full syntax highlighting, snippets, and editor integration.
+
+### Install from VS Code Marketplace
+
+```bash
+code --install-extension ziadstr.nashmic
+```
+
+Or search **"NashmiC"** in the Extensions panel (`Ctrl+Shift+X`).
+
+**Includes:**
+- Syntax highlighting for 80+ keywords
+- Snippets for `yalla`, `dalle`, `iza`, `hasab`, `natije`, `haikal`, `ta3dad`, `tabbe2`, and more
+- Bracket matching, auto-closing, code folding
+- Auto-indentation
+
 ## Status
 
 NashmiC is in active development. The compiler handles:
@@ -346,6 +376,7 @@ NashmiC is in active development. The compiler handles:
 - ✅ Control flow (if/else, while, for-each, loop, break, continue)
 - ✅ Range iteration (`lakol i fi 0..20`)
 - ✅ String interpolation (`"hello {name}"`)
+- ✅ String concatenation (`"hello " + name`)
 - ✅ Structs (declaration, literals, member access)
 - ✅ Recursive functions
 - ✅ Operator precedence (Pratt parsing)
@@ -356,6 +387,7 @@ NashmiC is in active development. The compiler handles:
 - ✅ Enums (tagged unions) + pattern matching (`hasab`/`hale`)
 - ✅ Impl blocks (methods with `tabbe2`)
 - ✅ Defer (`ba3dain`)
+- ✅ Arrays (`saff<T>` with `.zeed()`, `.toul()`, iteration)
 - 📋 Multiple return values
 - 📋 Semicolon-free syntax
 

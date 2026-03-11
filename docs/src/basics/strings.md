@@ -1,5 +1,7 @@
 # Strings & Interpolation
 
+> **Status:** Working. See `examples/interpolation.nsh` and `examples/arrays.nsh`.
+
 ## String Basics
 
 Strings in NashmiC use the `nass` type ("nass" (نص) means "text") and are declared with double quotes:
@@ -16,7 +18,7 @@ khalli greeting: nass = "مرحبا يا عالم!"
 
 ## String Interpolation
 
-Put expressions in `{braces}` inside strings. No format specifiers, no string concatenation.
+Put expressions in `{braces}` inside strings. No format specifiers, no string concatenation needed.
 
 ### Variable interpolation
 
@@ -61,6 +63,30 @@ itba3("Point: ({p.x}, {p.y})\n")
 ```
 
 Output: `Point: (3, 4)`
+
+## String Concatenation
+
+Strings can be concatenated with the `+` operator:
+
+```
+khalli ism = "NashmiC"
+khalli tahiyye = "marhaba ya " + ism + "!"
+itba3("%s\n", tahiyye)
+```
+
+Output: `marhaba ya NashmiC!`
+
+## String Length
+
+Use `toul(str)` to get the length of a string:
+
+```
+khalli ism = "NashmiC"
+khalli toul_ism = toul(ism)
+itba3("toul '%s' = %lld\n", ism, toul_ism)
+```
+
+Output: `toul 'NashmiC' = 7`
 
 ## Type-Aware Formatting
 

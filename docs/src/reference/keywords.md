@@ -45,6 +45,7 @@ Every NashmiC keyword is a word you'd actually say in Amman. Franco-Arab only: n
 | `fadi` | fa-di | "empty" | `void` |
 | `natije` | na-tee-je | "result" / "outcome" | `Result<T>` |
 | `yimkin` | yim-kin | "maybe" / "possibly" | `Optional<T>` |
+| `saff` | saff | "row" / "line" | `Vec<T>` / `[]T` |
 
 ## Values
 
