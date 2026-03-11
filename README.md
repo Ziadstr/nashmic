@@ -14,6 +14,7 @@
   <a href="https://github.com/Ziadstr/nashmic/releases"><img src="https://img.shields.io/github/v/release/Ziadstr/nashmic?include_prereleases&label=version" alt="Version"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="License"></a>
   <a href="https://ziadstr.github.io/nashmic/"><img src="https://img.shields.io/badge/docs-live-brightgreen.svg" alt="Docs"></a>
+  <a href="https://ziadstr.github.io/nashmic/playground/"><img src="https://img.shields.io/badge/playground-try%20it-orange.svg" alt="Playground"></a>
   <a href="https://marketplace.visualstudio.com/items?itemName=ziadstr.nashmic"><img src="https://img.shields.io/visual-studio-marketplace/v/ziadstr.nashmic?label=VS%20Code&color=007ACC" alt="VS Code"></a>
 </p>
 
@@ -42,9 +43,11 @@ yalla() {
 - **Structs + methods:** `haikal` with `tabbe2` impl blocks
 - **Tagged unions:** `ta3dad` with typed variants
 - **Arrays:** `saff<T>` with `.zeed()` push, `.toul()` length, iteration
+- **Semantic analysis:** type checking, field/method validation, unused variable warnings
 - **Compiler personality:** errors come with Jordanian proverbs
 - **Easter eggs:** `drobi()` for proverbs, `mansaf()` for the recipe
-- **VS Code extension:** syntax highlighting, snippets, bracket matching
+- **VS Code extension:** syntax highlighting, snippets, bracket matching — [install it](https://marketplace.visualstudio.com/items?itemName=ziadstr.nashmic)
+- **[Web playground](https://ziadstr.github.io/nashmic/playground/):** try NashmiC in your browser
 
 ## Installation
 
@@ -309,6 +312,7 @@ nashmic/
 │   ├── parser.c/h         # Recursive descent + Pratt parser
 │   ├── ast.c/h            # AST node types
 │   ├── codegen_c.c/h      # C transpiler backend
+│   ├── sema.c/h           # Semantic analysis + type checking
 │   ├── diagnostics.c/h    # Errors with proverbs
 │   ├── utf8.c/h           # UTF-8 encoding/decoding
 │   └── span.h             # Source locations
@@ -332,10 +336,15 @@ nashmic/
 │   └── arrays.nsh         # Arrays, push, iteration
 ├── editor/                # Editor extensions
 │   └── vscode-nashmic/    # VS Code extension
+├── tools/                 # Developer tools
+│   └── playground/        # Web playground
+├── tests/                 # Test suite
+│   ├── expected/          # Expected output files
+│   ├── fail/              # Semantic error test cases
+│   └── run_tests.sh       # Test runner
 ├── install.sh             # One-liner installer
 ├── uninstall.sh           # Clean removal script
 ├── Makefile
-├── PLAN.md                # Language design + roadmap
 ├── LICENSE
 └── README.md
 ```
@@ -345,10 +354,10 @@ nashmic/
 NashmiC compiles through C:
 
 ```
-.nsh source → Lexer → Parser → AST → C Codegen → .c file → cc → native binary
+.nsh source → Lexer → Parser → AST → Sema → C Codegen → .c file → cc → native binary
 ```
 
-The generated C code links against `nsh_runtime.c` for print/read/exit and easter eggs.
+The semantic analysis pass catches type mismatches, undeclared variables, invalid field access, and more — with Jordanian proverb error messages. The generated C code links against `nsh_runtime.c` for print/read/exit and easter eggs.
 
 ## Editor Support
 
@@ -388,6 +397,10 @@ NashmiC is in active development. The compiler handles:
 - ✅ Impl blocks (methods with `tabbe2`)
 - ✅ Defer (`ba3dain`)
 - ✅ Arrays (`saff<T>` with `.zeed()`, `.toul()`, iteration)
+- ✅ Semantic analysis (type checking, field/method validation)
+- ✅ VS Code extension (published on marketplace)
+- ✅ Web playground (try it in the browser)
+- ✅ CI/CD (build + test + deploy on every push)
 - 📋 Multiple return values
 - 📋 Semicolon-free syntax
 
