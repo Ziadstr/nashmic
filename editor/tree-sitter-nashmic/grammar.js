@@ -49,7 +49,7 @@ module.exports = grammar({
         "(",
         optional($.parameter_list),
         ")",
-        optional(seq(":", field("return_type", $._type))),
+        optional(seq(choice(":", "->"), field("return_type", $._type))),
         field("body", $.block)
       ),
 
@@ -193,7 +193,7 @@ module.exports = grammar({
         "lakol",
         field("variable", $.identifier),
         "fi",
-        field("iterable", $._expression),
+        field("iterable", $._non_struct_expr),
         field("body", $.block)
       ),
 
@@ -288,6 +288,25 @@ module.exports = grammar({
         $.range_expr,
         $.result_wrap,
         $._primary_expr
+      ),
+
+    // Like _non_assign_expr but without struct_literal (used in for_loop iterable)
+    _non_struct_expr: ($) =>
+      choice(
+        $.binary_expr,
+        $.unary_expr,
+        $.call_expr,
+        $.field_access,
+        $.index_expr,
+        $.range_expr,
+        $.result_wrap,
+        $.number_literal,
+        $.string_literal,
+        $.bool_literal,
+        $.null_literal,
+        $.identifier,
+        $.array_literal,
+        $.paren_expr
       ),
 
     assignment: ($) =>

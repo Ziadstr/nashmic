@@ -1160,10 +1160,6 @@
             "named": true
           },
           {
-            "type": "assignment",
-            "named": true
-          },
-          {
             "type": "binary_expr",
             "named": true
           },
@@ -1209,10 +1205,6 @@
           },
           {
             "type": "string_literal",
-            "named": true
-          },
-          {
-            "type": "struct_literal",
             "named": true
           },
           {
@@ -2864,6 +2856,10 @@
   },
   {
     "type": "-",
+    "named": false
+  },
+  {
+    "type": "->",
     "named": false
   },
   {
