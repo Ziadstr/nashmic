@@ -237,6 +237,11 @@ tbody tr:last-child td{border-bottom:none}
     <a class="nav-item" href="#" data-section="builtins" onclick="nav(this);return false">Built-in Functions</a>
     <a class="nav-item" href="#" data-section="compiler" onclick="nav(this);return false">Compiler Messages</a>
   </div>
+  <div class="nav-group" style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+    <a class="nav-item" href="playground/" style="color:var(--gold)">Playground</a>
+    <a class="nav-item" href="https://marketplace.visualstudio.com/items?itemName=ziadstr.nashmic" target="_blank">VS Code Extension</a>
+    <a class="nav-item" href="https://github.com/Ziadstr/nashmic" target="_blank">GitHub</a>
+  </div>
 </nav>
 
 <div class="main">
@@ -248,6 +253,7 @@ tbody tr:last-child td{border-bottom:none}
   <div class="hero-badge">Open Source &middot; MIT License</div>
   <h1>Code in <span>Jordanian.</span></h1>
   <p class="hero-sub">NashmiC is a compiled programming language with Franco-Arab keywords. Every keyword is a word you'd actually say in Amman. Not textbook Arabic, real dialect.</p>
+  <p class="hero-sub" style="margin-top:0"><strong style="color:var(--gold)">Why Franco-Arab?</strong> Arabic script goes right-to-left. That breaks every terminal, every diff tool, every code editor cursor. Half the Arabic letters change shape depending on position. Keyboard layouts fight you. Tooling barely exists. Franco-Arab (Arabizi) sidesteps all of this — it uses Latin characters that every dev tool already supports, with numbers like <code style="color:var(--gold);font-family:var(--font-mono)">3</code> for ain and <code style="color:var(--gold);font-family:var(--font-mono)">2</code> for hamza, exactly like millions of Arabs text every day. You get Arabic meaning with zero tooling friction.</p>
   <div class="install-box" onclick="copyInstall(this)">
     <code>curl -fsSL https://raw.githubusercontent.com/Ziadstr/nashmic/main/install.sh | bash</code>
     <span class="copy-hint">copy</span>
@@ -298,7 +304,11 @@ make</code></pre></div>
 <h2>Editor Support</h2>
 <p>Install the VS Code extension for syntax highlighting and snippets:</p>
 <div class="code-block"><div class="code-block-header"><span class="code-block-lang">bash</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code>code --install-extension ziadstr.nashmic</code></pre></div>
-<p>Or search <strong>"NashmiC"</strong> in the Extensions panel (<code class="inline-code">Ctrl+Shift+X</code>).</p>
+<p>Or search <strong>"NashmiC"</strong> in the Extensions panel (<code class="inline-code">Ctrl+Shift+X</code>). Includes syntax highlighting for 80+ keywords, 15 code snippets, bracket matching, and auto-indentation.</p>
+
+<h2>Try It Online</h2>
+<p>Don't want to install? Try NashmiC in your browser with pre-loaded examples:</p>
+<p style="margin-top:12px"><a href="playground/" style="display:inline-block;padding:10px 24px;background:var(--gold);color:#000;border-radius:6px;text-decoration:none;font-weight:600;font-size:15px">Open Playground</a></p>
 
 <h2>Your First Program</h2>
 <p>Create a file called <code class="inline-code">marhaba.nsh</code>:</p>
@@ -620,6 +630,38 @@ a3dad.<span class="c-fn">zeed</span>(<span class="c-num">50</span>)
     <span class="c-fn">itba3</span>(<span class="c-str">"]\n"</span>)
 }</code></pre></div>
 
+<h2>Under the Hood</h2>
+<p>A <code class="inline-code">saff&lt;adad64&gt;</code> compiles to a C struct with a pointer, length, and capacity. Array literals allocate with <code class="inline-code">malloc</code>. The <code class="inline-code">.zeed()</code> method doubles capacity when full, giving you amortized O(1) appends. Iteration with <code class="inline-code">lakol</code> becomes a simple index loop in C.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">C (generated)</span></div><pre><code>// saff&lt;adad64&gt; compiles to:
+struct nsh_array_int64_t {
+    int64_t *data;
+    int64_t len;
+    int64_t cap;
+};
+
+// Array literal [10, 20, 30] becomes:
+struct nsh_array_int64_t a3dad;
+a3dad.cap = 3;
+a3dad.len = 3;
+a3dad.data = malloc(sizeof(int64_t) * 3);
+a3dad.data[0] = 10;
+a3dad.data[1] = 20;
+a3dad.data[2] = 30;
+
+// .zeed(40) checks capacity, doubles if full:
+if (a3dad.len >= a3dad.cap) {
+    a3dad.cap *= 2;
+    a3dad.data = realloc(a3dad.data, sizeof(int64_t) * a3dad.cap);
+}
+a3dad.data[a3dad.len++] = 40;
+
+// lakol n fi a3dad becomes:
+for (int64_t _i = 0; _i < a3dad.len; _i++) {
+    int64_t n = a3dad.data[_i];
+    // body
+}</code></pre></div>
+<p>No hidden allocations, no garbage collector. You get exactly what you'd write in C, but without the boilerplate.</p>
+
 <div class="footer">
 <span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
 <span>MIT License</span>
@@ -659,6 +701,48 @@ a3dad.<span class="c-fn">zeed</span>(<span class="c-num">50</span>)
     }
 }</code></pre></div>
 <p>Each <code class="inline-code">hale</code> arm destructures the variant payload into local variables. Use <code class="inline-code">3adi</code> as a catch-all default.</p>
+
+<h2>Under the Hood</h2>
+<p>Enums become tagged unions in C. The compiler generates a struct with an <code class="inline-code">int _tag</code> field and a <code class="inline-code">union _v</code> that holds the payload for whichever variant is active. Each variant gets a unique integer tag constant. Pattern matching with <code class="inline-code">hasab</code>/<code class="inline-code">hale</code> compiles to a <code class="inline-code">switch(_tag)</code> statement.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">C (generated)</span></div><pre><code>// ta3dad Shape { Da2ira(fasle64), Mustateel(fasle64), Noqta }
+// compiles to:
+
+#define Shape_Da2ira    0
+#define Shape_Mustateel 1
+#define Shape_Noqta     2
+
+struct Shape {
+    int _tag;
+    union {
+        double Da2ira;
+        double Mustateel;
+        // Noqta carries no data
+    } _v;
+};
+
+// khalli circle: Shape = Da2ira(5.0) becomes:
+struct Shape circle;
+circle._tag = Shape_Da2ira;
+circle._v.Da2ira = 5.0;
+
+// hasab s { hale Da2ira(radius) => ... } becomes:
+switch (s._tag) {
+    case Shape_Da2ira: {
+        double radius = s._v.Da2ira;
+        // arm body
+        break;
+    }
+    case Shape_Mustateel: {
+        double width = s._v.Mustateel;
+        // arm body
+        break;
+    }
+    case Shape_Noqta: {
+        // arm body
+        break;
+    }
+}</code></pre></div>
+<p>Tagged unions give you type-safe variants with zero overhead. The tag is just an int comparison, and the union shares memory across variants so you only pay for the largest one.</p>
 
 <div class="footer">
 <span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
@@ -701,6 +785,35 @@ a3dad.<span class="c-fn">zeed</span>(<span class="c-num">50</span>)
     }
 }</code></pre></div>
 
+<h2>Under the Hood</h2>
+<p>A <code class="inline-code">yimkin&lt;adad64&gt;</code> compiles to a simple struct with a flag and a value. <code class="inline-code">fi(x)</code> sets the flag to 1 and stores the value. <code class="inline-code">mafi</code> sets the flag to 0. The <code class="inline-code">iza fi</code> binding checks the flag and extracts the value into a local variable.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">C (generated)</span></div><pre><code>// yimkin&lt;adad64&gt; compiles to:
+struct nsh_option_int64_t {
+    int _has_value;
+    int64_t _value;
+};
+
+// rajje3 fi(n) becomes:
+struct nsh_option_int64_t _ret;
+_ret._has_value = 1;
+_ret._value = n;
+return _ret;
+
+// rajje3 mafi becomes:
+struct nsh_option_int64_t _ret;
+_ret._has_value = 0;
+return _ret;
+
+// iza fi result = find_even(10) { ... } becomes:
+struct nsh_option_int64_t _tmp = find_even(10);
+if (_tmp._has_value) {
+    int64_t result = _tmp._value;
+    // body
+} else {
+    // wala body
+}</code></pre></div>
+<p>No null pointers, no sentinel values, no segfaults. The compiler forces you to check before you unwrap. The whole thing is just a struct with a flag -- zero magic, maximum safety.</p>
+
 <div class="footer">
 <span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
 <span>MIT License</span>
@@ -742,6 +855,43 @@ a3dad.<span class="c-fn">zeed</span>(<span class="c-num">50</span>)
     }
 }</code></pre></div>
 
+<h2>Under the Hood</h2>
+<p>A <code class="inline-code">natije&lt;fasle64&gt;</code> compiles to a struct with a discriminator flag and a union holding either the success value or the error string. <code class="inline-code">tamam(x)</code> sets the flag to 1 (success), <code class="inline-code">ghalat(msg)</code> sets it to 0 (error). The <code class="inline-code">wala?</code> propagation operator uses a GNU C statement expression to check the flag and return early if it's an error.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">C (generated)</span></div><pre><code>// natije&lt;fasle64&gt; compiles to:
+struct nsh_result_double {
+    int _is_ok;
+    union {
+        double _ok;
+        const char* _err;
+    } _v;
+};
+
+// rajje3 tamam(a / b) becomes:
+struct nsh_result_double _ret;
+_ret._is_ok = 1;
+_ret._v._ok = a / b;
+return _ret;
+
+// rajje3 ghalat("division by zero!") becomes:
+struct nsh_result_double _ret;
+_ret._is_ok = 0;
+_ret._v._err = "division by zero!";
+return _ret;
+
+// khalli result: fasle64 = divide(x, 2.0) wala?
+// uses a GNU C statement expression:
+double result = ({
+    struct nsh_result_double _tmp = divide(x, 2.0);
+    if (!_tmp._is_ok) {
+        struct nsh_result_double _prop;
+        _prop._is_ok = 0;
+        _prop._v._err = _tmp._v._err;
+        return _prop;
+    }
+    _tmp._v._ok;
+});</code></pre></div>
+<p>Errors as values, propagation as a single operator. No stack unwinding, no hidden control flow. The <code class="inline-code">wala?</code> is just a conditional return that the compiler writes for you. You get Rust-style error handling with C-level transparency.</p>
+
 <div class="footer">
 <span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
 <span>MIT License</span>
@@ -780,6 +930,31 @@ a3dad.<span class="c-fn">zeed</span>(<span class="c-num">50</span>)
 }</code></pre></div>
 
 <div class="note"><strong>Cultural note:</strong> "ba3dain" is probably the most-used word in Jordan. "I'll do it ba3dain." Unlike real life, <code class="inline-code">ba3dain</code> in NashmiC actually keeps its promise.</div>
+
+<h2>Under the Hood</h2>
+<p>Defers compile to a goto-chain at the end of the function. Each <code class="inline-code">ba3dain</code> block becomes a labeled section. When the function returns, instead of returning directly, it jumps to the last defer label. Each defer block, after executing, falls through (or jumps) to the previous one in LIFO order. The final defer block then performs the actual return.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">C (generated)</span></div><pre><code>// dalle greet() {
+//     itba3("start\n")
+//     ba3dain { itba3("cleanup 1\n") }
+//     ba3dain { itba3("cleanup 2\n") }
+//     itba3("middle\n")
+//     rajje3
+// }
+// compiles to:
+
+void greet(void) {
+    printf("start\n");
+    // ba3dain blocks are registered, not executed here
+    printf("middle\n");
+    goto _defer_2;  // return jumps to the chain
+
+_defer_2:
+    printf("cleanup 2\n");  // LIFO: last defer runs first
+_defer_1:
+    printf("cleanup 1\n");  // then the earlier one
+    return;                 // actual return happens here
+}</code></pre></div>
+<p>Every <code class="inline-code">rajje3</code> in the function gets rewritten to jump to the defer chain instead of returning directly. If the function has a return value, it gets stashed in a local variable before the jump. Simple, predictable, and no runtime overhead -- just gotos.</p>
 
 <div class="footer">
 <span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
@@ -830,6 +1005,41 @@ a3dad.<span class="c-fn">zeed</span>(<span class="c-num">50</span>)
     <span class="c-kw">hale</span> <span class="c-fn">ghalat</span>(msg) => <span class="c-fn">itba3</span>(<span class="c-str">"error: {msg}\n"</span>)
 }</code></pre></div>
 
+<h2>Under the Hood</h2>
+<p>Pattern matching compiles differently depending on what you're matching. For enums, <code class="inline-code">hasab</code> becomes a <code class="inline-code">switch</code> on the <code class="inline-code">_tag</code> field. For results, it checks <code class="inline-code">_is_ok</code>. For optionals, it checks <code class="inline-code">_has_value</code>. Pattern variables (like <code class="inline-code">radius</code> in <code class="inline-code">hale Da2ira(radius)</code>) are scoped to their arm body -- they don't leak out.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">C (generated)</span></div><pre><code>// hasab s { hale Da2ira(radius) => ... } compiles to:
+switch (s._tag) {
+    case Shape_Da2ira: {
+        double radius = s._v.Da2ira;  // destructured, scoped to this block
+        printf("Circle: radius %g\n", radius);
+        break;
+    }
+    case Shape_Noqta: {
+        printf("Point\n");
+        break;
+    }
+}
+
+// hasab divide(10.0, 0.0) { hale tamam(val) => ... } compiles to:
+struct nsh_result_double _match = divide(10.0, 0.0);
+if (_match._is_ok) {
+    double val = _match._v._ok;
+    printf("%g\n", val);
+} else {
+    const char* msg = _match._v._err;
+    printf("Error: %s\n", msg);
+}
+
+// hasab find_even(7) { hale fi(val) => ... } compiles to:
+struct nsh_option_int64_t _match = find_even(7);
+if (_match._has_value) {
+    int64_t val = _match._value;
+    // fi arm
+} else {
+    // mafi arm
+}</code></pre></div>
+<p>The compiler picks the right strategy based on the type. Enums use <code class="inline-code">switch</code> for jump-table efficiency. Results and optionals use <code class="inline-code">if/else</code> since they only have two variants. Either way, the generated C is exactly what you'd write by hand.</p>
+
 <div class="footer">
 <span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
 <span>MIT License</span>
@@ -866,6 +1076,31 @@ a3dad.<span class="c-fn">zeed</span>(<span class="c-num">50</span>)
 <div class="code-block"><div class="code-block-header"><span class="code-block-lang">nashmic</span><button class="copy-btn" onclick="copyCode(this)">copy</button></div><pre><code><span class="c-kw">khalli</span> p: <span class="c-type">Point</span> = <span class="c-type">Point</span>{ x: <span class="c-num">3.0</span>, y: <span class="c-num">4.0</span> }
 <span class="c-kw">khalli</span> m: <span class="c-type">fasle64</span> = p.<span class="c-fn">magnitude</span>()</code></pre></div>
 <p>The instance before the dot becomes the <code class="inline-code">had</code> parameter. Under the hood, <code class="inline-code">p.distance(q)</code> becomes <code class="inline-code">Point_distance(&amp;p, q)</code> in C.</p>
+
+<h2>Under the Hood</h2>
+<p>Methods are just regular C functions with the struct passed as the first parameter. The <code class="inline-code">had</code> keyword becomes a pointer to the struct (<code class="inline-code">struct Type *had</code>). Dot syntax on method calls is pure syntactic sugar -- the compiler rewrites <code class="inline-code">p.magnitude()</code> to <code class="inline-code">Point_magnitude(&amp;p)</code>. No vtables, no dynamic dispatch, no runtime cost.</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">C (generated)</span></div><pre><code>// tabbe2 Point {
+//     dalle magnitude(had) -> fasle64 { ... }
+//     dalle distance(had, other: Point) -> fasle64 { ... }
+// }
+// compiles to:
+
+double Point_magnitude(struct Point *had) {
+    return sqrt(had->x * had->x + had->y * had->y);
+}
+
+double Point_distance(struct Point *had, struct Point other) {
+    double dx = had->x - other.x;
+    double dy = had->y - other.y;
+    return sqrt(dx * dx + dy * dy);
+}
+
+// p.magnitude() becomes:
+Point_magnitude(&p);
+
+// p.distance(q) becomes:
+Point_distance(&p, q);</code></pre></div>
+<p>The naming convention is <code class="inline-code">TypeName_methodName</code>. Since methods are just functions, they get the same optimization treatment from the C compiler -- inlining, constant folding, the whole deal. The dot syntax is there for readability, not for adding overhead.</p>
 
 <div class="footer">
 <span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
@@ -1085,6 +1320,16 @@ done! wallah ma 2assart (you didn't fall short)</code></pre></div>
 
 <h2>The <code class="inline-code">--tarab</code> Flag</h2>
 <p>Build with <code class="inline-code">mansaf build --tarab program.nsh</code> for celebratory audio on success. "Tarab" means musical ecstasy.</p>
+
+<h2>Compilation Pipeline</h2>
+<p>NashmiC compiles through C in six stages:</p>
+<div class="code-block"><div class="code-block-header"><span class="code-block-lang">pipeline</span></div><pre><code>.nsh source → Lexer → Parser → AST → Sema → C Codegen → cc → native binary</code></pre></div>
+<p><strong>Lexer:</strong> Tokenizes your source. Handles UTF-8, Franco-Arab keywords, string interpolation, operators.</p>
+<p><strong>Parser:</strong> Recursive descent + Pratt parser builds an AST. Handles operator precedence, generics (<code class="inline-code">natije&lt;T&gt;</code>, <code class="inline-code">saff&lt;T&gt;</code>), and block scoping.</p>
+<p><strong>Semantic Analysis (Sema):</strong> Three-pass analysis — declares symbols, resolves types, then type-checks. Catches undeclared variables, type mismatches, invalid field access, wrong argument counts, and unused variables. Errors include Jordanian proverbs.</p>
+<p><strong>C Code Generation:</strong> Walks the AST and emits C11. Structs → C structs. Enums → tagged unions. Methods → mangled functions. <code class="inline-code">natije&lt;T&gt;</code> → result structs. <code class="inline-code">wala?</code> → GNU C statement expressions.</p>
+<p><strong>C Compilation:</strong> Your system's <code class="inline-code">gcc</code> or <code class="inline-code">clang</code> compiles the generated C with <code class="inline-code">-std=gnu11 -O2</code> and links against <code class="inline-code">nsh_runtime.c</code>.</p>
+<p>The entire compiler is ~5,000 lines of C11. No dependencies beyond libc and libm. No VM, no interpreter, no garbage collector — just native binaries.</p>
 
 <div class="footer">
 <span>Built by <a href="https://github.com/Ziadstr" target="_blank">Ziad Al Sharif</a> (ziadstr)</span>
