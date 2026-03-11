@@ -82,7 +82,6 @@ static void repl_sigint_handler(int sig) {
     ssize_t __attribute__((unused)) w = write(STDOUT_FILENO, "\n", 1);
 #ifdef HAVE_READLINE
     rl_on_new_line();
-    rl_replace_line("", 0);
     rl_redisplay();
 #endif
 }
