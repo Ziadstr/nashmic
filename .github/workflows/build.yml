@@ -52,8 +52,8 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install tree-sitter CLI
+        run: npm install --ignore-scripts
 
       - name: Generate parser
         run: npx tree-sitter generate
@@ -117,7 +117,9 @@ jobs:
         run: node -c docs/site/playground/app.js && echo "app.js OK"
 
       - name: Check tools/playground in sync with docs
-        run: diff tools/playground/app.js docs/site/playground/app.js
+        run: |
+          diff tools/playground/app.js docs/site/playground/app.js
+          diff tools/playground/examples.js docs/site/playground/examples.js
 
   # ── Packaging Validation ────────────────────────────
   packaging:

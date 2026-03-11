@@ -46,22 +46,39 @@ yalla() {
 - **Semantic analysis:** type checking, field/method validation, unused variable warnings
 - **Compiler personality:** errors come with Jordanian proverbs
 - **Easter eggs:** `drobi()` for proverbs, `mansaf()` for the recipe
-- **VS Code extension:** syntax highlighting, snippets, bracket matching — [install it](https://marketplace.visualstudio.com/items?itemName=ziadstr.nashmic)
+- **Standard library:** math (`riyadiyat`), strings (`nusoos`), file I/O (`malafat`)
+- **VS Code extension:** syntax highlighting, snippets, bracket matching -- [install it](https://marketplace.visualstudio.com/items?itemName=ziadstr.nashmic)
+- **Tree-sitter grammar:** syntax highlighting for Neovim, Helix, Zed
 - **[Web playground](https://ziadstr.github.io/nashmic/playground/):** try NashmiC in your browser
 
 ## Installation
 
-### One-liner (recommended)
+### Homebrew (macOS / Linux)
+
+```bash
+brew tap Ziadstr/nashmic
+brew install nashmic
+```
+
+### AUR (Arch Linux)
+
+```bash
+yay -S nashmic-git
+```
+
+### Debian / Ubuntu (.deb)
+
+Download the `.deb` from [Releases](https://github.com/Ziadstr/nashmic/releases):
+
+```bash
+sudo dpkg -i nashmic_*.deb
+```
+
+### One-liner
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Ziadstr/nashmic/main/install.sh | bash
 ```
-
-This will:
-- Check for dependencies (C compiler, make, git)
-- Clone, build, and install to `~/.nashmic/`
-- Add `mansaf` to your PATH
-- No sudo needed
 
 ### Build from source
 
@@ -69,35 +86,13 @@ This will:
 git clone https://github.com/Ziadstr/nashmic.git
 cd nashmic
 make
-```
-
-Then either install globally:
-
-```bash
 sudo make install
-# Installs mansaf binary + runtime. Works from any directory.
-```
-
-Or run from the source directory:
-
-```bash
-export PATH="$PWD/build:$PATH"
-# mansaf auto-detects runtime from its binary location
-```
-
-### Uninstall
-
-```bash
-~/.nashmic/bin/install.sh --uninstall
-# or
-./uninstall.sh
 ```
 
 ### Requirements
 
 - A C11 compiler (`gcc` or `clang`)
 - `make`
-- `git`
 - Linux or macOS
 
 ## Quick Start
@@ -271,6 +266,19 @@ yalla() {
 | `itba3(...)` | print to stdout |
 | `i2ra()` | read line from stdin |
 | `itla3(code)` | exit program |
+
+### Standard Library
+
+| Module | Functions |
+|--------|-----------|
+| `riyadiyat` (math) | `jadhr`, `qowa`, `mutlaq`, `ashwa2i`, `jeta`, `jeta_tamam`, `dal`, `ardiye`, `sa2fiye`, `da2reb`, `aqall`, `akthar`, `log_tabi3i`, `log10` |
+| `nusoos` (strings) | `toul`, `qass`, `damj`, `badel`, `yihtawi`, `bdaya`, `nihaya`, `a3la`, `asfal`, `qass_haddi`, `harf_3ind`, `juz2`, `karrer` |
+| `malafat` (files) | `iftah_malaf`, `iftah_malaf_ktaba`, `sakker_malaf`, `i2ra_kol`, `uktub_malaf`, `dahef_malaf`, `mawjood`, `imsah_malaf`, `hajm_malaf`, `i2ra_sutoor` |
+
+### Easter Eggs
+
+| NashmiC | Meaning |
+|---------|---------|
 | `drobi()` | random Jordanian proverb |
 | `mansaf()` | mansaf recipe (ASCII art) |
 | `sahteen()` | "bon appetit" |
@@ -317,48 +325,34 @@ Covers: language basics, types, error handling, pattern matching, methods, and c
 
 ```
 nashmic/
-├── compiler/src/          # mansaf compiler (C)
-│   ├── main.c             # CLI entry point
-│   ├── lexer.c/h          # UTF-8 tokenizer
-│   ├── keywords.c/h       # Franco-Arab keyword table
-│   ├── parser.c/h         # Recursive descent + Pratt parser
-│   ├── ast.c/h            # AST node types
-│   ├── codegen_c.c/h      # C transpiler backend
-│   ├── sema.c/h           # Semantic analysis + type checking
-│   ├── formatter.c/h      # Auto-formatter (mansaf fmt)
-│   ├── repl.c/h           # Interactive REPL (mansaf repl)
-│   ├── wasm_entry.c       # WASM entry point (playground)
-│   ├── diagnostics.c/h    # Errors with proverbs
-│   ├── utf8.c/h           # UTF-8 encoding/decoding
-│   └── span.h             # Source locations
-├── runtime/               # Runtime library (C)
-│   └── nsh_runtime.c/h    # Core: print, read, exit, easter eggs
-├── docs/                  # Documentation (mdBook)
-│   ├── book.toml          # mdBook config
-│   └── src/               # Markdown source pages
-├── examples/              # Example programs
-│   ├── marhaba.nsh        # Hello world
-│   ├── fibonacci.nsh      # Fibonacci (ranges + interpolation)
-│   ├── ranges.nsh         # Range iteration demo
-│   ├── interpolation.nsh  # String interpolation demo
-│   ├── structs.nsh        # Struct declaration + literals
-│   ├── easter_eggs.nsh    # Cultural easter eggs
-│   ├── enums.nsh          # Enums + pattern matching
-│   ├── natije.nsh         # Result type + error propagation
-│   ├── yimkin.nsh         # Optional type
-│   ├── methods.nsh        # Methods + impl blocks
-│   ├── defer.nsh          # Defer (ba3dain)
-│   └── arrays.nsh         # Arrays, push, iteration
-├── editor/                # Editor extensions
-│   └── vscode-nashmic/    # VS Code extension
-├── tools/                 # Developer tools
-│   └── playground/        # Web playground
-├── tests/                 # Test suite
-│   ├── expected/          # Expected output files
-│   ├── fail/              # Semantic error test cases
-│   └── run_tests.sh       # Test runner
-├── install.sh             # One-liner installer
-├── uninstall.sh           # Clean removal script
+├── compiler/src/              # mansaf compiler (C)
+│   ├── main.c                 # CLI entry point
+│   ├── lexer.c/h              # UTF-8 tokenizer
+│   ├── keywords.c/h           # Franco-Arab keyword table
+│   ├── parser.c/h             # Recursive descent + Pratt parser
+│   ├── ast.c/h                # AST node types
+│   ├── codegen_c.c/h          # C transpiler backend
+│   ├── sema.c/h               # Semantic analysis + type checking
+│   ├── formatter.c/h          # Auto-formatter (mansaf fmt)
+│   ├── repl.c/h               # Interactive REPL (mansaf repl)
+│   └── diagnostics.c/h        # Errors with proverbs
+├── runtime/                   # Runtime library (C)
+│   └── nsh_runtime.c/h        # Core: print, read, exit, easter eggs
+├── stdlib/                    # Standard library
+│   ├── riyadiyat/             # Math (sqrt, pow, sin, cos, etc.)
+│   ├── nusoos/                # Strings (split, join, replace, etc.)
+│   └── malafat/               # File I/O (read, write, delete, etc.)
+├── editor/                    # Editor extensions
+│   ├── vscode-nashmic/        # VS Code extension (published)
+│   └── tree-sitter-nashmic/   # Tree-sitter grammar (Neovim/Helix/Zed)
+├── packaging/                 # Distribution packaging
+│   ├── aur/                   # Arch Linux (AUR)
+│   └── deb/                   # Debian/Ubuntu (.deb)
+├── examples/                  # 15 example programs
+├── tools/playground/          # Web playground source
+├── docs/site/                 # GitHub Pages site + playground
+├── tests/                     # Test suite (23 tests)
+├── install.sh                 # One-liner installer
 ├── Makefile
 ├── LICENSE
 └── README.md
@@ -439,25 +433,35 @@ Or search **"NashmiC"** in the Extensions panel (`Ctrl+Shift+X`).
 - Bracket matching, auto-closing, code folding
 - Auto-indentation
 
-### Neovim
+### Neovim (Tree-sitter)
 
-Use `mansaf fmt` as an external formatter:
+Full syntax highlighting via tree-sitter. Add to your `init.lua`:
 
 ```lua
--- In your init.lua or ftplugin/nashmic.lua
-vim.bo.formatprg = "mansaf fmt"
+local parser_config = require("nvim-treesitter.parsers").get_parser_configs()
+parser_config.nashmic = {
+  install_info = {
+    url = "https://github.com/Ziadstr/nashmic",
+    files = { "src/parser.c" },
+    subdirectory = "editor/tree-sitter-nashmic",
+    branch = "main",
+  },
+  filetype = "nashmic",
+}
+vim.filetype.add({ extension = { nsh = "nashmic" } })
 ```
 
-Or with [conform.nvim](https://github.com/stevearc/conform.nvim):
+Then `:TSInstall nashmic` and copy the queries:
+
+```bash
+mkdir -p ~/.config/nvim/queries/nashmic
+cp editor/tree-sitter-nashmic/queries/*.scm ~/.config/nvim/queries/nashmic/
+```
+
+Formatting with `mansaf fmt`:
 
 ```lua
-require("conform").setup({
-  formatters_by_ft = {
-    nashmic = {
-      { command = "mansaf", args = { "fmt", "--write", "$FILENAME" } }
-    }
-  }
-})
+vim.bo.formatprg = "mansaf fmt"
 ```
 
 ### Any Editor
@@ -488,9 +492,12 @@ NashmiC is in active development. The compiler handles:
 - ✅ Auto-formatter (`mansaf fmt`)
 - ✅ Interactive REPL (`mansaf repl`)
 - ✅ Test harness (`mansaf test`)
+- ✅ Standard library (math, strings, file I/O)
 - ✅ VS Code extension with formatter, run/build, 22 snippets
+- ✅ Tree-sitter grammar (Neovim, Helix, Zed)
 - ✅ Web playground (try it in the browser)
 - ✅ CI/CD (build + test + deploy on every push)
+- ✅ Distribution (Homebrew, AUR, .deb)
 - 📋 Multiple return values
 - 📋 Semicolon-free syntax
 

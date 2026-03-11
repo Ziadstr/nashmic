@@ -852,5 +852,127 @@ int main(void) {
     }
     return 0;
 }`
+  },
+  {
+    id: "riyadiyat",
+    name: "Math (riyadiyat)",
+    code: `// riyadiyat -- NashmiC standard library math functions
+// Square roots, powers, trig, rounding, and more
+
+yalla() {
+    itba3("=== riyadiyat (Math) ===\\n\\n")
+
+    // Square root and power
+    itba3("jadhr(16) = {jadhr(16.0)}\\n")
+    itba3("qowa(2, 10) = {qowa(2.0, 10.0)}\\n")
+
+    // Absolute value
+    itba3("mutlaq(-42) = {mutlaq(-42.0)}\\n")
+
+    // Trig
+    itba3("jeta(0) = {jeta(0.0)}\\n")
+    itba3("jeta_tamam(0) = {jeta_tamam(0.0)}\\n")
+
+    // Rounding
+    itba3("ardiye(3.7) = {ardiye(3.7)}\\n")
+    itba3("sa2fiye(3.2) = {sa2fiye(3.2)}\\n")
+    itba3("da2reb(3.5) = {da2reb(3.5)}\\n")
+
+    // Min / Max
+    itba3("aqall(5, 3) = {aqall(5.0, 3.0)}\\n")
+    itba3("akthar(5, 3) = {akthar(5.0, 3.0)}\\n")
+
+    // Logarithms
+    itba3("log10(1000) = {log10(1000.0)}\\n")
+}`,
+    output: `=== riyadiyat (Math) ===
+
+jadhr(16) = 4
+qowa(2, 10) = 1024
+mutlaq(-42) = 42
+jeta(0) = 0
+jeta_tamam(0) = 1
+ardiye(3.7) = 3
+sa2fiye(3.2) = 4
+da2reb(3.5) = 4
+aqall(5, 3) = 3
+akthar(5, 3) = 5
+log10(1000) = 3`,
+    generatedC: `#include <stdio.h>
+#include <math.h>
+#include "nsh_runtime.h"
+
+int main(void) {
+    nsh_runtime_init();
+    printf("=== riyadiyat (Math) ===\\n\\n");
+    printf("jadhr(16) = %g\\n", sqrt(16.0));
+    printf("qowa(2, 10) = %g\\n", pow(2.0, 10.0));
+    printf("mutlaq(-42) = %g\\n", fabs(-42.0));
+    // ... trig, rounding, min/max, log
+    nsh_runtime_shutdown();
+    return 0;
+}`
+  },
+  {
+    id: "nusoos",
+    name: "Strings (nusoos)",
+    code: `// nusoos -- NashmiC standard library string functions
+// Split, join, replace, contains, case conversion, and more
+
+yalla() {
+    itba3("=== nusoos (Strings) ===\\n\\n")
+
+    khalli text: nass = "marhaba ya nashmi"
+
+    // Length
+    itba3("toul: {toul(text)}\\n")
+
+    // Contains
+    iza (yihtawi(text, "nashmi")) {
+        itba3("yihtawi 'nashmi': ah\\n")
+    }
+
+    // Starts/ends with
+    iza (bdaya(text, "marhaba")) {
+        itba3("bdaya 'marhaba': ah\\n")
+    }
+
+    // Case conversion
+    itba3("a3la: {a3la(text)}\\n")
+    itba3("asfal: {asfal(text)}\\n")
+
+    // Replace
+    itba3("badel: {badel(text, "nashmi", "za3eem")}\\n")
+
+    // Repeat
+    itba3("karrer: {karrer("na", 5)}\\n")
+
+    // Substring
+    itba3("juz2: {juz2(text, 0, 7)}\\n")
+}`,
+    output: `=== nusoos (Strings) ===
+
+toul: 17
+yihtawi 'nashmi': ah
+bdaya 'marhaba': ah
+a3la: MARHABA YA NASHMI
+asfal: marhaba ya nashmi
+badel: marhaba ya za3eem
+karrer: nanananana
+juz2: marhaba`,
+    generatedC: `#include <stdio.h>
+#include <string.h>
+#include "nsh_runtime.h"
+
+int main(void) {
+    nsh_runtime_init();
+    const char* text = "marhaba ya nashmi";
+    printf("toul: %lld\\n", (int64_t)strlen(text));
+    printf("yihtawi: %s\\n", strstr(text, "nashmi") ? "ah" : "la");
+    printf("a3la: %s\\n", nsh_a3la(text));
+    // ... replace, repeat, substring
+    nsh_runtime_shutdown();
+    return 0;
+}`
   }
 ];
