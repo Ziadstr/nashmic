@@ -1,0 +1,11 @@
+Package: nashmic
+Version: VERSION
+Section: devel
+Priority: optional
+Architecture: ARCH
+Depends: libc6, libreadline8
+Maintainer: Ziad Strawberry <ziadstr@users.noreply.github.com>
+Description: The first Franco-Arab programming language
+ NashmiC uses Franco-Arab (Arabizi) keywords and transpiles to C.
+ Easy like Python. Powerful like Go. Jordanian to the bone.
+Homepage: https://github.com/Ziadstr/nashmic

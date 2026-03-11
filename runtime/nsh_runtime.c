@@ -96,6 +96,12 @@ int64_t nsh_str_len(const char *s) {
     return (int64_t)strlen(s);
 }
 
+/* ── Standard Library (included for single-TU compilation) ──── */
+
+#include "../stdlib/riyadiyat/riyadiyat.c"
+#include "../stdlib/nusoos/nusoos.c"
+#include "../stdlib/malafat/malafat.c"
+
 /* ── Easter Eggs ─────────────────────────────────────────────── */
 
 static const char *PROVERBS[] = {

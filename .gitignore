@@ -23,6 +23,14 @@ marhaba_arabic
 # Docs build output
 docs/book/
 
+# Tree-sitter
+editor/tree-sitter-nashmic/node_modules/
+editor/tree-sitter-nashmic/build/
+
+# Packaging
+packaging/deb/nashmic_*/
+*.deb
+
 # Internal / private
 PLAN.md
 TODO.md

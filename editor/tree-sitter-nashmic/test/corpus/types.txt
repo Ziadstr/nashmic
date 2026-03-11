@@ -1,0 +1,67 @@
+================
+Generic array type
+================
+
+khalli nums: saff<adad64> = [1, 2, 3]
+
+---
+
+(source_file
+  (variable_decl
+    name: (identifier)
+    type: (generic_type
+      type_argument: (builtin_type))
+    value: (array_literal
+      (argument_list
+        (number_literal)
+        (number_literal)
+        (number_literal)))))
+
+================
+Result type
+================
+
+dalle divide(a: fasle64, b: fasle64): natije<fasle64> {
+  rajje3 a
+}
+
+---
+
+(source_file
+  (function_def
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (builtin_type))
+      (parameter
+        name: (identifier)
+        type: (builtin_type)))
+    return_type: (generic_type
+      type_argument: (builtin_type))
+    body: (block
+      (return_statement
+        value: (identifier)))))
+
+================
+Optional type
+================
+
+dalle find(name: nass): yimkin<adad64> {
+  rajje3 mafi
+}
+
+---
+
+(source_file
+  (function_def
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (builtin_type)))
+    return_type: (generic_type
+      type_argument: (builtin_type))
+    body: (block
+      (return_statement
+        value: (null_literal)))))

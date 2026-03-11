@@ -95,6 +95,100 @@ void nsh_drobi(void) {
 void nsh_mansaf(void) { printf("mansaf recipe — best served with jameed\\n"); }
 void nsh_sahteen(void) { printf("bon appetit!\\n"); }
 void nsh_nashmi(void) { printf("NashmiC — Franco-Arab Programming Language\\n"); }
+
+/* ---- stdlib: riyadiyat (math) ---- */
+#include <math.h>
+double nsh_jadhr(double x) { return sqrt(x); }
+double nsh_qowa(double x, double n) { return pow(x, n); }
+double nsh_mutlaq(double x) { return fabs(x); }
+int64_t nsh_ashwa2i(int64_t min, int64_t max) {
+    static int seeded = 0;
+    if (!seeded) { srand((unsigned)time(NULL)); seeded = 1; }
+    if (min > max) { int64_t t = min; min = max; max = t; }
+    return min + (int64_t)(rand() % (max - min + 1));
+}
+double nsh_jeta(double x) { return sin(x); }
+double nsh_jeta_tamam(double x) { return cos(x); }
+double nsh_dal(double x) { return tan(x); }
+double nsh_ardiye(double x) { return floor(x); }
+double nsh_sa2fiye(double x) { return ceil(x); }
+double nsh_da2reb(double x) { return round(x); }
+double nsh_aqall(double a, double b) { return (a < b) ? a : b; }
+double nsh_akthar(double a, double b) { return (a > b) ? a : b; }
+double nsh_log_tabi3i(double x) { return log(x); }
+double nsh_log10_nsh(double x) { return log10(x); }
+
+/* ---- stdlib: nusoos (strings) ---- */
+#include <ctype.h>
+typedef struct { char **items; int64_t len; int64_t cap; } NshStringArray;
+void nsh_string_array_free(NshStringArray *arr) {
+    if (!arr) return;
+    for (int64_t i = 0; i < arr->len; i++) free(arr->items[i]);
+    free(arr->items); arr->items = NULL; arr->len = 0; arr->cap = 0;
+}
+int64_t nsh_toul(const char *s) { return s ? (int64_t)strlen(s) : 0; }
+char *nsh_badel(const char *s, const char *old_s, const char *new_s) {
+    if (!s || !old_s || !new_s) return s ? strdup(s) : strdup("");
+    size_t ol = strlen(old_s); if (ol == 0) return strdup(s);
+    size_t nl = strlen(new_s);
+    int cnt = 0; const char *p = s;
+    while ((p = strstr(p, old_s))) { cnt++; p += ol; }
+    size_t rl = strlen(s) + cnt * ((int64_t)nl - (int64_t)ol);
+    char *out = malloc(rl + 1), *d = out; const char *src = s;
+    while ((p = strstr(src, old_s))) {
+        size_t ch = (size_t)(p - src); memcpy(d, src, ch); d += ch;
+        memcpy(d, new_s, nl); d += nl; src = p + ol;
+    }
+    strcpy(d, src); return out;
+}
+int nsh_yihtawi(const char *s, const char *sub) { return (s && sub) ? (strstr(s, sub) != NULL) : 0; }
+int nsh_bdaya(const char *s, const char *pfx) { return (s && pfx) ? (strncmp(s, pfx, strlen(pfx)) == 0) : 0; }
+int nsh_nihaya(const char *s, const char *sfx) {
+    if (!s || !sfx) return 0;
+    size_t sl = strlen(s), xl = strlen(sfx);
+    return xl <= sl && strcmp(s + sl - xl, sfx) == 0;
+}
+char *nsh_a3la(const char *s) {
+    if (!s) return strdup("");
+    size_t l = strlen(s); char *o = malloc(l+1);
+    for (size_t i = 0; i < l; i++) o[i] = (char)toupper((unsigned char)s[i]);
+    o[l] = '\\0'; return o;
+}
+char *nsh_asfal(const char *s) {
+    if (!s) return strdup("");
+    size_t l = strlen(s); char *o = malloc(l+1);
+    for (size_t i = 0; i < l; i++) o[i] = (char)tolower((unsigned char)s[i]);
+    o[l] = '\\0'; return o;
+}
+char *nsh_qass_haddi(const char *s, int64_t start, int64_t length) {
+    if (!s) return strdup("");
+    int64_t sl = (int64_t)strlen(s);
+    if (start < 0) start = 0; if (start >= sl) return strdup("");
+    if (length < 0) length = 0; if (start + length > sl) length = sl - start;
+    char *o = malloc((size_t)length+1); memcpy(o, s+start, (size_t)length);
+    o[length] = '\\0'; return o;
+}
+char nsh_harf_3ind(const char *s, int64_t i) {
+    if (!s) return '\\0';
+    int64_t sl = (int64_t)strlen(s);
+    if (i < 0 || i >= sl) return '\\0';
+    return s[i];
+}
+char *nsh_juz2(const char *s, int64_t start, int64_t end) {
+    if (!s) return strdup("");
+    int64_t sl = (int64_t)strlen(s);
+    if (start < 0) start = 0; if (end > sl) end = sl;
+    if (start >= end) return strdup("");
+    int64_t l = end - start; char *o = malloc((size_t)l+1);
+    memcpy(o, s+start, (size_t)l); o[l] = '\\0'; return o;
+}
+char *nsh_karrer(const char *s, int64_t n) {
+    if (!s || n <= 0) return strdup("");
+    size_t sl = strlen(s), total = sl * (size_t)n;
+    char *o = malloc(total+1), *p = o;
+    for (int64_t i = 0; i < n; i++) { memcpy(p, s, sl); p += sl; }
+    *p = '\\0'; return o;
+}
 `;
 
 /* ---- WASM Initialization ---- */

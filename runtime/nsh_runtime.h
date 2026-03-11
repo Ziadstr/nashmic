@@ -52,6 +52,12 @@ char *nsh_str_concat(const char *a, const char *b);
 /* nsh_str_len — return string length */
 int64_t nsh_str_len(const char *s);
 
+/* ── Standard Library ───────────────────────────────────────── */
+
+#include "../stdlib/riyadiyat/riyadiyat.h"
+#include "../stdlib/nusoos/nusoos.h"
+#include "../stdlib/malafat/malafat.h"
+
 /* ── Easter Egg Functions ────────────────────────────────────── */
 
 /* drobi — random Jordanian proverb/joke */

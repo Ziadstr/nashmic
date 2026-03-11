@@ -469,6 +469,45 @@ static void emit_expr(Emitter *e, NshNode *node) {
         else if (strcmp(id, "toul") == 0) { emit(e, "nsh_str_len"); }
         else if (strcmp(id, "zeed") == 0) { emit(e, "nsh_array_push"); }
         else if (strcmp(id, "hajm") == 0) { emit(e, "sizeof"); }
+        /* stdlib — riyadiyat (math) */
+        else if (strcmp(id, "jadhr") == 0) { emit(e, "nsh_jadhr"); }
+        else if (strcmp(id, "qowa") == 0) { emit(e, "nsh_qowa"); }
+        else if (strcmp(id, "mutlaq") == 0) { emit(e, "nsh_mutlaq"); }
+        else if (strcmp(id, "ashwa2i") == 0) { emit(e, "nsh_ashwa2i"); }
+        else if (strcmp(id, "jeta") == 0) { emit(e, "nsh_jeta"); }
+        else if (strcmp(id, "jeta_tamam") == 0) { emit(e, "nsh_jeta_tamam"); }
+        else if (strcmp(id, "dal") == 0) { emit(e, "nsh_dal"); }
+        else if (strcmp(id, "ardiye") == 0) { emit(e, "nsh_ardiye"); }
+        else if (strcmp(id, "sa2fiye") == 0) { emit(e, "nsh_sa2fiye"); }
+        else if (strcmp(id, "da2reb") == 0) { emit(e, "nsh_da2reb"); }
+        else if (strcmp(id, "aqall") == 0) { emit(e, "nsh_aqall"); }
+        else if (strcmp(id, "akthar") == 0) { emit(e, "nsh_akthar"); }
+        else if (strcmp(id, "log_tabi3i") == 0) { emit(e, "nsh_log_tabi3i"); }
+        else if (strcmp(id, "log10") == 0) { emit(e, "nsh_log10_nsh"); }
+        /* stdlib — nusoos (strings) */
+        else if (strcmp(id, "qass") == 0) { emit(e, "nsh_qass"); }
+        else if (strcmp(id, "damj") == 0) { emit(e, "nsh_damj"); }
+        else if (strcmp(id, "badel") == 0) { emit(e, "nsh_badel"); }
+        else if (strcmp(id, "yihtawi") == 0) { emit(e, "nsh_yihtawi"); }
+        else if (strcmp(id, "bdaya") == 0) { emit(e, "nsh_bdaya"); }
+        else if (strcmp(id, "nihaya") == 0) { emit(e, "nsh_nihaya"); }
+        else if (strcmp(id, "a3la") == 0) { emit(e, "nsh_a3la"); }
+        else if (strcmp(id, "asfal") == 0) { emit(e, "nsh_asfal"); }
+        else if (strcmp(id, "qass_haddi") == 0) { emit(e, "nsh_qass_haddi"); }
+        else if (strcmp(id, "harf_3ind") == 0) { emit(e, "nsh_harf_3ind"); }
+        else if (strcmp(id, "juz2") == 0) { emit(e, "nsh_juz2"); }
+        else if (strcmp(id, "karrer") == 0) { emit(e, "nsh_karrer"); }
+        /* stdlib — malafat (files) */
+        else if (strcmp(id, "iftah_malaf") == 0) { emit(e, "nsh_iftah_malaf"); }
+        else if (strcmp(id, "iftah_malaf_ktaba") == 0) { emit(e, "nsh_iftah_malaf_ktaba"); }
+        else if (strcmp(id, "sakker_malaf") == 0) { emit(e, "nsh_sakker_malaf"); }
+        else if (strcmp(id, "i2ra_kol") == 0) { emit(e, "nsh_i2ra_kol"); }
+        else if (strcmp(id, "uktub_malaf") == 0) { emit(e, "nsh_uktub_malaf"); }
+        else if (strcmp(id, "dahef_malaf") == 0) { emit(e, "nsh_dahef_malaf"); }
+        else if (strcmp(id, "mawjood") == 0) { emit(e, "nsh_mawjood"); }
+        else if (strcmp(id, "imsah_malaf") == 0) { emit(e, "nsh_imsah_malaf"); }
+        else if (strcmp(id, "hajm_malaf") == 0) { emit(e, "nsh_hajm_malaf"); }
+        else if (strcmp(id, "i2ra_sutoor") == 0) { emit(e, "nsh_i2ra_sutoor"); }
         else {
             /* Check if this is a bare enum variant (no payload) */
             VariantInfo *vi = find_variant(e, id);

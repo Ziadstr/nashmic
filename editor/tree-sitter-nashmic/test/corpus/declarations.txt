@@ -1,0 +1,172 @@
+================
+Variable declaration with type
+================
+
+khalli x: adad64 = 42
+
+---
+
+(source_file
+  (variable_decl
+    name: (identifier)
+    type: (builtin_type)
+    value: (number_literal)))
+
+================
+Constant declaration
+================
+
+thabet PI: fasle64 = 3.14
+
+---
+
+(source_file
+  (const_decl
+    name: (identifier)
+    type: (builtin_type)
+    value: (number_literal)))
+
+================
+Variable without type annotation
+================
+
+khalli name = "nashmi"
+
+---
+
+(source_file
+  (variable_decl
+    name: (identifier)
+    value: (string_literal)))
+
+================
+Function definition
+================
+
+dalle greet(name: nass): nass {
+  rajje3 name
+}
+
+---
+
+(source_file
+  (function_def
+    name: (identifier)
+    (parameter_list
+      (parameter
+        name: (identifier)
+        type: (builtin_type)))
+    return_type: (builtin_type)
+    body: (block
+      (return_statement
+        value: (identifier)))))
+
+================
+Yalla entry point
+================
+
+yalla() {
+  itba3("marhaba!")
+}
+
+---
+
+(source_file
+  (expression_statement
+    (call_expr
+      function: (identifier)))
+  (block
+    (expression_statement
+      (call_expr
+        function: (identifier)
+        (argument_list
+          (string_literal))))))
+
+================
+Struct definition
+================
+
+haikal Point {
+  x: fasle64,
+  y: fasle64
+}
+
+---
+
+(source_file
+  (struct_def
+    name: (identifier)
+    (field_list
+      (field_def
+        name: (identifier)
+        type: (builtin_type))
+      (field_def
+        name: (identifier)
+        type: (builtin_type)))))
+
+================
+Enum definition
+================
+
+ta3dad Color {
+  Red,
+  Green,
+  Blue
+}
+
+---
+
+(source_file
+  (enum_def
+    name: (identifier)
+    (variant_list
+      (variant
+        name: (identifier))
+      (variant
+        name: (identifier))
+      (variant
+        name: (identifier)))))
+
+================
+Enum with payload
+================
+
+ta3dad Shape {
+  Circle(fasle64),
+  Square(fasle64)
+}
+
+---
+
+(source_file
+  (enum_def
+    name: (identifier)
+    (variant_list
+      (variant
+        name: (identifier)
+        payload_type: (builtin_type))
+      (variant
+        name: (identifier)
+        payload_type: (builtin_type)))))
+
+================
+Impl block
+================
+
+tabbe2 Point {
+  dalle distance(): fasle64 {
+    rajje3 x
+  }
+}
+
+---
+
+(source_file
+  (impl_block
+    type_name: (identifier)
+    (function_def
+      name: (identifier)
+      return_type: (builtin_type)
+      body: (block
+        (return_statement
+          value: (identifier))))))

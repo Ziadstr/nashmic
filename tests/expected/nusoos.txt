@@ -1,0 +1,12 @@
+=== nusoos (Strings) ===
+toul("marhaba") = 7
+a3la: NASHMIC
+asfal: nashmic
+yihtawi: 1
+bdaya: 1
+nihaya: 1
+badel: marhaba ya NashmiC!
+karrer: hahaha
+qass_haddi: nash
+harf_3ind: n
+juz2: mic

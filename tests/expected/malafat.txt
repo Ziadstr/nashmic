@@ -1,0 +1,10 @@
+=== malafat (Files) ===
+uktub: 1
+mawjood: 1
+i2ra_kol: marhaba ya NashmiC!
+hajm: 19
+dahef: 1
+ba3d dahef: marhaba ya NashmiC!
+more content
+imsah: 1
+mawjood ba3d imsah: 0

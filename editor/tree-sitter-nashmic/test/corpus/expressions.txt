@@ -1,0 +1,120 @@
+================
+Binary expression
+================
+
+khalli x = 1 + 2 * 3
+
+---
+
+(source_file
+  (variable_decl
+    name: (identifier)
+    value: (binary_expr
+      left: (number_literal)
+      right: (binary_expr
+        left: (number_literal)
+        right: (number_literal)))))
+
+================
+Function call
+================
+
+itba3("hello")
+
+---
+
+(source_file
+  (expression_statement
+    (call_expr
+      function: (identifier)
+      (argument_list
+        (string_literal)))))
+
+================
+Array literal
+================
+
+khalli nums = [1, 2, 3]
+
+---
+
+(source_file
+  (variable_decl
+    name: (identifier)
+    value: (array_literal
+      (argument_list
+        (number_literal)
+        (number_literal)
+        (number_literal)))))
+
+================
+Boolean literals
+================
+
+khalli yes = ah
+khalli no = la
+
+---
+
+(source_file
+  (variable_decl
+    name: (identifier)
+    value: (bool_literal))
+  (variable_decl
+    name: (identifier)
+    value: (bool_literal)))
+
+================
+Null literal
+================
+
+khalli empty = mafi
+
+---
+
+(source_file
+  (variable_decl
+    name: (identifier)
+    value: (null_literal)))
+
+================
+Unary negation
+================
+
+khalli neg = -42
+
+---
+
+(source_file
+  (variable_decl
+    name: (identifier)
+    value: (unary_expr
+      operand: (number_literal))))
+
+================
+String literal
+================
+
+khalli greeting = "marhaba ya nashmi"
+
+---
+
+(source_file
+  (variable_decl
+    name: (identifier)
+    value: (string_literal)))
+
+================
+Comment
+================
+
+// this is a comment
+khalli x = 1
+
+---
+
+(source_file
+  (comment)
+  (variable_decl
+    name: (identifier)
+    value: (number_literal)))

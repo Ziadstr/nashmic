@@ -18,7 +18,7 @@ FAIL_DIR="$SCRIPT_DIR/fail"
 
 # Examples that have non-deterministic output (random proverbs, etc.)
 # These are tested for successful compilation+execution only, not output matching
-SKIP_OUTPUT_CHECK="easter_eggs"
+SKIP_OUTPUT_CHECK="easter_eggs riyadiyat"
 
 # ── Color output ──────────────────────────────────────────────
 if [ -t 1 ]; then

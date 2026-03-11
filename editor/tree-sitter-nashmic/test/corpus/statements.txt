@@ -1,0 +1,165 @@
+================
+If statement
+================
+
+iza (x > 0) {
+  itba3("positive")
+}
+
+---
+
+(source_file
+  (if_statement
+    condition: (binary_expr
+      left: (identifier)
+      right: (number_literal))
+    consequence: (block
+      (expression_statement
+        (call_expr
+          function: (identifier)
+          (argument_list
+            (string_literal)))))))
+
+================
+If-else statement
+================
+
+iza (x > 0) {
+  itba3("yes")
+} wala {
+  itba3("no")
+}
+
+---
+
+(source_file
+  (if_statement
+    condition: (binary_expr
+      left: (identifier)
+      right: (number_literal))
+    consequence: (block
+      (expression_statement
+        (call_expr
+          function: (identifier)
+          (argument_list
+            (string_literal)))))
+    (else_clause
+      body: (block
+        (expression_statement
+          (call_expr
+            function: (identifier)
+            (argument_list
+              (string_literal))))))))
+
+================
+While loop
+================
+
+tool_ma (x < 10) {
+  x = x + 1
+}
+
+---
+
+(source_file
+  (while_loop
+    condition: (binary_expr
+      left: (identifier)
+      right: (number_literal))
+    body: (block
+      (expression_statement
+        (assignment
+          target: (identifier)
+          value: (binary_expr
+            left: (identifier)
+            right: (number_literal)))))))
+
+================
+For loop with range
+================
+
+lakol i fi 0..10 {
+  itba3(i)
+}
+
+---
+
+(source_file
+  (for_loop
+    variable: (identifier)
+    iterable: (range_expr
+      start: (number_literal)
+      end: (number_literal))
+    body: (block
+      (expression_statement
+        (call_expr
+          function: (identifier)
+          (argument_list
+            (identifier)))))))
+
+================
+Return statement
+================
+
+rajje3 42
+
+---
+
+(source_file
+  (return_statement
+    value: (number_literal)))
+
+================
+Defer statement
+================
+
+ba3dain {
+  itba3("cleanup")
+}
+
+---
+
+(source_file
+  (defer_statement
+    body: (block
+      (expression_statement
+        (call_expr
+          function: (identifier)
+          (argument_list
+            (string_literal)))))))
+
+================
+Break and continue
+================
+
+khalas
+
+---
+
+(source_file
+  (break_statement))
+
+================
+Match statement
+================
+
+hasab color {
+  hale Red: itba3("red")
+  hale Blue: itba3("blue")
+}
+
+---
+
+(source_file
+  (match_statement
+    subject: (identifier)
+    (match_arm
+      pattern: (pattern (identifier))
+      body: (call_expr
+        function: (identifier)
+        (argument_list (string_literal))))
+    (match_arm
+      pattern: (pattern (identifier))
+      body: (call_expr
+        function: (identifier)
+        (argument_list (string_literal))))))

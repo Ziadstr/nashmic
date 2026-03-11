@@ -39,7 +39,7 @@ WASM_OUT_DIR = tools/playground
 WASM_JS = $(WASM_OUT_DIR)/nashmic.js
 WASM_FILE = $(WASM_OUT_DIR)/nashmic.wasm
 
-.PHONY: all clean test wasm run-hello run-fib run-enums run-natije run-yimkin run-arrays run-all test
+.PHONY: all clean test wasm run-hello run-fib run-enums run-natije run-yimkin run-arrays run-riyadiyat run-nusoos run-malafat run-all test
 
 all: $(MANSAF)
 
@@ -123,6 +123,15 @@ run-defer: $(MANSAF)
 run-arrays: $(MANSAF)
 	NASHMIC_ROOT=. $(MANSAF) run examples/arrays.nsh
 
+run-riyadiyat: $(MANSAF)
+	NASHMIC_ROOT=. $(MANSAF) run examples/riyadiyat.nsh
+
+run-nusoos: $(MANSAF)
+	NASHMIC_ROOT=. $(MANSAF) run examples/nusoos.nsh
+
+run-malafat: $(MANSAF)
+	NASHMIC_ROOT=. $(MANSAF) run examples/malafat.nsh
+
 run-repl: $(MANSAF)
 	NASHMIC_ROOT=. $(MANSAF) repl
 
@@ -152,13 +161,26 @@ run-all: $(MANSAF)
 	@NASHMIC_ROOT=. $(MANSAF) run examples/defer.nsh
 	@echo "\n=== arrays ==="
 	@NASHMIC_ROOT=. $(MANSAF) run examples/arrays.nsh
+	@echo "\n=== riyadiyat ==="
+	@NASHMIC_ROOT=. $(MANSAF) run examples/riyadiyat.nsh
+	@echo "\n=== nusoos ==="
+	@NASHMIC_ROOT=. $(MANSAF) run examples/nusoos.nsh
+	@echo "\n=== malafat ==="
+	@NASHMIC_ROOT=. $(MANSAF) run examples/malafat.nsh
+
+PREFIX ?= /usr/local
+DESTDIR ?=
 
 install: $(MANSAF)
-	mkdir -p /usr/local/share/nashmic/runtime
-	cp $(MANSAF) /usr/local/bin/mansaf
-	cp runtime/nsh_runtime.c runtime/nsh_runtime.h /usr/local/share/nashmic/runtime/
-	@echo "✓ mansaf installed to /usr/local/bin/"
-	@echo "✓ runtime installed to /usr/local/share/nashmic/runtime/"
+	install -d $(DESTDIR)$(PREFIX)/bin
+	install -d $(DESTDIR)$(PREFIX)/share/nashmic/runtime
+	install -d $(DESTDIR)$(PREFIX)/share/nashmic/stdlib
+	install -m 755 $(MANSAF) $(DESTDIR)$(PREFIX)/bin/mansaf
+	install -m 644 runtime/nsh_runtime.c runtime/nsh_runtime.h $(DESTDIR)$(PREFIX)/share/nashmic/runtime/
+	cp -r stdlib/* $(DESTDIR)$(PREFIX)/share/nashmic/stdlib/
+	@echo "mansaf installed to $(DESTDIR)$(PREFIX)/bin/"
+	@echo "runtime installed to $(DESTDIR)$(PREFIX)/share/nashmic/runtime/"
+	@echo "stdlib installed to $(DESTDIR)$(PREFIX)/share/nashmic/stdlib/"
 
 uninstall:
 	rm -f /usr/local/bin/mansaf

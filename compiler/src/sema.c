@@ -446,6 +446,40 @@ static void register_unary_builtin(SemaCtx *ctx, const char *name,
     scope_insert(ctx->global_scope, sym);
 }
 
+/* Helper to register a binary built-in function */
+static void register_binary_builtin(SemaCtx *ctx, const char *name,
+                                     NshTypeKind param1_kind,
+                                     NshTypeKind param2_kind,
+                                     NshTypeKind return_kind) {
+    NshType *ftype = nsh_type_new(NSH_TYPE_FUNC);
+    ftype->as.func_type.param_count = 2;
+    ftype->as.func_type.param_types = calloc(2, sizeof(NshType *));
+    ftype->as.func_type.param_types[0] = nsh_type_new(param1_kind);
+    ftype->as.func_type.param_types[1] = nsh_type_new(param2_kind);
+    ftype->as.func_type.return_type = nsh_type_new(return_kind);
+
+    NshSymbol *sym = make_symbol(name, SYM_FUNC, ftype, NSH_SPAN_NONE);
+    sym->is_used = 1;
+    scope_insert(ctx->global_scope, sym);
+}
+
+/* Helper to register a ternary built-in function */
+static void register_ternary_builtin(SemaCtx *ctx, const char *name,
+                                      NshTypeKind p1, NshTypeKind p2,
+                                      NshTypeKind p3, NshTypeKind return_kind) {
+    NshType *ftype = nsh_type_new(NSH_TYPE_FUNC);
+    ftype->as.func_type.param_count = 3;
+    ftype->as.func_type.param_types = calloc(3, sizeof(NshType *));
+    ftype->as.func_type.param_types[0] = nsh_type_new(p1);
+    ftype->as.func_type.param_types[1] = nsh_type_new(p2);
+    ftype->as.func_type.param_types[2] = nsh_type_new(p3);
+    ftype->as.func_type.return_type = nsh_type_new(return_kind);
+
+    NshSymbol *sym = make_symbol(name, SYM_FUNC, ftype, NSH_SPAN_NONE);
+    sym->is_used = 1;
+    scope_insert(ctx->global_scope, sym);
+}
+
 /* Helper to register a nullary built-in function */
 static void register_nullary_builtin(SemaCtx *ctx, const char *name,
                                       NshTypeKind return_kind) {
@@ -477,6 +511,48 @@ static void register_builtins(SemaCtx *ctx) {
     register_unary_builtin(ctx, "abs", NSH_TYPE_INT64, NSH_TYPE_INT64);
     register_unary_builtin(ctx, "sin", NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE);
     register_unary_builtin(ctx, "cos", NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE);
+
+    /* stdlib — riyadiyat (math) */
+    register_unary_builtin(ctx, "jadhr", NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE);
+    register_binary_builtin(ctx, "qowa", NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE);
+    register_unary_builtin(ctx, "mutlaq", NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE);
+    register_binary_builtin(ctx, "ashwa2i", NSH_TYPE_INT64, NSH_TYPE_INT64, NSH_TYPE_INT64);
+    register_unary_builtin(ctx, "jeta", NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE);
+    register_unary_builtin(ctx, "jeta_tamam", NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE);
+    register_unary_builtin(ctx, "dal", NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE);
+    register_unary_builtin(ctx, "ardiye", NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE);
+    register_unary_builtin(ctx, "sa2fiye", NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE);
+    register_unary_builtin(ctx, "da2reb", NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE);
+    register_binary_builtin(ctx, "aqall", NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE);
+    register_binary_builtin(ctx, "akthar", NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE);
+    register_unary_builtin(ctx, "log_tabi3i", NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE);
+    register_unary_builtin(ctx, "log10", NSH_TYPE_DOUBLE, NSH_TYPE_DOUBLE);
+
+    /* stdlib — nusoos (strings) */
+    register_binary_builtin(ctx, "qass", NSH_TYPE_STRING, NSH_TYPE_STRING, NSH_TYPE_UNKNOWN);
+    register_binary_builtin(ctx, "damj", NSH_TYPE_UNKNOWN, NSH_TYPE_STRING, NSH_TYPE_STRING);
+    register_ternary_builtin(ctx, "badel", NSH_TYPE_STRING, NSH_TYPE_STRING, NSH_TYPE_STRING, NSH_TYPE_STRING);
+    register_binary_builtin(ctx, "yihtawi", NSH_TYPE_STRING, NSH_TYPE_STRING, NSH_TYPE_BOOL);
+    register_binary_builtin(ctx, "bdaya", NSH_TYPE_STRING, NSH_TYPE_STRING, NSH_TYPE_BOOL);
+    register_binary_builtin(ctx, "nihaya", NSH_TYPE_STRING, NSH_TYPE_STRING, NSH_TYPE_BOOL);
+    register_unary_builtin(ctx, "a3la", NSH_TYPE_STRING, NSH_TYPE_STRING);
+    register_unary_builtin(ctx, "asfal", NSH_TYPE_STRING, NSH_TYPE_STRING);
+    register_ternary_builtin(ctx, "qass_haddi", NSH_TYPE_STRING, NSH_TYPE_INT64, NSH_TYPE_INT64, NSH_TYPE_STRING);
+    register_binary_builtin(ctx, "harf_3ind", NSH_TYPE_STRING, NSH_TYPE_INT64, NSH_TYPE_CHAR);
+    register_ternary_builtin(ctx, "juz2", NSH_TYPE_STRING, NSH_TYPE_INT64, NSH_TYPE_INT64, NSH_TYPE_STRING);
+    register_binary_builtin(ctx, "karrer", NSH_TYPE_STRING, NSH_TYPE_INT64, NSH_TYPE_STRING);
+
+    /* stdlib — malafat (files) */
+    register_unary_builtin(ctx, "iftah_malaf", NSH_TYPE_STRING, NSH_TYPE_UNKNOWN);
+    register_unary_builtin(ctx, "iftah_malaf_ktaba", NSH_TYPE_STRING, NSH_TYPE_UNKNOWN);
+    register_unary_builtin(ctx, "sakker_malaf", NSH_TYPE_UNKNOWN, NSH_TYPE_VOID);
+    register_unary_builtin(ctx, "i2ra_kol", NSH_TYPE_STRING, NSH_TYPE_STRING);
+    register_binary_builtin(ctx, "uktub_malaf", NSH_TYPE_STRING, NSH_TYPE_STRING, NSH_TYPE_BOOL);
+    register_binary_builtin(ctx, "dahef_malaf", NSH_TYPE_STRING, NSH_TYPE_STRING, NSH_TYPE_BOOL);
+    register_unary_builtin(ctx, "mawjood", NSH_TYPE_STRING, NSH_TYPE_BOOL);
+    register_unary_builtin(ctx, "imsah_malaf", NSH_TYPE_STRING, NSH_TYPE_BOOL);
+    register_unary_builtin(ctx, "hajm_malaf", NSH_TYPE_STRING, NSH_TYPE_INT64);
+    register_unary_builtin(ctx, "i2ra_sutoor", NSH_TYPE_STRING, NSH_TYPE_UNKNOWN);
 
     /* Result/Optional identifiers — these normally go through
      * NODE_RESULT_WRAP or NODE_NULL_LIT, but register as symbols
