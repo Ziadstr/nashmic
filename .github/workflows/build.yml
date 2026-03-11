@@ -53,7 +53,7 @@ jobs:
           node-version: 20
 
       - name: Install tree-sitter CLI
-        run: npm install --ignore-scripts
+        run: npm install tree-sitter-cli
 
       - name: Generate parser
         run: npx tree-sitter generate
